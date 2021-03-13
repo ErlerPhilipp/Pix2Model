@@ -8,10 +8,10 @@ from redis import Redis
 from rq import Queue
 from uuid import uuid4
 
-from config import set_flask_configs
+from .config import set_flask_configs
 from image_to_mesh import image_to_mesh
 
-task_queue = Queue(connection=Redis())
+task_queue = Queue(connection=Redis(host="redis"))
 
 app = Flask(__name__)
 set_flask_configs(app)
@@ -70,4 +70,4 @@ def get_result():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=12345)
+    app.run(host="0.0.0.0", port=5000)

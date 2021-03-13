@@ -1,5 +1,5 @@
 FROM python:3.9-alpine
-EXPOSE 12345/tcp
+EXPOSE 5000/tcp
 
 RUN pip install pipenv
 
@@ -13,5 +13,6 @@ RUN pipenv install
 COPY . .
 
 ENV PYTHONPATH "${PYTHONPATH}:."
+ENV FLASK_APP "app.main"
 
-CMD ["pipenv" ,"run" ,"python", "app/main.py"]
+CMD ["pipenv" ,"run" ,"flask", "run", "--host=0.0.0.0"]

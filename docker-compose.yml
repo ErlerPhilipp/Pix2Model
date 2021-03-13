@@ -1,0 +1,12 @@
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+    - "5000:5000"
+    depends_on:
+      - redis
+  redis:
+    image: "redis:alpine"
+    expose:
+      - "6379"
