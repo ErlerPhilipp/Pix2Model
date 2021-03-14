@@ -8,9 +8,11 @@ WORKDIR /usr/src/app
 COPY Pipfile ./
 COPY Pipfile.lock ./
 
-RUN pipenv install
+RUN pipenv install --dev
 
 COPY . .
+
+RUN mkdir data
 
 ENV PYTHONPATH "${PYTHONPATH}:."
 ENV FLASK_APP "app.main"

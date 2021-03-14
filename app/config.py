@@ -1,7 +1,7 @@
 from pathlib import Path
 from flask import Flask
 
-UPLOAD_FOLDER = Path("/home/max/Schreibtisch/Data")
+UPLOAD_FOLDER = Path("./data/")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_FILE_SIZE_IN_MB = 10
 
