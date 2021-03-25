@@ -15,7 +15,7 @@ services:
     expose:
       - "6379"
   dashboard:
-    image: eoranged/rq-dashboard
+    build: ./dashboard
     ports:
     - "9181:9181"
     depends_on:
@@ -23,7 +23,13 @@ services:
     environment:
       - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
       - RQ_DASHBOARD_USERNAME=${RQ_DASHBOARD_USERNAME}
-      - RQ_DASHBOARD_PASSWORD=${RQ_DASHBOARD_PASSWORD}f
+      - RQ_DASHBOARD_PASSWORD=${RQ_DASHBOARD_PASSWORD}
   worker:
     build: .
-    command: sh -c echo "Test"
+    depends_on:
+      - redis
+    volumes:
+    - type: bind
+      target: /usr/src/app/data
+      source: ${UPLOAD_FOLDER}
+    command: sh -c "pipenv run rqworker -u redis://redis:6379"
