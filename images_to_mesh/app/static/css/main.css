@@ -1,0 +1,56 @@
+body {
+    background: #white;
+    color: black;
+    margin: 0;
+    padding: 0;
+}
+
+.file_upload {
+    margin: 5rem auto;
+    width: 500px;
+}
+
+#submit_upload {
+    margin-top: 2rem;
+}
+
+#response_field {
+    margin-top: 1rem;
+    display: block;
+}
+
+.hint {
+    color: 	#808080;
+}
+
+nav {
+    margin-bottom: 2rem;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+nav li {
+    display: inline;
+}
+
+nav li a {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav li a:hover {
+  background-color: #111;
+}
+
+.active {
+  background-color: #2999f0;
+}

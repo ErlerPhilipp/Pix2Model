@@ -1,17 +1,18 @@
 from pathlib import Path
 from typing import List
 
-from flask import Flask, request, render_template, redirect, url_for, flash
+from flask import Flask, request, render_template
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 from redis import Redis
 from rq import Queue
 from uuid import uuid4
 
-from .config import set_flask_configs
-from image_to_mesh import image_to_mesh
+from images_to_mesh.app import process_order
+from images_to_mesh.app.config import set_flask_configs
 
-task_queue = Queue(connection=Redis(host="redis"))
+connection = Redis(host="redis")
+task_queue = Queue(connection=connection)
 
 app = Flask(__name__)
 set_flask_configs(app)
@@ -19,6 +20,11 @@ set_flask_configs(app)
 
 def allowed_extension(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
+
+
+@app.route("/about", methods=["GET"])
+def about():
+    return "WIP"
 
 
 @app.route("/", methods=["GET"])
@@ -37,7 +43,7 @@ def file_upload():
         else:
             return "Invalid file extension", 400
 
-    folder: Path = app.config["UPLOAD_FOLDER"] / str(uuid4())
+    folder: Path = app.config["UPLOAD_FOLDER"] / str(uuid4()) / "input"
     if not folder.exists():
         folder.mkdir(parents=True)
 
@@ -47,8 +53,7 @@ def file_upload():
         processed_filenames.append(processed_filename)
         file.save(processed_filename)
 
-    job = task_queue.enqueue(image_to_mesh.process_images, processed_filenames)
-    return job.id
+    return process_order.queue_jobs(processed_filenames)
 
 
 @app.errorhandler(413)
