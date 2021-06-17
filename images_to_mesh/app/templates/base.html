@@ -1,0 +1,52 @@
+<!doctype html>
+    <html>
+    <head>
+        <title>Image2Mesh</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    </head>
+    <body>
+    <nav>
+        <ul>
+            <li><a class="active" href="{{ url_for('index') }}">Image-2-Mesh</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div class="file_upload">
+            <form class="dropzone" method="POST" action="{{ url_for('index') }}" id="upload">
+            </form>
+            <small class="hint">Supports JPG, JPEG, PNG</small><br />
+            <button id="submit_upload">Submit files</button><br />
+            <small id="response_field">
+            </small>
+        </div>
+    </main>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+        <script>
+            Dropzone.options.upload = {
+                paramName: "file",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 100,
+                maxFilesize: 10,
+                maxFiles: 100,
+                acceptedFiles: ".png, .jpg, .jpeg",
+                dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>"
+            };
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const submitButton = document.querySelector("#submit_upload");
+                submitButton.addEventListener("click", eventArgs => {
+                    document.querySelector("#upload").dropzone.processQueue();
+                });
+
+                document.querySelector("#upload").dropzone.on("success", (file, response) => {
+                    submitButton.disabled = true;
+                    document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
+                });
+            });
+
+        </script>
+    </body>
+</html>
