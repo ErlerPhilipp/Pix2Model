@@ -1,20 +1,22 @@
 import subprocess
-import yaml
 import os
-
-# Config file with path to COLMAP installation
-config = yaml.safe_load(open("config.yml"))
+from pathlib import Path
+from typing import List
 
 
 # Reconstruct using colmap (https://colmap.github.io/)
-def reconstruct_with_colmap(dataset_path: str):
+def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
+    dataset_path: Path = Path(image_list[0]).parent.parent
 
-    colmap_path = config['COLMAP']['PATH'] + '/colmap'
+    print(f"Here be the SFM {str(dataset_path)}")
+
+    # TODO: Add colmap to project via Docker
+    colmap_path = '/colmap'
 
     # Set up project directory for reconstruction
-    database_path = dataset_path + '/database.db'
-    image_path = dataset_path + '/images'
-    output_path = dataset_path + '/sparse'
+    database_path = str(dataset_path) + '/database.db'
+    image_path = str(dataset_path) + '/input'
+    output_path = str(dataset_path) + '/sparse'
 
     try:
         os.mkdir(output_path)
@@ -47,7 +49,7 @@ def reconstruct_with_colmap(dataset_path: str):
                        image_path,
                        '--output_path',
                        output_path]
-    execute_subprocess(command=mapping_command, verbose=True)
+    # execute_subprocess(command=mapping_command, verbose=True)
 
     # Read points
     # TODO
@@ -80,7 +82,3 @@ def execute_subprocess(command: list[str], verbose: bool):
                 for output in process.stdout.readlines():
                     print(output.strip())
                 break
-
-
-# Test
-reconstruct_with_colmap(dataset_path="C:/Users/joey/Desktop/colmap_test")
