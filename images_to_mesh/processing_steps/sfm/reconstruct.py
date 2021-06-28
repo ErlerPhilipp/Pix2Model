@@ -10,9 +10,6 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
 
     print(f"Here be the SFM {str(dataset_path)}")
 
-    # TODO: Add colmap to project via Docker
-    colmap_path = '/colmap'
-
     # Set up project directory for reconstruction
     database_path = str(dataset_path) + '/database.db'
     image_path = str(dataset_path) + '/input'
@@ -24,8 +21,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         print("Creation of the output directory %s failed" % output_path)
         return
 
+    print(f"Testing colmap...")
+    test_command = ['colmap', 'help']
+    execute_subprocess(command=test_command, verbose=True)
+
     # Extract features
-    extract_command = [colmap_path,
+    extract_command = ['colmap',
                        'feature_extractor',
                        '--database_path',
                        database_path,
@@ -34,14 +35,14 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     # execute_subprocess(command=extract_command, verbose=True)
 
     # Exhaustive matching
-    matching_command = [colmap_path,
+    matching_command = ['colmap',
                         'exhaustive_matcher',
                         '--database_path',
                         database_path]
     # execute_subprocess(command=matching_command, verbose=True)
 
     # Mapping
-    mapping_command = [colmap_path,
+    mapping_command = ['colmap',
                        'mapper',
                        '--database_path',
                        database_path,
