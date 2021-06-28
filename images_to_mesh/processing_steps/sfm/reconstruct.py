@@ -8,7 +8,7 @@ from typing import List
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     dataset_path: Path = Path(image_list[0]).parent.parent
 
-    print(f"Here be the SFM {str(dataset_path)}")
+    print(f"Starting reconstruction with colmap for dataset path: {str(dataset_path)}")
 
     # Set up project directory for reconstruction
     database_path = str(dataset_path) + '/database.db'
@@ -21,36 +21,36 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         print("Creation of the output directory %s failed" % output_path)
         return
 
-    print(f"Testing colmap...")
-    test_command = ['colmap', 'help']
-    execute_subprocess(command=test_command, verbose=True)
-
     # Extract features
-    extract_command = ['colmap',
-                       'feature_extractor',
-                       '--database_path',
-                       database_path,
-                       '--image_path',
-                       image_path]
-    # execute_subprocess(command=extract_command, verbose=True)
+    print(f"Extracting features...")
+    extract_command = [
+        'colmap', 'feature_extractor',
+        '--database_path', database_path,
+        '--image_path', image_path,
+        '--SiftExtraction.use_gpu', '0'
+    ]
+    output = (subprocess.check_output(extract_command, universal_newlines=True))
+    print(output)
 
     # Exhaustive matching
-    matching_command = ['colmap',
-                        'exhaustive_matcher',
-                        '--database_path',
-                        database_path]
-    # execute_subprocess(command=matching_command, verbose=True)
+    print(f"Performing matching...")
+    matching_command = [
+        'colmap', 'exhaustive_matcher',
+        '--database_path', database_path
+    ]
+    output = (subprocess.check_output(matching_command, universal_newlines=True))
+    print(output)
 
     # Mapping
-    mapping_command = ['colmap',
-                       'mapper',
-                       '--database_path',
-                       database_path,
-                       '--image_path',
-                       image_path,
-                       '--output_path',
-                       output_path]
-    # execute_subprocess(command=mapping_command, verbose=True)
+    print(f"Performing mapping...")
+    mapping_command = [
+        'colmap', 'mapper',
+        '--database_path', database_path,
+        '--image_path', image_path,
+        '--output_path', output_path
+    ]
+    output = (subprocess.check_output(mapping_command, universal_newlines=True))
+    print(output)
 
     # Read points
     # TODO
@@ -64,6 +64,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
 
 # Call the colmap command line interface and print all outputs
 def execute_subprocess(command: list[str], verbose: bool):
+    print(command)
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                universal_newlines=True,
@@ -83,3 +84,8 @@ def execute_subprocess(command: list[str], verbose: bool):
                 for output in process.stdout.readlines():
                     print(output.strip())
                 break
+
+
+def run_subprocess(command: list[str]):
+    feat_output = (subprocess.check_output(command, universal_newlines=True))
+    print(feat_output)
