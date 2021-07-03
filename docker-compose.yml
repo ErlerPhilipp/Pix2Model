@@ -1,5 +1,14 @@
 version: "3"
 services:
+  client:
+    stdin_open: true
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile.fe
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./web:/app"
   web:
     build: .
     ports:
