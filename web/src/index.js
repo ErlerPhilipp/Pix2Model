@@ -6,7 +6,7 @@ import './index.css';
 import './react-tabs-custom.css';
 import Upload from "./UploadComponent"
 import About from "./AboutComponent"
-import SceneWithSpinningBoxes from "./EditComponent";
+import Edit from "./EditComponent";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -27,7 +27,7 @@ ReactDOM.render(
     <TabPanel>
     </TabPanel>
     <TabPanel>
-      <SceneWithSpinningBoxes></SceneWithSpinningBoxes>
+      <Edit></Edit>
     </TabPanel>
   </Tabs>
   </React.StrictMode>,
