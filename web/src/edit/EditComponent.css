@@ -1,0 +1,71 @@
+canvas {
+    height: calc(100vh - 50px);
+    width: calc(100vw - 300px);
+    margin-left: 10px;
+}
+
+.edit_toolbar {
+    background-color: rgb(199, 199, 199);
+    height: calc(100vh - 50px);
+    width: 270px;
+    position: absolute;
+    right: 10px;
+    align-content: center;
+    display: inline-block;
+    justify-content: center;
+    align-items: baseline;
+}
+
+button {
+    background-color: azure;
+    width: 230px;
+    height: 50px;
+    font-size: 1.5em;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: rgb(225, 255, 255);
+}
+
+.edit_remove {
+    display: block;
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    border: 1px solid black;
+    color: red;
+    cursor: pointer;
+    top: 40px;
+    right: 20px;
+    position: absolute;
+}
+
+.edit_download {
+    display: block;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    margin-left: calc(50% - 30px);
+    margin-top: 20px;
+}
+
+.edit_upload {
+    display: block;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    left: calc(50% - 30px);
+    bottom: 40px;
+    position: absolute;  
+}
+
+.edit_box {
+    box-shadow: 0px 2px 3px rgb(0 0 0 / 13%), 1px 2px 2px rgb(0 0 0 / 10%), -1px -2px 2px rgb(0 0 0 / 5%);
+    padding: 10px;
+    margin: 25px 10px;
+}

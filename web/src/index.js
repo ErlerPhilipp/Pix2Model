@@ -4,9 +4,10 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import './index.css';
 import './react-tabs-custom.css';
-import Upload from "./UploadComponent"
-import About from "./AboutComponent"
-import Edit from "./EditComponent";
+
+import Upload from "./upload/UploadComponent"
+import About from "./about/AboutComponent"
+import Edit from "./edit/EditComponent";
 
 ReactDOM.render(
   <React.StrictMode>
