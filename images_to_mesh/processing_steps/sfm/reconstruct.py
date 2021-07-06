@@ -1,11 +1,22 @@
 import subprocess
 import os
+import numpy as np
+
 from pathlib import Path
 from typing import List
+from plyfile import PlyData, PlyElement
+from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
-
-# Reconstruct using colmap (https://colmap.github.io/)
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
+    """Generate a point cloud from a list of input images and save it as a .ply file
+
+    Uses COLMAP (https://colmap.github.io/) for reconstruction and provides the output point cloud
+    as a .ply file with rgb vertex colors.
+
+    :param image_list: List of images for feature extraction
+    :return: Path to file with reconstruction results
+    """
+
     dataset_path: Path = Path(image_list[0]).parent.parent
 
     print(f"Starting reconstruction with colmap for dataset path: {str(dataset_path)}")
@@ -13,13 +24,9 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     # Set up project directory for reconstruction
     database_path = str(dataset_path) + '/database.db'
     image_path = str(dataset_path) + '/input'
-    output_path = str(dataset_path) + '/sparse'
+    sparse_path = str(dataset_path) + '/sparse'
 
-    try:
-        os.mkdir(output_path)
-    except OSError:
-        print("Creation of the output directory %s failed" % output_path)
-        return
+    make_directory(sparse_path)
 
     # Extract features
     print(f"Extracting features...")
@@ -29,17 +36,16 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--image_path', image_path,
         '--SiftExtraction.use_gpu', '0'
     ]
-    output = (subprocess.check_output(extract_command, universal_newlines=True))
-    print(output)
+    execute_subprocess(command=extract_command, verbose=True)
 
     # Exhaustive matching
     print(f"Performing matching...")
     matching_command = [
         'colmap', 'exhaustive_matcher',
-        '--database_path', database_path
+        '--database_path', database_path,
+        '--SiftMatching.use_gpu', '0'
     ]
-    output = (subprocess.check_output(matching_command, universal_newlines=True))
-    print(output)
+    execute_subprocess(command=matching_command, verbose=True)
 
     # Mapping
     print(f"Performing mapping...")
@@ -47,28 +53,45 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         'colmap', 'mapper',
         '--database_path', database_path,
         '--image_path', image_path,
-        '--output_path', output_path
+        '--output_path', sparse_path
     ]
-    output = (subprocess.check_output(mapping_command, universal_newlines=True))
-    print(output)
+    execute_subprocess(command=mapping_command, verbose=True)
 
-    # Read points
-    # TODO
+    # Read points and convert to ply format
+    points = read_points3D_binary(sparse_path + '/0/points3D.bin')
 
-    # Clean up project dir
-    # TODO
+    vertices = np.array([], dtype=[
+        ('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
+        ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')
+    ])
 
-    # Return points
-    # TODO
+    for id, point in points.items():
+        vertices = np.append(vertices, np.array([(
+            point.xyz[0],
+            point.xyz[1],
+            point.xyz[2],
+            point.rgb[0],
+            point.rgb[1],
+            point.rgb[2])],
+            dtype=vertices.dtype))
+
+    output_dir = str(dataset_path) + '/output'
+    make_directory(output_dir)
+
+    output_path = output_dir + '/points.ply'
+
+    el = PlyElement.describe(vertices, 'vertex')
+    PlyData([el]).write(output_path)
+
+    print(f"Finished reconstruction. Output written to: {str(output_path)}")
+    return output_path
 
 
 # Call the colmap command line interface and print all outputs
 def execute_subprocess(command: list[str], verbose: bool):
-    print(command)
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
-                               universal_newlines=True,
-                               shell=True)
+                               universal_newlines=True)
 
     # Print console output of command
     if verbose:
@@ -86,6 +109,9 @@ def execute_subprocess(command: list[str], verbose: bool):
                 break
 
 
-def run_subprocess(command: list[str]):
-    feat_output = (subprocess.check_output(command, universal_newlines=True))
-    print(feat_output)
+def make_directory(path: str):
+    try:
+        os.mkdir(path)
+    except OSError:
+        print("Creation of the output directory %s failed" % path)
+        return
