@@ -33,12 +33,9 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    var rotation = {x: this.object.rotation.x, y: this.object.rotation.y, z: this.object.rotation.z};
+    var rotation = {x: this.object.rotation.x * 180 / Math.PI, y: this.object.rotation.y * 180 / Math.PI, z: this.object.rotation.z * 180 / Math.PI};
     var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
     var translation = {x: this.object.position.x, y: this.object.position.y, z: this.object.position.z};
-    console.log('rotation:', rotation);
-    console.log('scale:', scale);
-    console.log('translation:', translation);
     this.setState({rotation, scale, translation});
   }
 
@@ -59,11 +56,11 @@ class Edit extends Component {
     } else if (attribute === 'TranslationZ') {
       this.object.position.z = parseFloat(value)
     } else if (attribute === 'RotationX') {
-      this.object.rotation.x = parseFloat(value)
+      this.object.rotation.x = parseFloat(value) * Math.PI / 180
     } else if (attribute === 'RotationY') {
-      this.object.rotation.y = parseFloat(value)
+      this.object.rotation.y = parseFloat(value) * Math.PI / 180
     } else if (attribute === 'RotationZ') {
-      this.object.rotation.z = parseFloat(value)
+      this.object.rotation.z = parseFloat(value) * Math.PI / 180
     }
     this.handleUpdate();
   }
