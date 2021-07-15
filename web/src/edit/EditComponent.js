@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import * as THREE from "three";
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Attribute from "./AttributeComponent";
@@ -21,50 +21,6 @@ class Edit extends Component {
     this.scene = new THREE.Scene();
     this.state = {loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
   }
-
-  addObject(object, filename) {
-    this.scene.add(object);
-    this.transformControls.attach(object);
-    this.object = object;
-    this.setState({loaded: true, name: filename});
-  }
-
-  handleUpdate() {
-    if (!this.object) {
-      return;
-    }
-    var rotation = {x: this.object.rotation.x * 180 / Math.PI, y: this.object.rotation.y * 180 / Math.PI, z: this.object.rotation.z * 180 / Math.PI};
-    var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
-    var translation = {x: this.object.position.x, y: this.object.position.y, z: this.object.position.z};
-    this.setState({rotation, scale, translation});
-  }
-
-  updateValue(attribute, value) {
-    if (isNaN(parseFloat(value))) {
-      parseFloat(value)
-    }
-    if (attribute === 'ScaleX') {
-      this.object.scale.x = parseFloat(value)
-    } else if (attribute === 'ScaleY') {
-      this.object.scale.y = parseFloat(value)
-    } else if (attribute === 'ScaleZ') {
-      this.object.scale.z = parseFloat(value)
-    } else if (attribute === 'TranslationX') {
-      this.object.position.x = parseFloat(value)
-    } else if (attribute === 'TranslationY') {
-      this.object.position.y = parseFloat(value)
-    } else if (attribute === 'TranslationZ') {
-      this.object.position.z = parseFloat(value)
-    } else if (attribute === 'RotationX') {
-      this.object.rotation.x = parseFloat(value) * Math.PI / 180
-    } else if (attribute === 'RotationY') {
-      this.object.rotation.y = parseFloat(value) * Math.PI / 180
-    } else if (attribute === 'RotationZ') {
-      this.object.rotation.z = parseFloat(value) * Math.PI / 180
-    }
-    this.handleUpdate();
-  }
-  
 
   componentDidMount() {
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -144,16 +100,67 @@ class Edit extends Component {
     }
   }
 
+  addObject(object, filename) {
+    this.scene.add(object);
+    this.transformControls.attach(object);
+    this.object = object;
+    this.setState({loaded: true, name: filename});
+  }
+
+  handleUpdate() {
+    if (!this.object) {
+      return;
+    }
+    var rotation = {x: this.object.rotation.x * 180 / Math.PI, y: this.object.rotation.y * 180 / Math.PI, z: this.object.rotation.z * 180 / Math.PI};
+    var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
+    var translation = {x: this.object.position.x, y: this.object.position.y, z: this.object.position.z};
+    this.setState({rotation, scale, translation});
+  }
+
+  handleDownload() {
+    var exporter = new OBJExporter();
+    var link = document.createElement( 'a' );
+    if ( link.href ) {
+      URL.revokeObjectURL( link.href );
+    }
+    link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
+    link.download = "model.obj";
+    link.dispatchEvent( new MouseEvent( 'click' ) );
+  }
+
+  updateValue(attribute, value) {
+    if (attribute === 'ScaleX') {
+      this.object.scale.x = parseFloat(value)
+    } else if (attribute === 'ScaleY') {
+      this.object.scale.y = parseFloat(value)
+    } else if (attribute === 'ScaleZ') {
+      this.object.scale.z = parseFloat(value)
+    } else if (attribute === 'TranslationX') {
+      this.object.position.x = parseFloat(value)
+    } else if (attribute === 'TranslationY') {
+      this.object.position.y = parseFloat(value)
+    } else if (attribute === 'TranslationZ') {
+      this.object.position.z = parseFloat(value)
+    } else if (attribute === 'RotationX') {
+      this.object.rotation.x = parseFloat(value) * Math.PI / 180
+    } else if (attribute === 'RotationY') {
+      this.object.rotation.y = parseFloat(value) * Math.PI / 180
+    } else if (attribute === 'RotationZ') {
+      this.object.rotation.z = parseFloat(value) * Math.PI / 180
+    }
+    this.handleUpdate();
+  }
+
+  handleRemove() {
+    this.transformControls.detach(this.object);
+    this.scene.remove(this.object);
+    this.setState({loaded: false, name: ''});
+  }
+
   render() {
 
-    const loader_ = new OBJLoader();
-    var scope = this;
-
-    function handleRemove() {
-      scope.transformControls.detach(scope.object);
-      scope.scene.remove(scope.object);
-      scope.setState({loaded: false, name: ''});
-    }
+    this._handleRemove = this.handleRemove.bind(this)
+    this._handleDownload = this.handleDownload.bind(this)
 
     return (
       <div ref={ref => (this.mount = ref)}>
@@ -166,8 +173,8 @@ class Edit extends Component {
               <Attribute name='Scale' editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
-              <button onClick={handleRemove} class='edit_download'><i class="fa fa-download"></i></button>
-              <button onClick={handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
+              <button onClick={this._handleDownload} class='edit_download'><i class="fa fa-download"></i></button>
+              <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
           <button onClick={this.handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
