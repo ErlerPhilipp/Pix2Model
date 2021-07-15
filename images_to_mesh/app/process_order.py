@@ -33,7 +33,7 @@ def task(number: int):
 
 def queue_jobs(input_files: Any) -> int:
     connection = Redis(host="redis")
-    task_queue = Queue(connection=connection)
+    task_queue = Queue(connection=connection, default_timeout=3600)
     j1 = task_queue.enqueue(_structure_from_motion, input_files)
     #j1 = task_queue.enqueue(_step_one, input_files)
     j2 = task_queue.enqueue(_step_two, depends_on=j1)
