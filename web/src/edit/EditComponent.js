@@ -29,41 +29,44 @@ class Edit extends Component {
     this.setState({loaded: true, name: filename});
   }
 
-  handleUpdate(event) {
+  handleUpdate() {
     if (!this.object) {
       return;
     }
     var rotation = {x: this.object.rotation.x, y: this.object.rotation.y, z: this.object.rotation.z};
     var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
-    var translation = {x: this.object.translation.x, y: this.object.translation.y, z: this.object.translation.z};
+    var translation = {x: this.object.position.x, y: this.object.position.y, z: this.object.position.z};
+    console.log('rotation:', rotation);
+    console.log('scale:', scale);
+    console.log('translation:', translation);
     this.setState({rotation, scale, translation});
   }
 
   updateValue(attribute, value) {
-    if (attribute == 'ScaleX') {
-      this.object.scale.x = value
-    } else if (attribute == 'ScaleY') {
-      this.object.scale.y = value
-    } else if (attribute == 'ScaleZ') {
-      this.object.scale.z = value
-    } else if (attribute == 'TranslationX') {
-      this.object.position.x = value
-    } else if (attribute == 'TranslationY') {
-      this.object.position.y = value
-    } else if (attribute == 'TranslationZ') {
-      this.object.position.z = value
-    } else if (attribute == 'RotationX') {
-      this.object.rotation.x = value
-    } else if (attribute == 'RotationY') {
-      this.object.rotation.y = value
-    } else if (attribute == 'RotationZ') {
-      this.object.rotation.z = value
+    if (attribute === 'ScaleX') {
+      this.object.scale.x = parseFloat(value)
+    } else if (attribute === 'ScaleY') {
+      this.object.scale.y = parseFloat(value)
+    } else if (attribute === 'ScaleZ') {
+      this.object.scale.z = parseFloat(value)
+    } else if (attribute === 'TranslationX') {
+      this.object.position.x = parseFloat(value)
+    } else if (attribute === 'TranslationY') {
+      this.object.position.y = parseFloat(value)
+    } else if (attribute === 'TranslationZ') {
+      this.object.position.z = parseFloat(value)
+    } else if (attribute === 'RotationX') {
+      this.object.rotation.x = parseFloat(value)
+    } else if (attribute === 'RotationY') {
+      this.object.rotation.y = parseFloat(value)
+    } else if (attribute === 'RotationZ') {
+      this.object.rotation.z = parseFloat(value)
     }
+    this.handleUpdate();
   }
   
 
   componentDidMount() {
-    console.log('MOUNT');
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 50);
@@ -82,15 +85,9 @@ class Edit extends Component {
     this.transformControls.addEventListener('mouseUp', function () {
       controls.enabled = true;
     });
-    this._handleUpdate = this.handleUpdate.bind(this)
-    //this.transformControls.addEventListener('change', this._handleUpdate);
-    var animate = function () {
-      requestAnimationFrame(animate);
-      renderer.render(scope.scene, camera);
-      controls.update();
-    };
-    animate();
     // transformcontrols
+    this._handleUpdate = this.handleUpdate.bind(this)
+    this.transformControls.addEventListener('change', this._handleUpdate);
     this.scene.add(this.transformControls);
     window.addEventListener('keydown', function (event) {
       switch (event.key) {
@@ -105,6 +102,13 @@ class Edit extends Component {
           break
       }
     })
+    // animation
+    var animate = function () {
+      requestAnimationFrame(animate);
+      renderer.render(scope.scene, camera);
+      controls.update();
+    };
+    animate();
     // loader
     document.addEventListener('dragover', function (event) {
       event.preventDefault();
@@ -113,6 +117,7 @@ class Edit extends Component {
     document.addEventListener('drop', function (event) {
       event.preventDefault();
       if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
+      console.log(event.dataTransfer.items);
       if (event.dataTransfer.items) {
         scope.loader.loadItemList(event.dataTransfer.items);
       } else {
@@ -120,6 +125,7 @@ class Edit extends Component {
       }
     }, false);
     this.fileSelector = buildFileSelector();
+    this.fileSelector.addEventListener('change', this.handleUpload, false);
 
   }
 
@@ -128,19 +134,20 @@ class Edit extends Component {
     this.fileSelector.click();
   }
 
+  handleUpload = (event) => {
+    console.log(event);
+    if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
+    if (event.dataTransfer.items) {
+      this.loader.loadItemList(event.dataTransfer.items);
+    } else {
+      this.loader.loadFiles(event.dataTransfer.files);
+    }
+  }
+
   render() {
 
     const loader_ = new OBJLoader();
     var scope = this;
-
-    function handleUpload(event) {
-      if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
-      if (event.dataTransfer.items) {
-        this.loader.loadItemList(event.dataTransfer.items);
-      } else {
-        this.loader.loadFiles(event.dataTransfer.files);
-      }
-    }
 
     function handleRemove() {
       scope.transformControls.detach(scope.object);
