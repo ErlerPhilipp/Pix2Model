@@ -4,32 +4,22 @@ import './NumberFieldComponent.css';
 
 class NumberField extends React.Component {
 
-   value = 0;
-
    constructor(props) {
       super(props);
       this.state = { value: props.value };
-      this.value = this.state.value;
       this.onChange = this.onChange.bind(this);
       this.onBlur = this.onBlur.bind(this)
    }
 
-   static getDerivedStateFromProps(props, current_state) {
-      if (current_state.value !== props.value) {
-         return {
-          value: props.value
-        }
+   componentDidUpdate(prevProps) {
+      if (prevProps.value !== this.props.value) {
+         this.setState({value: this.props.value})
       }
-      return null
-    }
+   }
 
-    onChange(e) {
-      const re = /^(\d*(\.\d+)?)/;
+   onChange(e) {
       if (this.state.value !== e.target.value) {
-         if (re.test(e.target.value) && !(e.target.value === '')) {
-            console.log('HÄÄÄÄÄ', e.target.value)
-            //this.props.editor.updateValue(this.props.attribute, e.target.value)
-         }
+         this.setState({value: e.target.value});
       }
    }
 
@@ -45,7 +35,7 @@ class NumberField extends React.Component {
    }
 
    render() {
-      return <input class='attribute' value={this.value} onChange={this.onChange} onBlur={this.onBlur}/>
+      return <input class='attribute' value={this.state.value} onChange={this.onChange} onBlur={this.onBlur}/>
    }
 }
 

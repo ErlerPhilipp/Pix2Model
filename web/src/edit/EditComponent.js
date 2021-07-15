@@ -43,6 +43,9 @@ class Edit extends Component {
   }
 
   updateValue(attribute, value) {
+    if (isNaN(parseFloat(value))) {
+      parseFloat(value)
+    }
     if (attribute === 'ScaleX') {
       this.object.scale.x = parseFloat(value)
     } else if (attribute === 'ScaleY') {
