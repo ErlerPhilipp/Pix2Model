@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from pathlib import Path
-from typing import List
+from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
@@ -28,43 +28,57 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
 
     make_directory(sparse_path)
 
+    # Create log file
+    log_path = str(dataset_path) + '/log.txt'
+    logfile = open(log_path, "w")
+
     # Extract features
-    print(f"Extracting features...")
+    logfile.write(f"Extracting features...\n")
     extract_command = [
         'colmap', 'feature_extractor',
         '--database_path', database_path,
         '--image_path', image_path,
         '--SiftExtraction.use_gpu', '0'
     ]
-    execute_subprocess(command=extract_command, verbose=True)
+    for line in execute_subprocess(command=extract_command, logfile=logfile):
+        logfile.write(line)
 
-    # Exhaustive matching
-    print(f"Performing matching...")
+    # logfile.write matching
+    logfile.write(f"Performing matching...\n")
     matching_command = [
         'colmap', 'exhaustive_matcher',
         '--database_path', database_path,
         '--SiftMatching.use_gpu', '0'
     ]
-    execute_subprocess(command=matching_command, verbose=True)
+    for line in execute_subprocess(command=matching_command, logfile=logfile):
+        logfile.write(line)
 
     # Mapping
-    print(f"Performing mapping...")
+    logfile.write(f"Performing mapping...\n")
     mapping_command = [
         'colmap', 'mapper',
         '--database_path', database_path,
         '--image_path', image_path,
         '--output_path', sparse_path
     ]
-    execute_subprocess(command=mapping_command, verbose=True)
+    for line in execute_subprocess(command=mapping_command, logfile=logfile):
+        logfile.write(line)
 
+    output_path = convert_to_ply(dataset_path, sparse_path)
+    logfile.write(f"Output written to: {str(output_path)}")
+    logfile.close()
+
+    print(f"Finished reconstruction. Output written to: {str(output_path)}, log written to log.txt")
+    return output_path
+
+
+def convert_to_ply(dataset_path, sparse_path):
     # Read points and convert to ply format
     points = read_points3D_binary(sparse_path + '/0/points3D.bin')
-
     vertices = np.array([], dtype=[
         ('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
         ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')
     ])
-
     for id, point in points.items():
         vertices = np.append(vertices, np.array([(
             point.xyz[0],
@@ -74,44 +88,30 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             point.rgb[1],
             point.rgb[2])],
             dtype=vertices.dtype))
-
     output_dir = str(dataset_path) + '/output'
     make_directory(output_dir)
-
     output_path = output_dir + '/points.ply'
-
     el = PlyElement.describe(vertices, 'vertex')
     PlyData([el]).write(output_path)
-
-    print(f"Finished reconstruction. Output written to: {str(output_path)}")
     return output_path
 
 
 # Call the colmap command line interface and print all outputs
-def execute_subprocess(command: list[str], verbose: bool):
+def execute_subprocess(command: list[str], logfile: TextIO):
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
-
-    # Print console output of command
-    if verbose:
-        while True:
-            output = process.stdout.readline()
-            if len(output.strip()) > 0:
-                print(output.strip())
-            # Do something else
-            return_code = process.poll()
-            if return_code is not None:
-                print('RETURN CODE', return_code)
-                # Process has finished, read rest of the output
-                for output in process.stdout.readlines():
-                    print(output.strip())
-                break
+    for stdout_line in iter(process.stdout.readline, ""):
+        yield stdout_line
+    process.stdout.close()
+    return_code = process.wait()
+    if return_code is not None:
+        logfile.write(f"RETURN CODE {str(return_code)}\n")
 
 
 def make_directory(path: str):
     try:
         os.mkdir(path)
     except OSError:
-        print("Creation of the output directory %s failed" % path)
+        print("Creation of directory %s failed" % path)
         return
