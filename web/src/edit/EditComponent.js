@@ -8,13 +8,6 @@ import { Loader } from './Loader.js';
 
 import './EditComponent.css';
 
-function buildFileSelector(){
-  const fileSelector = document.createElement('input');
-  fileSelector.setAttribute('type', 'file');
-  fileSelector.setAttribute('multiple', 'multiple');
-  return fileSelector;
-}
-
 class Edit extends Component {
   constructor(props) {
     super(props);
@@ -47,7 +40,7 @@ class Edit extends Component {
     this.scene.add(this.transformControls);
     window.addEventListener('keydown', function (event) {
       switch (event.key) {
-        case "g":
+        case "q":
           scope.transformControls.setMode("translate")
           break
         case "r":
@@ -73,16 +66,20 @@ class Edit extends Component {
     document.addEventListener('drop', function (event) {
       event.preventDefault();
       if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
-      console.log(event.dataTransfer.items);
       if (event.dataTransfer.items) {
         scope.loader.loadItemList(event.dataTransfer.items);
       } else {
         scope.loader.loadFiles(event.dataTransfer.files);
       }
     }, false);
-    this.fileSelector = buildFileSelector();
-    this.fileSelector.addEventListener('change', this.handleUpload, false);
+    this.buildFileSelector();
+  }
 
+  buildFileSelector(){
+    this.fileSelector = document.createElement('input');
+    this.fileSelector.setAttribute('type', 'file');
+    this.handleUpload_ = this.handleUpload.bind(this);
+    this.fileSelector.addEventListener('change', this.handleUpload_, false);
   }
 
   handleFileSelect = (e) => {
@@ -91,13 +88,7 @@ class Edit extends Component {
   }
 
   handleUpload = (event) => {
-    console.log(event);
-    if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
-    if (event.dataTransfer.items) {
-      this.loader.loadItemList(event.dataTransfer.items);
-    } else {
-      this.loader.loadFiles(event.dataTransfer.files);
-    }
+    this.loader.loadFiles(this.fileSelector.files);
   }
 
   addObject(object, filename) {
@@ -161,6 +152,7 @@ class Edit extends Component {
 
     this._handleRemove = this.handleRemove.bind(this)
     this._handleDownload = this.handleDownload.bind(this)
+    this._handleFileSelect = this.handleFileSelect.bind(this)
 
     return (
       <div ref={ref => (this.mount = ref)}>
@@ -177,7 +169,16 @@ class Edit extends Component {
               <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          <button onClick={this.handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+          <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+        </div>
+        <div class='infobox'>
+          Upload .obj file to view and edit<br></br>
+          via drag&drop or the upload-button.<br></br>
+          <br></br>
+          Shortcuts:<br></br>
+          q - Translate<br></br>
+          r - Rotate<br></br>
+          s - Scale<br></br>
         </div>
       </div>
     )

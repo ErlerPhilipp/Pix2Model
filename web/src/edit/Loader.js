@@ -83,7 +83,6 @@ function Loader( editor ) {
 					editor.addObject( object, filename );
 
 				}, false );
-				console.log(file);
 				reader.readAsText( file );
 
 				break;

@@ -69,3 +69,15 @@ button:hover {
     padding: 10px;
     margin: 25px 10px;
 }
+
+.infobox {
+    white-space: pre-line;
+    position: absolute;
+    left: 30px;
+    background-color: rgba(0,0,0,0.02);
+    padding: 8px;
+    display: block;
+    font-family: monospace;
+    white-space: pre;
+    margin: 1em 0px;
+}
