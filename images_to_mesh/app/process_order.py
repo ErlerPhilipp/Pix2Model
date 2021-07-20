@@ -6,8 +6,9 @@ from rq import Queue, get_current_job
 
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
-from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap, ReconstructionError
 from images_to_mesh.processing_steps.step_two import some_other_processing
+from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap
+from images_to_mesh.processing_steps.mesh_reconstruction.mesh_reconstruction import process_clouds
 
 NUMBER_OF_STEPS = 2
 
@@ -62,4 +63,4 @@ def _structure_from_motion(*args, **kwargs):
 
 @task(2)
 def _step_two(*args, **kwargs):
-    return some_other_processing(*args, **kwargs)
+    return process_clouds(*args, **kwargs)

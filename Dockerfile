@@ -6,7 +6,8 @@ FROM ubuntu:20.04
 
 RUN apt-get update && apt-get -y install \
     wget \
-    software-properties-common
+    software-properties-common \
+    libgl1-mesa-glx
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update && apt-get -y install \
     python3.9 \
@@ -153,6 +154,7 @@ WORKDIR /usr/src/app
 
 COPY Pipfile ./
 COPY Pipfile.lock ./
+COPY test_data /test_data
 
 RUN pipenv install --dev
 
