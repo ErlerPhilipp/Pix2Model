@@ -1,4 +1,17 @@
-FROM python:3.9
+FROM ubuntu:20.04
+
+###########################################################################
+# Install python
+###########################################################################
+
+RUN apt-get update && apt-get -y install \
+    wget \
+    software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update && apt-get -y install \
+    python3.9 \
+    python3-pip
+RUN pip install pipenv
 
 ###########################################################################
 # Install CUDA (sourced from https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist/11.4.0/ubuntu18.04-x86_64/devel)
@@ -135,8 +148,6 @@ RUN cmake .. \
 ###########################################################################
 
 EXPOSE 5000/tcp
-
-RUN pip install pipenv
 
 WORKDIR /usr/src/app
 
