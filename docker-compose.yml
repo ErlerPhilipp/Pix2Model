@@ -9,6 +9,7 @@ services:
       - "8080:8080"
     volumes:
       - "./web:/app"
+      - exclude:/app/node_modules/
   web:
     build: .
     ports:
@@ -42,3 +43,5 @@ services:
       target: /usr/src/app/data
       source: ${UPLOAD_FOLDER}
     command: sh -c "pipenv run rqworker -u redis://redis:6379"
+volumes:
+  exclude:
