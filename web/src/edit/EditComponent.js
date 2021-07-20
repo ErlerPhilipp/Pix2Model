@@ -172,7 +172,7 @@ class Edit extends Component {
           <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
         </div>
         <div class='infobox'>
-          Upload .obj file to view and edit<br></br>
+          Upload .obj or .ply file to view and edit<br></br>
           via drag&drop or the upload-button.<br></br>
           <br></br>
           Shortcuts:<br></br>
