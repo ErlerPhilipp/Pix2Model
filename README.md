@@ -69,3 +69,10 @@ def queue_jobs(input_files: Any) -> int:
 ```
 
 Here the "input_files" argument contains a list of the uploaded images and their paths. This argument should always be the fixed argument for the first step in the queue. For every other step, the return value of the previous step is automatically the input for the next one. In order to ensure that each consecutive step waits for the previous one, the "depends_on" keyword argument should be used.
+
+## Point Cloud Reconstruction
+
+The first processing step performs a point cloud reconstruction from input images using colmap. After the step completes, it provides two outputs:
+
+- A points.ply file containing the point cloud data (XYZ positions and RGB colors of each point)
+- A log.txt file containing the log of the reconstruction
