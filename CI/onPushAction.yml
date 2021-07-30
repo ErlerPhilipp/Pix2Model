@@ -1,0 +1,22 @@
+name: Publish stable version
+on:
+  push:
+    branches:
+      - main
+jobs:
+  Update-Public-Version:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      
+      - name: Connect to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: test.com
+          username: test
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            sh /path/to/script/deploy.sh

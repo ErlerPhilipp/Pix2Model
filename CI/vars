@@ -1,0 +1,4 @@
+PATH_TO_DIR="/path/to/web-server/dir"
+REPO_SSH_ID="git@github.com:ErlerPhilipp/Images2Mesh.git"
+REPO_NAME="Images2Mesh"
+NAME_OF_PUB_BRANCH="main"
