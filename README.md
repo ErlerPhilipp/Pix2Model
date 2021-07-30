@@ -1,6 +1,24 @@
 # Images2Mesh
 Images2Mesh Web funded by Netidee
 
+## Colmap prerequisites
+
+In order to use colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project:
+
+```bash
+# Add the package repositories
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+# Install nvidia-container-toolkit
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+
+# Check that it worked!
+docker run --gpus all nvidia/cuda:10.2-base nvidia-smi
+```
+
 ## Docker Setup
 
 The project can be deployed using docker and docker-compose. The architecture consists of the following services that can be found in the docker-compose.yml:
@@ -8,7 +26,7 @@ The project can be deployed using docker and docker-compose. The architecture co
 - web: Contains the application server written in python using flask
 - dashboard: Monitoring of the task queue via connection to redis server
 - redis: Database/Caching server used as host for the task queue
-- worker: Consumer for task queue written in python
+- worker: Consumer for task queue written in python includes installation of [colmap](https://colmap.github.io/) 
 
 To start the whole setup the command "docker-compose up" can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
 
@@ -51,3 +69,10 @@ def queue_jobs(input_files: Any) -> int:
 ```
 
 Here the "input_files" argument contains a list of the uploaded images and their paths. This argument should always be the fixed argument for the first step in the queue. For every other step, the return value of the previous step is automatically the input for the next one. In order to ensure that each consecutive step waits for the previous one, the "depends_on" keyword argument should be used.
+
+## Point Cloud Reconstruction
+
+The first processing step performs a point cloud reconstruction from input images using colmap. After the step completes, it provides two outputs:
+
+- A points.ply file containing the point cloud data (XYZ positions and RGB colors of each point)
+- A log.txt file containing the log of the reconstruction

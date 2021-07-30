@@ -3,7 +3,7 @@ from flask import Flask
 
 UPLOAD_FOLDER = Path("./data/")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-MAX_FILE_SIZE_IN_MB = 10
+MAX_FILE_SIZE_IN_MB = 1000
 
 
 def set_flask_configs(app: Flask):
