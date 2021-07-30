@@ -14,7 +14,7 @@ def queue_handler(job, exc_type, exc_value, traceback):
         file = open('/usr/src/app/data/logging_test.txt', 'a+')
     if retries >= 3 or not exc_type in retry_job:
         pass
-        #notify user here
+        #notify user here; get users addr by: job.meta['mail'] and check if it is valid!!!
         if log_events:
             file.write("User notification")
     else:
