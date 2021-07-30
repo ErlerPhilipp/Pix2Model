@@ -6,6 +6,7 @@ import './index.css';
 import './react-tabs-custom.css';
 
 import Upload from "./upload/UploadComponent"
+import UploadPLY from "./uploadPLY/UploadPLYComponent"
 import About from "./about/AboutComponent"
 import Edit from "./edit/EditComponent";
 
@@ -14,6 +15,7 @@ ReactDOM.render(
   <Tabs>
     <TabList>
       <Tab>Image-2-Mesh</Tab>
+      <Tab>Ply-2-Mesh</Tab>
       <Tab>About</Tab>
       <Tab>Download</Tab>
       <Tab>Edit</Tab>
@@ -21,6 +23,9 @@ ReactDOM.render(
 
     <TabPanel>
       <Upload></Upload>
+    </TabPanel>
+    <TabPanel>
+      <UploadPLY></UploadPLY>
     </TabPanel>
     <TabPanel>
       <About></About>

@@ -169,7 +169,12 @@ class Edit extends Component {
               <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+          {this.state.loaded &&
+            <button onClick={this._handleFileSelect} class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+          }
+          {!this.state.loaded &&
+            <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+          }
         </div>
         <div class='infobox'>
           Upload .obj or .ply file to view and edit<br></br>
