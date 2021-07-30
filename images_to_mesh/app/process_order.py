@@ -28,8 +28,8 @@ def task(number: int):
             print(f"Finished Step {number}!", flush=True)
             print(kwargs)
             print(number)
-            if number == NUMBER_OF_STEPS and "mail" in kwargs and not kwargs.get("mail") == "":
-                notify_user(current_job.id, kwargs.get("mail"), Order_state.success)
+            if number == NUMBER_OF_STEPS and "mail" in current_job.meta and not current_job.meta['mail'] == "":
+                notify_user(current_job.id, current_job.meta['mail'], Order_state.success)
             print("passed")
             return res
 
@@ -41,7 +41,11 @@ def queue_jobs(input_files: Any, user_email) -> int:
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection)
     j1 = task_queue.enqueue(_step_one, input_files)
-    j2 = task_queue.enqueue(_step_two, depends_on=j1, mail=user_email)
+    j2 = task_queue.enqueue(_step_two, depends_on=j1)
+    j1.meta['mail'] = user_email
+    j1.save_meta()
+    j2.meta['mail'] = user_email
+    j2.save_meta()
     return j2.id
 
 
