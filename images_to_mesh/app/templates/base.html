@@ -16,6 +16,10 @@
         <div class="file_upload">
             <form class="dropzone" method="POST" action="{{ url_for('index') }}" id="upload">
             </form>
+            <p>
+                I want to be notified when my oder is finished (optional):
+                <input type="email" id="email_input", name="user_mail">
+            </p>
             <small class="hint">Supports JPG, JPEG, PNG</small><br />
             <button id="submit_upload">Submit files</button><br />
             <small id="response_field">
@@ -24,7 +28,7 @@
     </main>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
         <script>
-            Dropzone.options.upload = {
+             Dropzone.options.upload = {
                 paramName: "file",
                 autoProcessQueue: false,
                 uploadMultiple: true,
@@ -37,6 +41,11 @@
 
             document.addEventListener("DOMContentLoaded", () => {
                 const submitButton = document.querySelector("#submit_upload");
+                document.querySelector("#upload").dropzone.on("sending", function(file, xhr, formData) {
+                    if(document.getElementById("email_input").value != ""){
+                        formData.append("user_email", document.getElementById("email_input").value);
+                    }
+                })
                 submitButton.addEventListener("click", eventArgs => {
                     document.querySelector("#upload").dropzone.processQueue();
                 });
