@@ -37,18 +37,16 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     extract_command = [
         'colmap', 'feature_extractor',
         '--database_path', database_path,
-        '--image_path', image_path,
-        '--SiftExtraction.use_gpu', '0'
+        '--image_path', image_path
     ]
     for line in execute_subprocess(command=extract_command, logfile=logfile):
         logfile.write(line)
 
-    # logfile.write matching
+    # Matching
     logfile.write(f"Performing matching...\n")
     matching_command = [
         'colmap', 'exhaustive_matcher',
-        '--database_path', database_path,
-        '--SiftMatching.use_gpu', '0'
+        '--database_path', database_path
     ]
     for line in execute_subprocess(command=matching_command, logfile=logfile):
         logfile.write(line)

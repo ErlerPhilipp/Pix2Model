@@ -1,10 +1,61 @@
 FROM python:3.9
 
-WORKDIR /root
+###########################################################################
+# Install CUDA (sourced from https://gitlab.com/nvidia/container-images/cuda/-/tree/master/dist/11.4.0/ubuntu18.04-x86_64/devel)
+###########################################################################
 
-# nvidia-container-runtime
+USER root
+# base
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg2 curl ca-certificates && \
+    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
+    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
+    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
+    apt-get purge --autoremove -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CUDA_VERSION 11.4.0
+
+# For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cuda-cudart-11-4=11.4.43-1 \
+    cuda-compat-11-4 \
+    && ln -s cuda-11.4 /usr/local/cuda && \
+    rm -rf /var/lib/apt/lists/*
+
+# Required for nvidia-docker v1
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
+    && echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+# devel next
+ENV NCCL_VERSION 2.10.3
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cuda-cudart-dev-11-4=11.4.43-1 \
+    cuda-command-line-tools-11-4=11.4.0-1 \
+    cuda-minimal-build-11-4=11.4.0-1 \
+    cuda-libraries-dev-11-4=11.4.0-1 \
+    cuda-nvml-dev-11-4=11.4.43-1 \
+    libnpp-dev-11-4=11.4.0.33-1 \
+    libnccl-dev=2.10.3-1+cuda11.4 \
+    libcublas-dev-11-4=11.5.2.43-1 \
+    libcusparse-dev-11-4=11.6.0.43-1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# apt from auto upgrading the cublas package. See https://gitlab.com/nvidia/container-images/cuda/-/issues/88
+RUN apt-mark hold libcublas-dev-11-4 libnccl-dev
+
 ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}compute,graphics,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=11.4 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441 driver>=450"
+
+###########################################################################
+# Install COLMAP (see https://colmap.github.io/install.html#linux)
+###########################################################################
+WORKDIR /root
 
 ENV DEBIAN_FRONTEND non-interactive
 ENV DEBCONF_NOWARNINGS yes
@@ -79,7 +130,9 @@ RUN cmake .. \
 &&  make -j4 \
 &&  make install
 
+###########################################################################
 # Create final image
+###########################################################################
 
 EXPOSE 5000/tcp
 
