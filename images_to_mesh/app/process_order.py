@@ -41,7 +41,7 @@ def task(number: int):
 
 def queue_jobs(input_files: Any, user_email) -> int:
     connection = Redis(host="redis")
-    task_queue = Queue(connection=connection, default_timeout=3600)
+    task_queue = Queue(connection=connection, default_timeout=18000)
     j1 = task_queue.enqueue(_structure_from_motion, input_files)
     j2 = task_queue.enqueue(_step_two, depends_on=j1)
     j1.meta['mail'] = user_email
