@@ -53,7 +53,12 @@ def file_upload():
         processed_filenames.append(processed_filename)
         file.save(processed_filename)
 
-    return process_order.queue_jobs(processed_filenames)
+    user_email = ""
+
+    if "user_email" in request.form:
+        user_email = request.form.get("user_email")
+
+    return process_order.queue_jobs(processed_filenames, user_email)
 
 
 @app.errorhandler(413)
