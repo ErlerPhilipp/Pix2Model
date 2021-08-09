@@ -15,3 +15,7 @@
     width: 400px;
     margin-top: 20px;
 }
+
+label {
+    white-space: pre-wrap;
+}   
