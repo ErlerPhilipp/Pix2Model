@@ -6,7 +6,7 @@ from rq import Queue, get_current_job
 
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
-from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap
+from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap, ReconstructionError
 from images_to_mesh.processing_steps.step_two import some_other_processing
 
 NUMBER_OF_STEPS = 2
@@ -53,7 +53,11 @@ def queue_jobs(input_files: Any, user_email) -> int:
 
 @task(1)
 def _structure_from_motion(*args, **kwargs):
-    return reconstruct_with_colmap(*args, **kwargs)
+    # Error handling test
+    try:
+        return reconstruct_with_colmap(*args, **kwargs)
+    except ReconstructionError as e:
+        print(e.msg)
 
 
 @task(2)

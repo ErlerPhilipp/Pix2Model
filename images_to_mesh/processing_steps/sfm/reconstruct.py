@@ -7,6 +7,14 @@ from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
+class ReconstructionError(Exception):
+    """Basic exception for errors raised by reconstruction"""
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = "An error occured during reconstruction, check log file for details"
+        super(ReconstructionError, self).__init__(msg)
+        self.msg = msg
+
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     """Generate a point cloud from a list of input images and save it as a .ply file
 
@@ -45,8 +53,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--database_path', database_path,
         '--image_path', image_path
     ]
-    for line in execute_subprocess(command=extract_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=extract_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Matching
     logfile.write(f"Performing matching...\n")
@@ -54,8 +66,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         'colmap', 'exhaustive_matcher',
         '--database_path', database_path
     ]
-    for line in execute_subprocess(command=matching_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=matching_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Mapping
     logfile.write(f"Performing mapping...\n")
@@ -65,11 +81,15 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--image_path', image_path,
         '--output_path', sparse_path
     ]
-    for line in execute_subprocess(command=mapping_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=mapping_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Undistort
-    logfile.write(f"Performing undistorting...")
+    logfile.write(f"Performing undistorting...\n")
     undistort_command = [
         'colmap', 'image_undistorter',
         '--image_path', image_path,
@@ -78,22 +98,30 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--output_type', 'COLMAP',
         '--max_image_size', '2000'
     ]
-    for line in execute_subprocess(command=undistort_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=undistort_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Patch Match
-    logfile.write(f"Performing Patch Match...")
+    logfile.write(f"Performing Patch Match...\n")
     patch_match_command = [
         'colmap', 'patch_match_stereo',
         '--workspace_path', dense_path,
         '--workspace_format', 'COLMAP',
         '--PatchMatchStereo.geom_consistency', 'true'
     ]
-    for line in execute_subprocess(command=patch_match_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=patch_match_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Stereo Fusion
-    logfile.write(f"Performing Stereo Fusion...")
+    logfile.write(f"Performing Stereo Fusion...\n")
     stereo_fusion_command = [
         'colmap', 'stereo_fusion',
         '--workspace_path', dense_path,
@@ -101,8 +129,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--input_type', 'geometric',
         '--output_path', output_file
     ]
-    for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     logfile.write(f"Output written to: {str(output_file)}")
     logfile.close()
@@ -139,13 +171,17 @@ def convert_to_ply(dataset_path, sparse_path):
 def execute_subprocess(command: list[str], logfile: TextIO):
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
                                universal_newlines=True)
     for stdout_line in iter(process.stdout.readline, ""):
         yield stdout_line
     process.stdout.close()
     return_code = process.wait()
+    (stdout, stderr) = process.communicate()
     if return_code is not None:
         logfile.write(f"RETURN CODE {str(return_code)}\n")
+        if return_code != 0:
+            raise ReconstructionError(stderr)
 
 
 def make_directory(path: str):
