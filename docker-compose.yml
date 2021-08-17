@@ -10,9 +10,14 @@ services:
       - PORT=8080
     ports:
       - "8080:8080"
+    depends_on:
+      - web
     volumes:
       - "./web:/app"
       - exclude:/app/node_modules/
+      - type: bind
+        target: /usr/src/app/data
+        source: ${UPLOAD_FOLDER}
   web:
     build: .
     ports:

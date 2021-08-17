@@ -18,7 +18,7 @@ class Edit extends Component {
   componentDidMount() {
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight - 50);
+    renderer.setSize(window.innerWidth - 300, window.innerHeight - 65);
     this.scene.background = new THREE.Color(0xFEFFE8);
     const light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(light);
@@ -50,6 +50,9 @@ class Edit extends Component {
           scope.transformControls.setMode("scale")
           break
       }
+    })
+    window.addEventListener('resize', function() {
+      renderer.setSize(window.innerWidth - 300, window.innerHeight - 65);
     })
     // animation
     var animate = function () {

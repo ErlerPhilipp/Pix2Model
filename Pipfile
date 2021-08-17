@@ -9,6 +9,7 @@ rq = "*"
 redis = "*"
 numpy = "*"
 plyfile = "*"
+flask-cors = "*"
 
 [dev-packages]
 rq-dashboard = "*"

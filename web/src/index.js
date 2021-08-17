@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
@@ -9,9 +9,12 @@ import Upload from "./upload/UploadComponent"
 import UploadPLY from "./uploadPLY/UploadPLYComponent"
 import About from "./about/AboutComponent"
 import Edit from "./edit/EditComponent";
+import Download from "./download/DownloadComponent";
+
 
 ReactDOM.render(
   <React.StrictMode>
+  <div className="Root">
   <Tabs>
     <TabList>
       <Tab>Image-2-Mesh</Tab>
@@ -31,11 +34,13 @@ ReactDOM.render(
       <About></About>
     </TabPanel>
     <TabPanel>
+      <Download></Download>
     </TabPanel>
     <TabPanel>
       <Edit></Edit>
     </TabPanel>
   </Tabs>
+  </div>
   </React.StrictMode>,
   document.getElementById('root')
 );

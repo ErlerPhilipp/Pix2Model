@@ -1,49 +1,62 @@
-import 'react-dropzone-uploader/dist/styles.css'
-import Dropzone from 'react-dropzone-uploader'
-
+import 'dropzone/dist/dropzone.css'
 import './UploadComponent.css';
+import React, { Component } from 'react';
+import Dropzone from 'dropzone'
 
-function Upload(props) {
-  // specify upload params and url for your files
-  const getUploadParams = ({ meta }) => { return { url: 'https://httpbin.org/post' } }
+class Upload extends Component {
+
+  constructor(props){
+    super(props);
+    Dropzone.autoDiscover = false;
   
-  // called every time a file's `status` changes
-  const handleChangeStatus = ({ meta, remove }, status) => {
-    if (status === 'headers_received') {
-      console.log(meta)
-      //document.querySelector("#description").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
-      document.querySelector("#description").innerHTML = `Upload successful!\nJob created with id:<br/>`;
-      //remove()
-    } else if (status === 'aborted') {
-      console.log(meta)
-      document.querySelector("#description").innerHTML = `Upload failed`;
-    }
-  }
-
+    document.addEventListener("DOMContentLoaded", () => {
+      const submitButton = document.querySelector("#submit_upload");
+      submitButton.addEventListener("click", eventArgs => {
+          document.querySelector("#upload").dropzone.processQueue();
+      });
   
-  // receives array of files that are done uploading when submit button is clicked
-  const handleSubmit = (files, allFiles) => { 
-    allFiles.forEach(f => f.remove());
+      document.querySelector("#upload").dropzone.on("success", (file, response) => {
+          submitButton.disablwrapper_uploaded = true;
+          document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
+      });
+    });
   }
 
-  const handleSuccess = (file, response) => {
+  componentDidMount() {
+    var dropzoneOptions = {
+      paramName: "file",
+      autoProcessQueue: false,
+      uploadMultiple: true,
+      parallelUploads: 100,
+      maxFilesize: 50,
+      maxFiles: 100,
+      acceptedFiles: ".png, .jpg, .jpeg",
+      dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>"
+    };
+    var uploader = document.querySelector('#upload');
+    var newDropzone = new Dropzone(uploader, dropzoneOptions);
   }
 
-  return (
-    <div class='upload'>
-        <p class='description' id='description'>
-        Upload between 10-50 images to create your mesh
-        </p>
-    <Dropzone
-      getUploadParams={getUploadParams}
-      inputContent='Drop files here to upload. Max 100 files, 10MB per file'
-      onChangeStatus={handleChangeStatus}
-      onSubmit={handleSubmit}
-      onSuccess={handleSuccess}
-      accept="image/*"
-    />
-    </div>
-  )
+  render() {
+    return (
+      <div class='wrapper_centered_box'>
+        <div class="formfield">
+        <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
+        <input type="email" id="email" name="email" class="formfield_input"></input>
+        </div>
+        <i class="arrow first"></i>
+        <i class="arrow second"></i>
+        <i class="arrow third"></i>
+        <i class="arrow fourth"></i>
+        <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload">
+        </form>
+        <small class="hint">Supports JPG, JPEG, PNG</small><br />
+        <button id="submit_upload" class="button_small">Submit files</button><br />
+        <small id="response_field">
+        </small>
+      </div>
+    )
+  }
 }
 
 export default Upload;

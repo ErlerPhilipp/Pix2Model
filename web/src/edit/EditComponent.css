@@ -1,12 +1,12 @@
 canvas {
-    height: calc(100vh - 50px);
+    height: calc(100vh - 65px);
     width: calc(100vw - 300px);
     margin-left: 10px;
 }
 
 .edit_toolbar {
     background-color: rgb(199, 199, 199);
-    height: calc(100vh - 50px);
+    height: calc(100vh - 65px);
     width: 270px;
     position: absolute;
     right: 10px;

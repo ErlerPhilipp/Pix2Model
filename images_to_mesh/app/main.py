@@ -11,11 +11,15 @@ from uuid import uuid4
 from images_to_mesh.app import process_order
 from images_to_mesh.app.config import set_flask_configs
 
+from flask_cors import CORS
+
+
 connection = Redis(host="redis")
 task_queue = Queue(connection=connection)
 
 app = Flask(__name__)
 set_flask_configs(app)
+CORS(app)
 
 
 def allowed_extension(filename):
