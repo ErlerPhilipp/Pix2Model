@@ -1,5 +1,23 @@
 version: "3"
 services:
+  client:
+    stdin_open: true
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile.fe
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - web
+    volumes:
+      - "./web:/app"
+      - exclude:/app/node_modules/
+      - type: bind
+        target: /usr/src/app/data
+        source: ${UPLOAD_FOLDER}
   web:
     build: .
     ports:
@@ -41,4 +59,3 @@ services:
         reservations:
           devices:
           - capabilities: [gpu]
-

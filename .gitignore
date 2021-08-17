@@ -130,4 +130,7 @@ dmypy.json
 
 .idea/
 
-/Data/
+# web stuff
+/web/node_modules
+.DS_Store
+/web/.DS_Store
