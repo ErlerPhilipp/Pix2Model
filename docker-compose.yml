@@ -50,6 +50,9 @@ services:
     - type: bind
       target: /usr/src/app/data
       source: ${UPLOAD_FOLDER}
-    command: sh -c "pipenv run rqworker -u redis://redis:6379"
-volumes:
-  exclude:
+    command: sh -c "pipenv run rqworker --exception-handler 'images_to_mesh.app.exception_handlers.exeption_handlers.queue_handler' --with-scheduler -u redis://redis:6379"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]

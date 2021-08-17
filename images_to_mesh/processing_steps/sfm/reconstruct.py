@@ -25,8 +25,14 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     database_path = str(dataset_path) + '/database.db'
     image_path = str(dataset_path) + '/input'
     sparse_path = str(dataset_path) + '/sparse'
+    dense_path = str(dataset_path) + '/dense'
+    output_path = str(dataset_path) + '/output'
 
     make_directory(sparse_path)
+    make_directory(dense_path)
+    make_directory(output_path)
+
+    output_file = output_path + '/points.ply'
 
     # Create log file
     log_path = str(dataset_path) + '/log.txt'
@@ -37,18 +43,16 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     extract_command = [
         'colmap', 'feature_extractor',
         '--database_path', database_path,
-        '--image_path', image_path,
-        '--SiftExtraction.use_gpu', '0'
+        '--image_path', image_path
     ]
     for line in execute_subprocess(command=extract_command, logfile=logfile):
         logfile.write(line)
 
-    # logfile.write matching
+    # Matching
     logfile.write(f"Performing matching...\n")
     matching_command = [
         'colmap', 'exhaustive_matcher',
-        '--database_path', database_path,
-        '--SiftMatching.use_gpu', '0'
+        '--database_path', database_path
     ]
     for line in execute_subprocess(command=matching_command, logfile=logfile):
         logfile.write(line)
@@ -64,12 +68,47 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     for line in execute_subprocess(command=mapping_command, logfile=logfile):
         logfile.write(line)
 
-    output_path = convert_to_ply(dataset_path, sparse_path)
-    logfile.write(f"Output written to: {str(output_path)}")
+    # Undistort
+    logfile.write(f"Performing undistorting...")
+    undistort_command = [
+        'colmap', 'image_undistorter',
+        '--image_path', image_path,
+        '--input_path', sparse_path + '/0',
+        '--output_path', dense_path,
+        '--output_type', 'COLMAP',
+        '--max_image_size', '2000'
+    ]
+    for line in execute_subprocess(command=undistort_command, logfile=logfile):
+        logfile.write(line)
+
+    # Patch Match
+    logfile.write(f"Performing Patch Match...")
+    patch_match_command = [
+        'colmap', 'patch_match_stereo',
+        '--workspace_path', dense_path,
+        '--workspace_format', 'COLMAP',
+        '--PatchMatchStereo.geom_consistency', 'true'
+    ]
+    for line in execute_subprocess(command=patch_match_command, logfile=logfile):
+        logfile.write(line)
+
+    # Stereo Fusion
+    logfile.write(f"Performing Stereo Fusion...")
+    stereo_fusion_command = [
+        'colmap', 'stereo_fusion',
+        '--workspace_path', dense_path,
+        '--workspace_format', 'COLMAP',
+        '--input_type', 'geometric',
+        '--output_path', output_file
+    ]
+    for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):
+        logfile.write(line)
+
+    logfile.write(f"Output written to: {str(output_file)}")
     logfile.close()
 
-    print(f"Finished reconstruction. Output written to: {str(output_path)}, log written to log.txt")
-    return output_path
+    print(f"Finished reconstruction. Output written to: {str(output_file)}, log written to log.txt")
+    return output_file
 
 
 def convert_to_ply(dataset_path, sparse_path):
