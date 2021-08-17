@@ -56,3 +56,5 @@ services:
         reservations:
           devices:
           - capabilities: [gpu]
+volumes:
+  exclude:
