@@ -188,7 +188,7 @@ def execute_subprocess(command: list[str], logfile: TextIO):
             logfile.write(stdout)
         if stderr:
             logfile.write(stderr)
-            raise ReconstructionError(stderr)
+            raise ReconstructionError(stderr.rstrip())
     except ReconstructionError:
         raise
     except OSError as e:
