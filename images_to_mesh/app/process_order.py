@@ -53,7 +53,7 @@ def queue_jobs(input_files: Any, user_email) -> int:
 
 @task(1)
 def _structure_from_motion(*args, **kwargs):
-    # Error handling test
+    # Error handling here for now
     try:
         return reconstruct_with_colmap(*args, **kwargs)
     except ReconstructionError as e:

@@ -7,13 +7,16 @@ from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
+
 class ReconstructionError(Exception):
     """Basic exception for errors raised by reconstruction"""
+
     def __init__(self, msg=None):
         if msg is None:
-            msg = "An error occured during reconstruction, check log file for details"
+            msg = "ReconstructionError: An error occurred during reconstruction, check log file for details"
         super(ReconstructionError, self).__init__(msg)
-        self.msg = msg
+        self.msg = 'ReconstructionError: ' + msg
+
 
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     """Generate a point cloud from a list of input images and save it as a .ply file
@@ -36,15 +39,18 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     dense_path = str(dataset_path) + '/dense'
     output_path = str(dataset_path) + '/output'
 
-    make_directory(sparse_path)
-    make_directory(dense_path)
-    make_directory(output_path)
-
-    output_file = output_path + '/points.ply'
-
     # Create log file
     log_path = str(dataset_path) + '/log.txt'
     logfile = open(log_path, "w")
+
+    try:
+        make_directory(path=sparse_path, logfile=logfile)
+        make_directory(path=dense_path, logfile=logfile)
+        make_directory(path=output_path, logfile=logfile)
+    except ReconstructionError:
+        raise
+
+    output_file = output_path + '/points.ply'
 
     # Extract features
     logfile.write(f"Extracting features...\n")
@@ -167,26 +173,31 @@ def convert_to_ply(dataset_path, sparse_path):
     return output_path
 
 
-# Call the colmap command line interface and print all outputs
 def execute_subprocess(command: list[str], logfile: TextIO):
-    process = subprocess.Popen(command,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               universal_newlines=True)
-    for stdout_line in iter(process.stdout.readline, ""):
-        yield stdout_line
-    process.stdout.close()
-    return_code = process.wait()
-    (stdout, stderr) = process.communicate()
-    if return_code is not None:
-        logfile.write(f"RETURN CODE {str(return_code)}\n")
-        if return_code != 0:
+    # Call the COLMAP command line interface and print all outputs
+    try:
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        for stdout_line in iter(process.stdout.readline, ""):
+            yield stdout_line
+        process.stdout.close()
+        (stdout, stderr) = process.communicate()
+        if stdout:
+            logfile.write(stdout)
+        if stderr:
+            logfile.write(stderr)
             raise ReconstructionError(stderr)
+    except ReconstructionError:
+        raise
+    except OSError as e:
+        raise ReconstructionError(e.strerror + ': ' + e.filename)
 
 
-def make_directory(path: str):
+def make_directory(path: str, logfile: TextIO):
     try:
         os.mkdir(path)
     except OSError:
-        print("Creation of directory %s failed" % path)
-        return
+        logfile.write("Creation of directory %s failed" % path)
+        raise ReconstructionError("Creation of directory %s failed" % path)
