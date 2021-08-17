@@ -1,0 +1,59 @@
+.file_upload {
+    width: 500px;
+}
+
+.images {
+    position: absolute;
+    left: 60px;
+    top: 170px;
+    font-size: 3em;
+    font-style: italic;
+}
+
+.mesh {
+    position: absolute;
+    right: 60px;
+    top: 170px;
+    font-size: 3em;
+    font-style: italic;
+}
+
+.arrow {
+    border: solid rgb(34,102,153);
+    border-width: 0 10px 10px 0;
+    position: absolute;
+    top: 260px;
+    display: inline-block;
+    padding: 20px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.first {
+    right: calc((100vw / 2) + 250px);
+}
+
+.second {
+    right: calc((100vw / 2) + 280px);
+}
+
+.third {
+    right: calc((100vw / 2) - 270px);
+}
+
+.fourth {
+    right: calc((100vw / 2) - 300px);
+}
+
+#submit_upload {
+    margin-top: 2rem;
+}
+
+#response_field {
+    margin-top: 1rem;
+    display: block;
+}
+
+.hint {
+    color: 	#808080;
+}
