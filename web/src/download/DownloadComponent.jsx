@@ -1,6 +1,4 @@
-import 'dropzone/dist/dropzone.css'
-import React, { Component } from 'react';
-import Dropzone from 'dropzone'
+import React from 'react';
 
 function Download() {
 
