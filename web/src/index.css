@@ -14,21 +14,48 @@ code {
     monospace;
 }
 
+.background-image {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: -1;
+  display: block;
+  background-image: url(background.jpg);
+  width: 3905px;
+  height: 2929px;
+  -moz-filter: blur(5px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: brightness(1.05) blur(7px) grayscale(100%);
+}
+
 .button_small {
   width: 200px;
   height: 40px;
   font-size: 1em;
   border-radius: 5px;
-  border: 1px solid black;
+  background: #263238;
+  border: 0px;
+  box-shadow: 1px 1px 5px grey;
+  color: white;
+}
+
+.button_small:hover {
+  background: rgb(34,102,153);
+  transition: background-color 0.5s ease;
 }
 
 .wrapper_centered_box {
   justify-content: center;
+  border-radius: 5px;
   margin: auto;
   margin-top: 100px;
   padding: 20px;
   background-color: white;
   width: 400px;
+  box-shadow: 1px 1px 4px #aaaaaa;
+  margin-bottom: 80px;
 }
 
 .icon {

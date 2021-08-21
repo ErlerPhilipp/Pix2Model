@@ -2,9 +2,9 @@ import './AboutComponent.css';
 
 function About(props) {
     return (
-        <div className='wrapper'>
+        <div className='wrapper_centered_box about'>
             <h2>Images2Mesh Web funded by Netidee</h2>
-            <p class='about'>A key step in any scanning-based asset creation workflow is to convert unordered point clouds
+            <p>A key step in any scanning-based asset creation workflow is to convert unordered point clouds
             to a surface. Classical methods (e.g., Poisson reconstruction) start to degrade in the presence
             of noisy and partial scans. Hence, deep learning based methods have recently been proposed to produce
             complete surfaces, even from partial scans. However, such data-driven methods struggle to generalize

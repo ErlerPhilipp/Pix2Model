@@ -40,10 +40,8 @@ class Upload extends Component {
   render() {
     return (
       <div class='wrapper_centered_box'>
-        <div class="formfield">
-        <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
-        <input type="email" id="email" name="email" class="formfield_input"></input>
-        </div>
+        <img src='images3.png' class='images'/>
+        <img src='mesh.png' class='mesh'/>
         <i class="arrow first"></i>
         <i class="arrow second"></i>
         <i class="arrow third"></i>
@@ -54,6 +52,12 @@ class Upload extends Component {
         <button id="submit_upload" class="button_small">Submit files</button><br />
         <small id="response_field">
         </small>
+        <hr></hr>
+        <div class="formfield">
+        <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
+        <input type="email" id="email" name="email" class="formfield_input"></input>
+        <small class="hint">[Optional] Notification email when convertion is done<br></br></small>
+        </div>
       </div>
     )
   }

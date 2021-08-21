@@ -25,18 +25,23 @@ ReactDOM.render(
     </TabList>
 
     <TabPanel>
+      <div class="background-image"></div>
       <Upload></Upload>
     </TabPanel>
     <TabPanel>
+    <div class="background-image"></div>
       <UploadPLY></UploadPLY>
     </TabPanel>
     <TabPanel>
+    <div class="background-image"></div>
       <About></About>
     </TabPanel>
     <TabPanel>
+    <div class="background-image"></div>
       <Download></Download>
     </TabPanel>
     <TabPanel>
+    <div class="background-image"></div>
       <Edit></Edit>
     </TabPanel>
   </Tabs>
