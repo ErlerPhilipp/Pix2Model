@@ -17,13 +17,17 @@ ReactDOM.render(
   <div className="Root">
   <Tabs>
     <TabList>
+      <Tab>About</Tab>
       <Tab>Image-2-Mesh</Tab>
       <Tab>Ply-2-Mesh</Tab>
-      <Tab>About</Tab>
       <Tab>Download</Tab>
       <Tab>Edit</Tab>
     </TabList>
 
+    <TabPanel>
+      <div class="background-image"></div>
+      <About></About>
+    </TabPanel>
     <TabPanel>
       <div class="background-image"></div>
       <Upload></Upload>
@@ -31,10 +35,6 @@ ReactDOM.render(
     <TabPanel>
     <div class="background-image"></div>
       <UploadPLY></UploadPLY>
-    </TabPanel>
-    <TabPanel>
-    <div class="background-image"></div>
-      <About></About>
     </TabPanel>
     <TabPanel>
     <div class="background-image"></div>
