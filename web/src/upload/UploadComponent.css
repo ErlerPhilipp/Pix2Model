@@ -5,14 +5,14 @@
 
 .images {
     position: absolute;
-    top: 180px;
+    top: 80px;
     width: 550px;
     left: calc((100vw / 2) - 880px);
 }
 
 .mesh {
     position: absolute;
-    top: 180px;
+    top: 80px;
     height: 300px;
     right: calc((100vw / 2) - 480px);
 }
@@ -21,14 +21,14 @@
     position: absolute;
     left: calc(50vw - 520px);
     height: 300px;
-    top: 180px;
+    top: 80px;
 }
 
 .arrow {
     border: solid rgb(34,102,153);
     border-width: 0 10px 10px 0;
     position: absolute;
-    top: 260px;
+    top: 160px;
     display: inline-block;
     padding: 20px;
     transform: rotate(-45deg);

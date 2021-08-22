@@ -158,7 +158,7 @@ class Edit extends Component {
     this._handleFileSelect = this.handleFileSelect.bind(this)
 
     return (
-      <div ref={ref => (this.mount = ref)}>
+      <div class='content' ref={ref => (this.mount = ref)}>
         <div class='edit_toolbar'>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
           {this.state.loaded &&

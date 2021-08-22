@@ -1,5 +1,25 @@
 .about {
-    margin-left: 65px;
-    margin-top: 65px;
+    margin-left: 45px;
+    margin-top: 45px;
+    display: flex;
+    height: fit-content;
+}
+
+.text {
     width: 500px;
+    margin: 0px 20px;
+    height: fit-content;
+}
+
+.team {
+    padding: 20px;
+    width: 400px;
+    background-color: rgb(245,206,106);
+    height: fit-content;
+    border-radius: 5px;
+}
+
+.team_images {
+    max-width: 100%;
+    max-height: 100%;
 }

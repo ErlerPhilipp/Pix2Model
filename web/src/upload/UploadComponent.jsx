@@ -39,33 +39,35 @@ class Upload extends Component {
 
   render() {
     return (
-      <div class='wrapper_centered_box'>
-        <img src='images3.png' class='images'/>
-        <img src='mesh.png' class='mesh'/>
-        <i class="arrow first"></i>
-        <i class="arrow second"></i>
-        <i class="arrow third"></i>
-        <i class="arrow fourth"></i>
-        <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload">
-        </form>
-        <small class="hint">Supports JPG, JPEG, PNG</small><br />
-        <button id="submit_upload" class="button_small">Submit files</button><br />
-        <small id="response_field">
-        </small>
-        <hr></hr>
-        <div class="formfield">
-        <input type="checkbox" id="ply" name="ply"></input>
-        <label for="ply" class="formfield">Convert to point cloud</label>
-        <small class="hint"><br></br>Check the above box to increase processing time and quality.
-        The images are converted to a point cloud instead of directly generating the reconstructed model.
-        The point cloud can be edited and cleaned up in the Edit area and can then be uploaded again 
-        under Ply-2-Mesh to generate the final reconstructed model.</small>
-        </div>
-        <hr></hr>
-        <div class="formfield">
-        <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
-        <input type="email" id="email" name="email" class="formfield_input"></input>
-        <small class="hint">[Optional] Notification email when convertion is done<br></br></small>
+      <div class='content'>
+        <div class='wrapper_centered_box'>
+          <img src='images3.png' class='images'/>
+          <img src='mesh.png' class='mesh'/>
+          <i class="arrow first"></i>
+          <i class="arrow second"></i>
+          <i class="arrow third"></i>
+          <i class="arrow fourth"></i>
+          <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload">
+          </form>
+          <small class="hint">Supports JPG, JPEG, PNG</small><br />
+          <button id="submit_upload" class="button_small">Submit files</button><br />
+          <small id="response_field">
+          </small>
+          <hr></hr>
+          <div class="formfield">
+          <input type="checkbox" id="ply" name="ply"></input>
+          <label for="ply" class="formfield">Convert to point cloud</label>
+          <small class="hint"><br></br>Check the above box to increase processing time and quality.
+          The images are converted to a point cloud instead of directly generating the reconstructed model.
+          The point cloud can be edited and cleaned up in the Edit area and can then be uploaded again 
+          under Ply-2-Mesh to generate the final reconstructed model.</small>
+          </div>
+          <hr></hr>
+          <div class="formfield">
+          <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
+          <input type="email" id="email" name="email" class="formfield_input"></input>
+          <small class="hint">[Optional] Notification email when convertion is done<br></br></small>
+          </div>
         </div>
       </div>
     )
