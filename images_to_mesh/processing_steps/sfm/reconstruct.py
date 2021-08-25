@@ -7,6 +7,17 @@ from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
+
+class ReconstructionError(Exception):
+    """Basic exception for errors raised by reconstruction"""
+
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = "ReconstructionError: An error occurred during reconstruction, check log file for details"
+        super(ReconstructionError, self).__init__(msg)
+        self.msg = 'ReconstructionError: ' + msg
+
+
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     """Generate a point cloud from a list of input images and save it as a .ply file
 
@@ -28,15 +39,18 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     dense_path = str(dataset_path) + '/dense'
     output_path = str(dataset_path) + '/output'
 
-    make_directory(sparse_path)
-    make_directory(dense_path)
-    make_directory(output_path)
-
-    output_file = output_path + '/points.ply'
-
     # Create log file
     log_path = str(dataset_path) + '/log.txt'
     logfile = open(log_path, "w")
+
+    try:
+        make_directory(path=sparse_path, logfile=logfile)
+        make_directory(path=dense_path, logfile=logfile)
+        make_directory(path=output_path, logfile=logfile)
+    except ReconstructionError:
+        raise
+
+    output_file = output_path + '/points.ply'
 
     # Extract features
     logfile.write(f"Extracting features...\n")
@@ -45,8 +59,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--database_path', database_path,
         '--image_path', image_path
     ]
-    for line in execute_subprocess(command=extract_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=extract_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Matching
     logfile.write(f"Performing matching...\n")
@@ -54,8 +72,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         'colmap', 'exhaustive_matcher',
         '--database_path', database_path
     ]
-    for line in execute_subprocess(command=matching_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=matching_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Mapping
     logfile.write(f"Performing mapping...\n")
@@ -65,11 +87,15 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--image_path', image_path,
         '--output_path', sparse_path
     ]
-    for line in execute_subprocess(command=mapping_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=mapping_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Undistort
-    logfile.write(f"Performing undistorting...")
+    logfile.write(f"Performing undistorting...\n")
     undistort_command = [
         'colmap', 'image_undistorter',
         '--image_path', image_path,
@@ -78,22 +104,30 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--output_type', 'COLMAP',
         '--max_image_size', '2000'
     ]
-    for line in execute_subprocess(command=undistort_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=undistort_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Patch Match
-    logfile.write(f"Performing Patch Match...")
+    logfile.write(f"Performing Patch Match...\n")
     patch_match_command = [
         'colmap', 'patch_match_stereo',
         '--workspace_path', dense_path,
         '--workspace_format', 'COLMAP',
         '--PatchMatchStereo.geom_consistency', 'true'
     ]
-    for line in execute_subprocess(command=patch_match_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=patch_match_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     # Stereo Fusion
-    logfile.write(f"Performing Stereo Fusion...")
+    logfile.write(f"Performing Stereo Fusion...\n")
     stereo_fusion_command = [
         'colmap', 'stereo_fusion',
         '--workspace_path', dense_path,
@@ -101,8 +135,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--input_type', 'geometric',
         '--output_path', output_file
     ]
-    for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):
-        logfile.write(line)
+    try:
+        for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        logfile.write(e.msg)
+        raise
 
     logfile.write(f"Output written to: {str(output_file)}")
     logfile.close()
@@ -135,22 +173,31 @@ def convert_to_ply(dataset_path, sparse_path):
     return output_path
 
 
-# Call the colmap command line interface and print all outputs
 def execute_subprocess(command: list[str], logfile: TextIO):
-    process = subprocess.Popen(command,
-                               stdout=subprocess.PIPE,
-                               universal_newlines=True)
-    for stdout_line in iter(process.stdout.readline, ""):
-        yield stdout_line
-    process.stdout.close()
-    return_code = process.wait()
-    if return_code is not None:
-        logfile.write(f"RETURN CODE {str(return_code)}\n")
+    # Call the COLMAP command line interface and print all outputs
+    try:
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        for stdout_line in iter(process.stdout.readline, ""):
+            yield stdout_line
+        process.stdout.close()
+        (stdout, stderr) = process.communicate()
+        if stdout:
+            logfile.write(stdout)
+        if stderr:
+            logfile.write(stderr)
+            raise ReconstructionError(stderr.rstrip())
+    except ReconstructionError:
+        raise
+    except OSError as e:
+        raise ReconstructionError(e.strerror + ': ' + e.filename)
 
 
-def make_directory(path: str):
+def make_directory(path: str, logfile: TextIO):
     try:
         os.mkdir(path)
     except OSError:
-        print("Creation of directory %s failed" % path)
-        return
+        logfile.write("Creation of directory %s failed" % path)
+        raise ReconstructionError("Creation of directory %s failed" % path)
