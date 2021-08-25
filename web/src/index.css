@@ -5,8 +5,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: aliceblue;
-  color: black;
+  background-color: #ffffff;
+  background-image: linear-gradient(315deg, #ffffff 0%, #d7e1ec 74%);
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }
 
 code {
@@ -14,21 +26,52 @@ code {
     monospace;
 }
 
+.content {
+  position: relative;
+}
+
+.background-image {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: -1;
+  display: block;
+  background-image: url(background.jpg);
+  width: 3905px;
+  height: 2929px;
+  -moz-filter: blur(5px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: brightness(1.05) blur(7px) grayscale(100%);
+}
+
 .button_small {
   width: 200px;
   height: 40px;
   font-size: 1em;
   border-radius: 5px;
-  border: 1px solid black;
+  background: #263238;
+  border: 0px;
+  box-shadow: 1px 1px 5px grey;
+  color: white;
+}
+
+.button_small:hover {
+  background: rgb(34,102,153);
+  transition: background-color 0.5s ease;
 }
 
 .wrapper_centered_box {
   justify-content: center;
+  border-radius: 5px;
   margin: auto;
-  margin-top: 100px;
+  margin-top: 45px;
   padding: 20px;
   background-color: white;
   width: 400px;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 80px;
 }
 
 .icon {
@@ -38,6 +81,30 @@ code {
   background: #263238;
   padding: 10px;
   cursor: pointer;
+}
+
+.arrow {
+  border: solid rgb(34,102,153);
+  border-width: 0 5px 5px 0;
+  top: 160px;
+  display: inline-block;
+  padding: 20px;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.embedded-right {
+  border: solid rgba(256, 256, 256, 0.2);
+  border-right-color: rgb(34,102,153);
+  border-bottom-color: rgb(34,102,153);
+  border-width: 10px;
+}
+
+.embedded-left {
+  border: solid rgba(256, 256, 256, 0.2);
+  border-left-color: rgb(34,102,153);
+  border-top-color: rgb(34,102,153);
+  border-width: 10px;
 }
 
 .icon:hover {
@@ -52,6 +119,74 @@ code {
   width: 200px;
 }
 
+.next {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  display: block;
+  height: 100vh;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  border-radius: 0px;
+  border: none;
+}
+
+.previous {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  display: block;
+  height: 100vh;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  border-radius: 0px;
+  border: none;
+}
+
+.next:hover {
+  transition: background-color 0.5s;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.previous:hover {
+  transition: background-color 0.5s;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.lang {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 5px;
+  font-size: 1.1em;
+  background-color: #37474F;
+  color:white;
+  z-index: 400;
+}
+
+.de {
+  right: 10px;
+}
+
+.en {
+  right: 60px;
+}
+
+.de:hover {
+  background-color: rgb(34,102,153);
+}
+
+.en:hover {
+  background-color: rgb(245,206,106);
+}
+
 label + input {
   margin-left: 10px;
+}
+
+h2 {
+  font-size: 1.6em;
 }

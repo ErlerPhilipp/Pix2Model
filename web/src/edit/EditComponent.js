@@ -5,6 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
+import { withTranslation } from 'react-i18next';
 
 import './EditComponent.css';
 
@@ -18,8 +19,8 @@ class Edit extends Component {
   componentDidMount() {
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight - 65);
-    this.scene.background = new THREE.Color(0xFEFFE8);
+    renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    this.scene.background = new THREE.Color(0xfbebc3);
     const light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(light);
     this.mount.appendChild(renderer.domElement);
@@ -52,7 +53,7 @@ class Edit extends Component {
       }
     })
     window.addEventListener('resize', function() {
-      renderer.setSize(window.innerWidth - 300, window.innerHeight - 65);
+      renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     })
     // animation
     var animate = function () {
@@ -156,9 +157,10 @@ class Edit extends Component {
     this._handleRemove = this.handleRemove.bind(this)
     this._handleDownload = this.handleDownload.bind(this)
     this._handleFileSelect = this.handleFileSelect.bind(this)
+    const { t } = this.props;
 
     return (
-      <div ref={ref => (this.mount = ref)}>
+      <div class='content' ref={ref => (this.mount = ref)}>
         <div class='edit_toolbar'>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
           {this.state.loaded &&
@@ -180,17 +182,11 @@ class Edit extends Component {
           }
         </div>
         <div class='infobox'>
-          Upload .obj or .ply file to view and edit<br></br>
-          via drag&drop or the upload-button.<br></br>
-          <br></br>
-          Shortcuts:<br></br>
-          q - Translate<br></br>
-          r - Rotate<br></br>
-          s - Scale<br></br>
+          {t('edit.interaction')}
         </div>
       </div>
     )
   }
 }
 
-export default Edit;
+export default withTranslation()(Edit);

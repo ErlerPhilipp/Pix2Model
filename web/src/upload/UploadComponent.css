@@ -1,47 +1,46 @@
 .file_upload {
     width: 500px;
+    border-radius: 5px;
 }
 
 .images {
     position: absolute;
-    left: 60px;
-    top: 170px;
-    font-size: 3em;
-    font-style: italic;
+    top: 80px;
+    width: 550px;
+    left: calc((100vw / 2) - 880px);
 }
 
 .mesh {
     position: absolute;
-    right: 60px;
-    top: 170px;
-    font-size: 3em;
-    font-style: italic;
+    top: 80px;
+    height: 300px;
+    right: calc((100vw / 2) - 480px);
 }
 
-.arrow {
-    border: solid rgb(34,102,153);
-    border-width: 0 10px 10px 0;
+.ply {
     position: absolute;
-    top: 260px;
-    display: inline-block;
-    padding: 20px;
-    transform: rotate(-45deg);
-    -webkit-transform: rotate(-45deg);
+    left: calc(50vw - 520px);
+    height: 300px;
+    top: 80px;
 }
 
 .first {
+    position: absolute;
     right: calc((100vw / 2) + 250px);
 }
 
 .second {
+    position: absolute;
     right: calc((100vw / 2) + 280px);
 }
 
 .third {
+    position: absolute;
     right: calc((100vw / 2) - 270px);
 }
 
 .fourth {
+    position: absolute;
     right: calc((100vw / 2) - 300px);
 }
 
