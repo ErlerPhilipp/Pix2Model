@@ -8,18 +8,28 @@
 .text {
     width: 500px;
     margin: 0px 20px;
-    height: fit-content;
+    padding: 20px 30px;
+    border-radius: 5px;
+    overflow: scroll;
+    height: calc(100vh - 200px);
 }
 
 .team {
-    padding: 20px;
-    width: 400px;
+    padding: 20px 30px;
+    width: 300px;
     background-color: rgb(245,206,106);
-    height: fit-content;
     border-radius: 5px;
+    overflow: scroll;
+    height: calc(100vh - 200px);
 }
 
 .team_images {
     max-width: 100%;
     max-height: 100%;
+    border: 1px solid white;
+}
+
+.seperator {
+    border-color: black;
+    margin-bottom: 20px;
 }

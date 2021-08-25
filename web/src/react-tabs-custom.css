@@ -6,6 +6,7 @@
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
   color: white;
   position: sticky;
+  z-index: 200;
 }
 
 .MuiTab-root {

@@ -24,30 +24,23 @@
     top: 80px;
 }
 
-.arrow {
-    border: solid rgb(34,102,153);
-    border-width: 0 10px 10px 0;
-    position: absolute;
-    top: 160px;
-    display: inline-block;
-    padding: 20px;
-    transform: rotate(-45deg);
-    -webkit-transform: rotate(-45deg);
-}
-
 .first {
+    position: absolute;
     right: calc((100vw / 2) + 250px);
 }
 
 .second {
+    position: absolute;
     right: calc((100vw / 2) + 280px);
 }
 
 .third {
+    position: absolute;
     right: calc((100vw / 2) - 270px);
 }
 
 .fourth {
+    position: absolute;
     right: calc((100vw / 2) - 300px);
 }
 

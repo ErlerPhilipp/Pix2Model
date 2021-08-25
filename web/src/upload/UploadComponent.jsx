@@ -3,6 +3,8 @@ import './UploadComponent.css';
 import React, { Component } from 'react';
 import Dropzone from 'dropzone'
 
+import { withTranslation } from 'react-i18next';
+
 class Upload extends Component {
 
   constructor(props){
@@ -23,6 +25,7 @@ class Upload extends Component {
   }
 
   componentDidMount() {
+    const { t } = this.props;
     var dropzoneOptions = {
       paramName: "file",
       autoProcessQueue: false,
@@ -38,6 +41,7 @@ class Upload extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <div class='content'>
         <div class='wrapper_centered_box'>
@@ -49,24 +53,21 @@ class Upload extends Component {
           <i class="arrow fourth"></i>
           <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload">
           </form>
-          <small class="hint">Supports JPG, JPEG, PNG</small><br />
-          <button id="submit_upload" class="button_small">Submit files</button><br />
+          <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
+          <button id="submit_upload" class="button_small">{t('upload.submit')}</button><br />
           <small id="response_field">
           </small>
           <hr></hr>
           <div class="formfield">
           <input type="checkbox" id="ply" name="ply"></input>
-          <label for="ply" class="formfield">Convert to point cloud</label>
-          <small class="hint"><br></br>Check the above box to increase processing time and quality.
-          The images are converted to a point cloud instead of directly generating the reconstructed model.
-          The point cloud can be edited and cleaned up in the Edit area and can then be uploaded again 
-          under Ply-2-Mesh to generate the final reconstructed model.</small>
+          <label for="ply" class="formfield">{t('upload.pc.label')}</label>
+          <small class="hint"><br></br>{t('upload.pc.hint')}</small>
           </div>
           <hr></hr>
           <div class="formfield">
-          <label for="email" class="formfield">Enter your email <big><sup>*</sup></big></label>
+          <label for="email" class="formfield">Email <big><sup>*</sup></big></label>
           <input type="email" id="email" name="email" class="formfield_input"></input>
-          <small class="hint">[Optional] Notification email when convertion is done<br></br></small>
+          <small class="hint"><br></br>{t('upload.email')}<br></br></small>
           </div>
         </div>
       </div>
@@ -74,4 +75,4 @@ class Upload extends Component {
   }
 }
 
-export default Upload;
+export default withTranslation()(Upload);

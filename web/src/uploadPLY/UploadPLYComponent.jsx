@@ -3,6 +3,8 @@ import '../upload/UploadComponent.css';
 import React, { Component } from 'react';
 import Dropzone from 'dropzone'
 
+import { withTranslation } from 'react-i18next';
+
 class UploadPLY extends Component {
   constructor(props){
     super(props);
@@ -22,6 +24,7 @@ class UploadPLY extends Component {
   }
 
   componentDidMount() {
+    const { t } = this.props;
     var dropzoneOptions = {
       paramName: "file",
       autoProcessQueue: false,
@@ -37,6 +40,7 @@ class UploadPLY extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <div class='content'>
         <div class='wrapper_centered_box'>
@@ -48,15 +52,15 @@ class UploadPLY extends Component {
           <i class="arrow fourth"></i>
           <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload_ply">
           </form>
-          <small class="hint">Supports PLY</small><br />
-          <button id="submit_upload_ply" class="button_small">Submit files</button><br />
+          <small class="hint">{t('upload.files.support')} PLY</small><br /><br /><br />
+          <button id="submit_upload_ply" class="button_small">{t('upload.submit')}</button><br />
           <small id="response_field_ply">
           </small>
           <hr></hr>
           <div class="formfield">
-          <label for="email_ply" class="formfield">Enter your email <big><sup>*</sup></big></label>
+          <label for="email_ply" class="formfield">Email <big><sup>*</sup></big></label>
           <input type="email" id="email_ply" name="email" class="formfield_input"></input>
-          <small class="hint">[Optional] Notification email when convertion is done<br></br></small>
+          <small class="hint"><br></br>{t('upload.email')}<br></br></small>
           </div>
         </div>
       </div>
@@ -64,4 +68,4 @@ class UploadPLY extends Component {
   }
 }
 
-export default UploadPLY;
+export default withTranslation()(UploadPLY);
