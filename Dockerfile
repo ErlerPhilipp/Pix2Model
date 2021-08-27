@@ -4,16 +4,11 @@ FROM images2mesh_base:latest
 # Create final image
 ###########################################################################
 
-RUN apt-get update && apt-get -y install \
-    libopengl-dev
-
 EXPOSE 5000/tcp
 
 WORKDIR /usr/src/app
 
-COPY Pipfile ./
-COPY Pipfile.lock ./
-COPY test_data /test_data
+COPY Pipfile* ./
 
 RUN pipenv install --dev
 

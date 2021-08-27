@@ -143,3 +143,11 @@ RUN cmake .. \
         -DBUILD_EXAMPLES:BOOL=OFF \
 &&  make -j4 \
 &&  make install
+
+
+###########################################################################
+# Other dependencies
+###########################################################################
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libopengl-dev
