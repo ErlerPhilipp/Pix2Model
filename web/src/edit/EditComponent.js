@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import * as THREE from "three";
-import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
+import { PLYExporter } from 'three/examples/jsm/exporters/PLYExporter.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Attribute from "./AttributeComponent";
@@ -113,13 +113,13 @@ class Edit extends Component {
   }
 
   handleDownload() {
-    var exporter = new OBJExporter();
+    var exporter = new PLYExporter();
     var link = document.createElement( 'a' );
     if ( link.href ) {
       URL.revokeObjectURL( link.href );
     }
     link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
-    link.download = "model.obj";
+    link.download = "model.ply";
     link.dispatchEvent( new MouseEvent( 'click' ) );
   }
 

@@ -10,17 +10,24 @@ class Upload extends Component {
   constructor(props){
     super(props);
     Dropzone.autoDiscover = false;
-  
-    document.addEventListener("DOMContentLoaded", () => {
-      const submitButton = document.querySelector("#submit_upload");
-      submitButton.addEventListener("click", eventArgs => {
-          document.querySelector("#upload").dropzone.processQueue();
+    const that = this;
+    if( document.readyState == 'complete' ) {
+      setTimeout(function(){ that.init(); }, 3000)
+    } else {
+      document.addEventListener("DOMContentLoaded", () => {
+        this.init();
       });
-  
-      document.querySelector("#upload").dropzone.on("success", (file, response) => {
-          submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
-      });
+    }
+  }
+
+  init() {
+    const submitButton = document.querySelector("#submit_upload");
+    submitButton.addEventListener("click", eventArgs => {
+        document.querySelector("#upload").dropzone.processQueue();
+    });
+    document.querySelector("#upload").dropzone.on("success", (file, response) => {
+        submitButton.disablwrapper_uploaded = true;
+        document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
     });
   }
 
