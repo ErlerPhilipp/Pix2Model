@@ -28,13 +28,14 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     :return: Path to file with reconstruction results
     """
 
-    dataset_path: Path = Path(image_list[0]).parent.parent
+    dataset_path: Path = Path(os.path.join(Path(image_list[0]).parent.parent, 'step1'))
+    os.makedirs(dataset_path)
 
     print(f"Starting reconstruction with colmap for dataset path: {str(dataset_path)}")
 
     # Set up project directory for reconstruction
     database_path = str(dataset_path) + '/database.db'
-    image_path = str(dataset_path) + '/input'
+    image_path = str(dataset_path.parent) + '/input'
     sparse_path = str(dataset_path) + '/sparse'
     dense_path = str(dataset_path) + '/dense'
     output_path = str(dataset_path) + '/output'
@@ -42,6 +43,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     # Create log file
     log_path = str(dataset_path) + '/log.txt'
     logfile = open(log_path, "w")
+
+    num_processes = str(os.cpu_count() - 1)
 
     try:
         make_directory(path=sparse_path, logfile=logfile)
@@ -57,7 +60,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     extract_command = [
         'colmap', 'feature_extractor',
         '--database_path', database_path,
-        '--image_path', image_path
+        '--image_path', image_path,
+        '--SiftExtraction.num_threads', num_processes
     ]
     try:
         for line in execute_subprocess(command=extract_command, logfile=logfile):
@@ -70,7 +74,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     logfile.write(f"Performing matching...\n")
     matching_command = [
         'colmap', 'exhaustive_matcher',
-        '--database_path', database_path
+        '--database_path', database_path,
+        '--SiftMatching.num_threads', num_processes
     ]
     try:
         for line in execute_subprocess(command=matching_command, logfile=logfile):
@@ -85,7 +90,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         'colmap', 'mapper',
         '--database_path', database_path,
         '--image_path', image_path,
-        '--output_path', sparse_path
+        '--output_path', sparse_path,
+        '--Mapper.num_threads', num_processes
     ]
     try:
         for line in execute_subprocess(command=mapping_command, logfile=logfile):
@@ -133,7 +139,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
         '--workspace_path', dense_path,
         '--workspace_format', 'COLMAP',
         '--input_type', 'geometric',
-        '--output_path', output_file
+        '--output_path', output_file,
+        '--StereoFusion.num_threads', num_processes
     ]
     try:
         for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile):

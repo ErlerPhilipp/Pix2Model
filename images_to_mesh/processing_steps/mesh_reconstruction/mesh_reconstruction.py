@@ -8,15 +8,13 @@ from images_to_mesh.processing_steps.mesh_reconstruction.mesh_loader import Gene
 def process_clouds(files: List[str]) -> bool:
     print(f"Got the following result from job 1:\n{str(files)}")
 
-    dirname = os.path.dirname(files [0])
+    dirname = os.path.dirname(files[0])
     parts = dirname.split("/")
     for i, part in enumerate(parts):
         if part == "step1":
             parts[i] = "step2"
             dirname = "/".join(parts)
     os.makedirs(dirname)
-
-    files = ["/test_data/points_dense.ply"]
 
     for file in files:
         filename = os.path.basename(file)
