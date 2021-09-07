@@ -1,4 +1,4 @@
-FROM images2mesh_base:latest
+FROM fsteinschorn/images2mesh:base
 
 ###########################################################################
 # Create final image

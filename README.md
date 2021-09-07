@@ -36,7 +36,7 @@ The project can be deployed using docker and docker-compose. The architecture co
 - redis: Database/Caching server used as host for the task queue
 - worker: Consumer for task queue written in python includes installation of CUDA and [Colmap](https://colmap.github.io/) 
 
-To start the whole setup the command "docker-compose up" can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
+To start the whole setup the "start.sh" script can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
 
 ### Local Data Folder
 
