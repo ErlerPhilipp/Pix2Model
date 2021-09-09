@@ -6,6 +6,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
+import { CSG } from 'three-csg-ts';
 
 import './EditComponent.css';
 
@@ -13,7 +14,7 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
+    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
   }
 
   componentDidMount() {
@@ -77,6 +78,7 @@ class Edit extends Component {
       }
     }, false);
     this.buildFileSelector();
+    this.createCropBox();
   }
 
   buildFileSelector(){
@@ -96,10 +98,20 @@ class Edit extends Component {
   }
 
   addObject(object, filename) {
-    this.scene.add(object);
-    this.transformControls.attach(object);
-    this.object = object;
+    this.object = object.children[0];
+    this.scene.add(this.object);
+    this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
+  }
+
+  createCropBox() {
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var material = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      opacity: 0.5,
+      transparent: true
+    });
+    this.cropBox = new THREE.Mesh( geometry, material );
   }
 
   handleUpdate() {
@@ -121,6 +133,26 @@ class Edit extends Component {
     link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
     link.download = "model.ply";
     link.dispatchEvent( new MouseEvent( 'click' ) );
+  }
+
+  cropObject() {
+    if (!this.object) {
+      return;
+    }
+    console.log(this.object)
+    this.cropBox.updateMatrix();
+    this.object.updateMatrix();
+    const bspObject = CSG.fromMesh(this.object);
+    const bspBox = CSG.fromMesh(this.cropBox);                        
+    const bspResult = bspBox.inverse().intersect(bspObject.inverse());
+    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
+    croppedObject.material = this.object.material;
+    /*
+    const croppedObject = CSG.intersect(this.object, this.cropBox);
+    croppedObject.material = this.object.material;*/
+    this.scene.add(croppedObject);
+    this.scene.remove(this.object);
+    this.object = croppedObject;
   }
 
   updateValue(attribute, value) {
@@ -152,6 +184,19 @@ class Edit extends Component {
     this.setState({loaded: false, name: ''});
   }
 
+  activateCrop(crop) {
+    this.setState({crop: crop});
+    if (crop) {
+      this.scene.add(this.cropBox);
+      this.transformControls.detach(this.object);
+      this.transformControls.attach(this.cropBox);
+    } else {
+      this.transformControls.detach(this.cropBox);
+      this.scene.remove(this.cropBox);
+      this.transformControls.attach(this.object);
+    }
+  }
+
   render() {
 
     this._handleRemove = this.handleRemove.bind(this)
@@ -167,17 +212,32 @@ class Edit extends Component {
             <div class='edit_box'>
               <p>{ this.state.name }</p>
               <hr></hr>
+              <p class="heading_interaction">TRANSFORMATIONS</p>
               <Attribute name='Scale' editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
+              <hr></hr>
+              <p class="heading_interaction">CROP</p>
+              <label class="container">Activate
+                <input id="crop" type="checkbox" onClick={(event) => {
+                  this.activateCrop(event.target.checked);
+                }}/>
+                <span class="checkmark"></span>
+              </label>
+              {this.state.crop &&
+                <button onClick={() => {this.cropObject()}} class="crop_button">Crop</button>
+              }
+              {!this.state.crop &&
+                <button class="crop_button" disabled>Crop</button>
+              }
               <button onClick={this._handleDownload} class='edit_download'><i class="fa fa-download"></i></button>
               <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          {this.state.loaded &&
+          {this._cropValue &&
             <button onClick={this._handleFileSelect} class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
-          {!this.state.loaded &&
+          {!this._cropValue &&
             <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>
