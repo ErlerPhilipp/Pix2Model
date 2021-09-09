@@ -147,9 +147,6 @@ class Edit extends Component {
     const bspResult = bspBox.inverse().intersect(bspObject.inverse());
     const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
     croppedObject.material = this.object.material;
-    /*
-    const croppedObject = CSG.intersect(this.object, this.cropBox);
-    croppedObject.material = this.object.material;*/
     this.scene.add(croppedObject);
     this.scene.remove(this.object);
     this.object = croppedObject;
