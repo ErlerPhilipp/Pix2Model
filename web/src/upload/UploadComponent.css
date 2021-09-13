@@ -1,0 +1,58 @@
+.file_upload {
+    width: 500px;
+    border-radius: 5px;
+}
+
+.images {
+    position: absolute;
+    top: 80px;
+    width: 550px;
+    left: calc((100vw / 2) - 880px);
+}
+
+.mesh {
+    position: absolute;
+    top: 80px;
+    height: 300px;
+    right: calc((100vw / 2) - 480px);
+}
+
+.ply {
+    position: absolute;
+    left: calc(50vw - 520px);
+    height: 300px;
+    top: 80px;
+}
+
+.first {
+    position: absolute;
+    right: calc((100vw / 2) + 250px);
+}
+
+.second {
+    position: absolute;
+    right: calc((100vw / 2) + 280px);
+}
+
+.third {
+    position: absolute;
+    right: calc((100vw / 2) - 270px);
+}
+
+.fourth {
+    position: absolute;
+    right: calc((100vw / 2) - 300px);
+}
+
+#submit_upload {
+    margin-top: 2rem;
+}
+
+#response_field {
+    margin-top: 1rem;
+    display: block;
+}
+
+.hint {
+    color: 	#808080;
+}

@@ -1,9 +1,9 @@
 # Images2Mesh
 Images2Mesh Web funded by Netidee
 
-## Colmap prerequisites
+## Colmap Prerequisites
 
-In order to use colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project:
+In order to use Colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project:
 
 ```bash
 # Add the package repositories
@@ -19,6 +19,14 @@ sudo systemctl restart docker
 docker run --gpus all nvidia/cuda:10.2-base nvidia-smi
 ```
 
+The [NVIDIA CUDA toolkit](https://developer.nvidia.com/cuda-downloads) must be installed on the host system.
+
+Check your CUDA installation with 
+```bash
+nvidia-smi
+```
+If a CUDA Version >= 11.4 is reported you are good to go.
+
 ## Docker Setup
 
 The project can be deployed using docker and docker-compose. The architecture consists of the following services that can be found in the docker-compose.yml:
@@ -26,9 +34,9 @@ The project can be deployed using docker and docker-compose. The architecture co
 - web: Contains the application server written in python using flask
 - dashboard: Monitoring of the task queue via connection to redis server
 - redis: Database/Caching server used as host for the task queue
-- worker: Consumer for task queue written in python includes installation of [colmap](https://colmap.github.io/) 
+- worker: Consumer for task queue written in python includes installation of CUDA and [Colmap](https://colmap.github.io/) 
 
-To start the whole setup the command "docker-compose up" can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
+To start the whole setup the "start.sh" script can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
 
 ### Local Data Folder
 
@@ -72,7 +80,7 @@ Here the "input_files" argument contains a list of the uploaded images and their
 
 ## Point Cloud Reconstruction
 
-The first processing step performs a point cloud reconstruction from input images using colmap. After the step completes, it provides two outputs:
+The first processing step performs a point cloud reconstruction from input images using Colmap. After the step completes, it provides two outputs:
 
 - A points.ply file containing the point cloud data (XYZ positions and RGB colors of each point)
 - A log.txt file containing the log of the reconstruction
