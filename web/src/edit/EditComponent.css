@@ -75,6 +75,8 @@ button:hover {
     margin: 25px 10px;
     background-color: #37474F;
     color: white;
+    max-height: calc(100vh - 255px);
+    overflow: scroll;
 }
 
 .infobox {
@@ -96,4 +98,22 @@ button:hover {
 .crop_button {
     height: auto;
     margin-top: 10px;
+}
+
+.label {
+    color: #FFF;
+    font-family: sans-serif;
+    padding: 2px;
+}
+
+.x {
+    background: red;
+}
+
+.y {
+    background: green;
+}
+
+.z {
+    background: blue;
 }
