@@ -98,14 +98,19 @@ class Edit extends Component {
   }
 
   addObject(object, filename) {
-    this.object = object.children[0];
+    if (object.type == 'Group') {
+      this.object = object.children[0];
+    } else {
+      this.object = object;
+    }
+    console.log(this.object)
     this.scene.add(this.object);
     this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
   }
 
   createCropBox() {
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
     var material = new THREE.MeshBasicMaterial({
       color: 0xff0000,
       opacity: 0.5,
@@ -139,9 +144,17 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    console.log(this.object)
+   
     this.cropBox.updateMatrix();
     this.object.updateMatrix();
+    if (!this.object.geometry.attributes.normal) {
+      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
+      this.object.geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), 3)
+      );
+    }
+    console.log(this.object)
     const bspObject = CSG.fromMesh(this.object);
     const bspBox = CSG.fromMesh(this.cropBox);                        
     const bspResult = bspBox.inverse().intersect(bspObject.inverse());
@@ -178,6 +191,7 @@ class Edit extends Component {
   handleRemove() {
     this.transformControls.detach(this.object);
     this.scene.remove(this.object);
+    this.scene.remove(this.cropBox);
     this.setState({loaded: false, name: ''});
   }
 
