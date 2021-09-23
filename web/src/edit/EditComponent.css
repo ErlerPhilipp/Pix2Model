@@ -88,3 +88,12 @@ button:hover {
     white-space: pre;
     margin: 1em 0px;
 }
+
+.heading_interaction {
+    background: black;
+}
+
+.crop_button {
+    height: auto;
+    margin-top: 10px;
+}

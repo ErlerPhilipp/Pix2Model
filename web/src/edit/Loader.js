@@ -69,24 +69,6 @@ function Loader( editor ) {
 
 		switch ( extension ) {
 
-
-
-			case 'obj':
-
-				reader.addEventListener( 'load', async function ( event ) {
-
-					var contents = event.target.result;
-
-					var object = new OBJLoader().parse( contents );
-					object.name = filename;
-
-					editor.addObject( object, filename );
-
-				}, false );
-				reader.readAsText( file );
-
-				break;
-
 			case 'ply':
 				reader.addEventListener( 'load', async function ( event ) {
 
@@ -102,7 +84,21 @@ function Loader( editor ) {
 
 				}, false );
 				reader.readAsArrayBuffer( file );
+				break;
 
+							
+			case 'obj':
+				reader.addEventListener( 'load', async function ( event ) {
+
+					var contents = event.target.result;
+
+					var object = new OBJLoader().parse( contents );
+					object.name = filename;
+
+					editor.addObject( object, filename );
+
+				}, false );
+				reader.readAsText( file );
 				break;
 
 
