@@ -53,7 +53,7 @@ function CustomTabs() {
         <button class='next' onClick={() => setIndex(index + 1)}><i class="arrow embedded-right"></i></button>
       }
 
-      <SwipeableViews index={index} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
+      <SwipeableViews index={index} disabled={true} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
           <div>
               <About></About>
           </div>

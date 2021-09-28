@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
 import * as THREE from "three";
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { PLYExporter } from 'three/examples/jsm/exporters/PLYExporter.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
+import { CSG } from 'three-csg-ts';
 
 import './EditComponent.css';
 
@@ -13,20 +15,27 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
+    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
   }
 
   componentDidMount() {
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 75), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     this.scene.background = new THREE.Color(0xfbebc3);
     const light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(light);
     this.mount.appendChild(renderer.domElement);
+
+    var labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    this.mount.appendChild(labelRenderer.domElement);
+
     camera.position.z = 5;
-    const controls = new OrbitControls(camera, renderer.domElement);
-    this.transformControls = new TransformControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, labelRenderer.domElement);
+    this.transformControls = new TransformControls(camera, labelRenderer.domElement);
     this.loader = new Loader(this);
     var scope = this;
     this.transformControls.addEventListener('mouseDown', function () {
@@ -53,12 +62,15 @@ class Edit extends Component {
       }
     })
     window.addEventListener('resize', function() {
+      camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 75);
+      camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     })
     // animation
     var animate = function () {
       requestAnimationFrame(animate);
       renderer.render(scope.scene, camera);
+      labelRenderer.render( scope.scene, camera );
       controls.update();
     };
     animate();
@@ -77,6 +89,10 @@ class Edit extends Component {
       }
     }, false);
     this.buildFileSelector();
+    this.createCropBox();
+    this.createLabels();
+    this.box3 = new THREE.Box3();
+    this.size = new THREE.Vector3();
   }
 
   buildFileSelector(){
@@ -96,10 +112,24 @@ class Edit extends Component {
   }
 
   addObject(object, filename) {
-    this.scene.add(object);
-    this.transformControls.attach(object);
-    this.object = object;
+    if (object.type == 'Group') {
+      this.object = object.children[0];
+    } else {
+      this.object = object;
+    }
+    this.scene.add(this.object);
+    this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
+  }
+
+  createCropBox() {
+    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    var material = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      opacity: 0.5,
+      transparent: true
+    });
+    this.cropBox = new THREE.Mesh( geometry, material );
   }
 
   handleUpdate() {
@@ -110,6 +140,10 @@ class Edit extends Component {
     var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
     var translation = {x: this.object.position.x, y: this.object.position.y, z: this.object.position.z};
     this.setState({rotation, scale, translation});
+    if (this.boxHelper) {
+      this.boxHelper.update();
+      this.updateLabels();
+    }
   }
 
   handleDownload() {
@@ -121,6 +155,30 @@ class Edit extends Component {
     link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
     link.download = "model.ply";
     link.dispatchEvent( new MouseEvent( 'click' ) );
+  }
+
+  cropObject() {
+    if (!this.object) {
+      return;
+    }
+   
+    this.cropBox.updateMatrix();
+    this.object.updateMatrix();
+    if (!this.object.geometry.attributes.normal) {
+      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
+      this.object.geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), 3)
+      );
+    }
+    const bspObject = CSG.fromMesh(this.object);
+    const bspBox = CSG.fromMesh(this.cropBox);                        
+    const bspResult = bspBox.inverse().intersect(bspObject.inverse());
+    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
+    croppedObject.material = this.object.material;
+    this.scene.add(croppedObject);
+    this.scene.remove(this.object);
+    this.object = croppedObject;
   }
 
   updateValue(attribute, value) {
@@ -149,7 +207,75 @@ class Edit extends Component {
   handleRemove() {
     this.transformControls.detach(this.object);
     this.scene.remove(this.object);
+    this.scene.remove(this.cropBox);
+    if (this.boxHelper) {
+      this.scene.remove(this.boxHelper);
+    }
     this.setState({loaded: false, name: ''});
+  }
+
+  activateCrop(crop) {
+    this.setState({crop: crop});
+    if (crop) {
+      this.scene.add(this.cropBox);
+      this.transformControls.detach(this.object);
+      this.transformControls.attach(this.cropBox);
+    } else {
+      this.transformControls.detach(this.cropBox);
+      this.scene.remove(this.cropBox);
+      this.transformControls.attach(this.object);
+    }
+  }
+
+  activateMeasurement(measure) {
+    if (measure) {
+      this.boxHelper = new THREE.BoxHelper( this.object, 0x37474F );
+      this.scene.add( this.boxHelper );
+      this.object.add( this.xLabel);
+      this.object.add(this.yLabel);
+      this.object.add(this.zLabel);
+      this.updateLabels();
+    } else if (this.boxHelper) {
+      this.scene.remove(this.boxHelper);
+      this.object.remove( this.xLabel);
+      this.object.remove(this.yLabel);
+      this.object.remove(this.zLabel);
+    }
+  }
+
+  createLabels() {
+    this.xDiv = document.createElement( 'div' );
+    this.xDiv.className = 'label x';
+    this.xDiv.style.marginTop = '-1em';
+    this.xLabel = new CSS2DObject( this.xDiv );
+    
+    this.yDiv = document.createElement( 'div' );
+    this.yDiv.className = 'label y';
+    this.yDiv.style.marginBottom = '-1em';
+    this.yLabel = new CSS2DObject(this.yDiv);
+
+    this.zDiv = document.createElement( 'div' );
+    this.zDiv.className = 'label z';
+    this.zDiv.style.marginTop = '-1em';
+    this.zLabel = new CSS2DObject( this.zDiv );
+  }
+
+  updateLabels() {
+    if (!this.boxHelper) {
+      return;
+    }
+    this.object.geometry.computeBoundingBox();
+    this.box3.copy( this.object.geometry.boundingBox ).applyMatrix4( this.object.matrixWorld );
+    this.box3.getSize(this.size);
+
+    this.xDiv.textContent = this.size.x;
+    this.xLabel.position.set(this.size.x / 2, 0, 0,);
+
+    this.yDiv.textContent = this.size.y;
+    this.yLabel.position.set(0, this.size.y / 2, 0);
+
+    this.zDiv.textContent = this.size.z;
+    this.zLabel.position.set(0, 0, this.size.z / 2);
   }
 
   render() {
@@ -167,17 +293,40 @@ class Edit extends Component {
             <div class='edit_box'>
               <p>{ this.state.name }</p>
               <hr></hr>
+              <p class="heading_interaction">TRANSFORMATIONS</p>
               <Attribute name='Scale' editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
+              <hr></hr>
+              <p class="heading_interaction">CROP</p>
+              <label class="container">Activate
+                <input id="crop" type="checkbox" onClick={(event) => {
+                  this.activateCrop(event.target.checked);
+                }}/>
+                <span class="checkmark"></span>
+              </label>
+              {this.state.crop &&
+                <button onClick={() => {this.cropObject()}} class="crop_button">Crop</button>
+              }
+              {!this.state.crop &&
+                <button class="crop_button" disabled>Crop</button>
+              }
+              <hr></hr>
+              <p class="heading_interaction">MEASUREMENT</p>
+              <label class="container">Activate
+                <input id="measure" type="checkbox" onClick={(event) => {
+                  this.activateMeasurement(event.target.checked);
+                }}/>
+                <span class="checkmark"></span>
+              </label>
               <button onClick={this._handleDownload} class='edit_download'><i class="fa fa-download"></i></button>
               <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          {this.state.loaded &&
+          {this._cropValue &&
             <button onClick={this._handleFileSelect} class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
-          {!this.state.loaded &&
+          {!this._cropValue &&
             <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>

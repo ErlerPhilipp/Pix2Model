@@ -1,7 +1,10 @@
 {
     "about": {
         "team": "Projektteam",
-        "netidee": "Images2Mesh Web gefördert von Netidee",
+        "netidee": {
+            "top": "Images2Mesh Web",
+            "sub": "gefördert von Netidee"
+        },
         "content": "Ein entscheidender Schritt bei der automatisierten Rekonstruktion von 3D Modellen, basierend auf Scans, ist es, unsortierte Punktwolken in eine Oberfläche zu konvertieren. Etablierte Methoden (z.B. Poisson reconstruction) liefern mangelhafte Ergebnisse, wenn die Scans nur teilbereiche eines Modells abbilden oder rauschen. Daher rücken Deep learning Methoden immer mehr in den Fokus, um vollständige Modelle zu erzeugen, selbst wenn die zugrunde liegenden Scans nicht alle Details abbilden. Jedoch haben diese machine learning Verfahren Probleme bei der Rekonstruktion neuer Modelle, die starke geometrische oder topologische Variationen zeigen. Wir präsentieren daher Points2Surf, ein neues patch-basierter Ansatz, welcher Scans ohne Normalen in akkurate Oberflächen übersetzt. Das Erlernen eines Priors über eine Kombination aus detaillierten lokalen Patches und groben globalen Informationen verbessert die Generalisierungsleistung und die Rekonstruktionsgenauigkeit. \n \n Unser umfassender Vergleich mit synthetischen und realen Daten zeigt einen klaren Vorteil unserer Methode gegenüber dem Stand der Technik bei zuvor unbekannten Klassen (im Durchschnitt verringert Points2Surf den Rekonstruktionsfehler um 30 % gegenüber SPR und um mehr als 270 % gegenüber SotA-Methoden, die auf Deep Learning basieren), allerdings um den Preis längerer Berechnungszeiten und einer leichten Zunahme des kleinräumigen topologischen Rauschens in einigen Fällen. Unser Quellcode, das vortrainierte Modell und der Datensatz sind verfügbar unter:",
         "stefan": "Projektleiter",
         "philipp": "Projektleiter",
@@ -12,7 +15,7 @@
         "edit": "Bearbeiten"
     },
     "edit": {
-        "interaction": "Lade .obj or .ply Dateien via drag&drop\noder über die Schaltfläche, um die\nDatei zu bearbeiten. \n \nShortcuts:\nq - Translation\nr - Rotation\ns - Skalierung"
+        "interaction": "Lade .ply oder .obj Dateien via drag&drop\noder über die Schaltfläche, um die\nDatei zu bearbeiten. \n \nShortcuts:\nq - Translation\nr - Rotation\ns - Skalierung"
     },
     "upload": {
         "email": "\n[Optional] Benachrichtigungs-Email, sobald die Konvertierung zum Herunterladen bereit steht",
