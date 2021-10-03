@@ -50,7 +50,7 @@ class UploadPLY extends Component {
           <i class="arrow second"></i>
           <i class="arrow third"></i>
           <i class="arrow fourth"></i>
-          <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload_ply">
+          <form class="dropzone" method="POST" action="http://127.0.0.1/backend/" id="upload_ply">
           </form>
           <small class="hint">{t('upload.files.support')} PLY</small><br /><br /><br />
           <button id="submit_upload_ply" class="button_small">{t('upload.submit')}</button><br />

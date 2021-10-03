@@ -58,7 +58,7 @@ class Upload extends Component {
           <i class="arrow second"></i>
           <i class="arrow third"></i>
           <i class="arrow fourth"></i>
-          <form class="dropzone" method="POST" action="http://0.0.0.0:5000/" id="upload">
+          <form class="dropzone" method="POST" action="http://127.0.0.1/backend/" id="upload">
           </form>
           <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
           <button id="submit_upload" class="button_small">{t('upload.submit')}</button><br />
