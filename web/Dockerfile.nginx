@@ -3,7 +3,6 @@ WORKDIR /app
 COPY ./package.json /app
 RUN yarn install
 COPY . /app
-#ENTRYPOINT ["sh"]
 RUN yarn build
 
 FROM nginx:alpine

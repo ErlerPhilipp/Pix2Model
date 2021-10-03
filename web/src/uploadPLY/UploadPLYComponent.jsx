@@ -18,7 +18,7 @@ class UploadPLY extends Component {
   
       document.querySelector("#upload_ply").dropzone.on("success", (file, response) => {
           submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field_ply").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
+          document.querySelector("#response_field_ply").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/backend/result?id=${response}">${response}</a>`;
       });
     });
   }
@@ -50,7 +50,7 @@ class UploadPLY extends Component {
           <i class="arrow second"></i>
           <i class="arrow third"></i>
           <i class="arrow fourth"></i>
-          <form class="dropzone" method="POST" action="http://127.0.0.1/backend/" id="upload_ply">
+          <form class="dropzone" method="POST" action="/backend/upload_ply" id="upload_ply">
           </form>
           <small class="hint">{t('upload.files.support')} PLY</small><br /><br /><br />
           <button id="submit_upload_ply" class="button_small">{t('upload.submit')}</button><br />

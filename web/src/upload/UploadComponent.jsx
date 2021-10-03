@@ -27,7 +27,7 @@ class Upload extends Component {
     });
     document.querySelector("#upload").dropzone.on("success", (file, response) => {
         submitButton.disablwrapper_uploaded = true;
-        document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/result?id=${response}">${response}</a>`;
+        document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/backend/result?id=${response}">${response}</a>`;
     });
   }
 
@@ -58,7 +58,7 @@ class Upload extends Component {
           <i class="arrow second"></i>
           <i class="arrow third"></i>
           <i class="arrow fourth"></i>
-          <form class="dropzone" method="POST" action="http://127.0.0.1/backend/" id="upload">
+          <form class="dropzone" method="POST" action="/backend/" id="upload">
           </form>
           <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
           <button id="submit_upload" class="button_small">{t('upload.submit')}</button><br />
