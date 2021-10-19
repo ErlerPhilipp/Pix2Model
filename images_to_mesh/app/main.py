@@ -26,16 +26,6 @@ def allowed_extension(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
 
 
-@app.route("/about", methods=["GET"])
-def about():
-    return "WIP"
-
-
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("base.html")
-
-
 @app.route("/", methods=["POST"])
 def file_upload():
     uploaded_files: List[FileStorage] = []

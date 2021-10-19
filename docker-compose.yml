@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 services:
   client:
     stdin_open: true
@@ -11,31 +11,44 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - web
+      - backend
     volumes:
       - "./web:/app"
       - exclude:/app/node_modules/
       - type: bind
         target: /usr/src/app/data
-        source: ${UPLOAD_FOLDER}
-  web:
-    build: .
+        source: ${UPLOAD_FOLDER}    
+    profiles:
+      - develop
+  client_deployed:
+    stdin_open: true
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile.nginx
     ports:
-    - "5000:5000"
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - type: bind
+        target: /usr/src/app/data
+        source: ${UPLOAD_FOLDER}    
+    profiles:
+      - deploy
+  backend:
+    build: .
     depends_on:
       - redis
+    expose:
+      - "5000"
     volumes:
     - type: bind
       target: /usr/src/app/data
       source: ${UPLOAD_FOLDER}
   redis:
     image: "redis:alpine"
-    expose:
-      - "6379"
   dashboard:
     build: ./dashboard
-    ports:
-    - "9181:9181"
     depends_on:
       - redis
     environment:
