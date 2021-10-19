@@ -19,6 +19,7 @@ class GeneralMeshLoader(MeshLoader):
                  cloud_file_in: str):
         self.cloud_file_in = cloud_file_in
 
+    # @raises PyMeshlabException if unable to load (file not found, file format not supported, ...)
     def load_mesh(self, ms: ml.MeshSet):
         ms.load_new_mesh(self.cloud_file_in)
 

@@ -5,17 +5,8 @@ import numpy as np
 from pathlib import Path
 from typing import List, TextIO
 from plyfile import PlyData, PlyElement
+from images_to_mesh.processing_steps.erros import ReconstructionError
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
-
-
-class ReconstructionError(Exception):
-    """Basic exception for errors raised by reconstruction"""
-
-    def __init__(self, msg=None):
-        if msg is None:
-            msg = "ReconstructionError: An error occurred during reconstruction, check log file for details"
-        super(ReconstructionError, self).__init__(msg)
-        self.msg = 'ReconstructionError: ' + msg
 
 
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
