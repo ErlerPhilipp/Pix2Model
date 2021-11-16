@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16.13-alpine3.12  # workaround until this is released: https://github.com/webpack/webpack/pull/14584
 WORKDIR /app
 COPY ./package.json /app
 RUN yarn install
