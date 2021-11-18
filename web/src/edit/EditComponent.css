@@ -40,6 +40,16 @@ button:hover {
     position: absolute;
 }
 
+.edit_refresh {
+    height: 40px;
+    width: 40px;
+    margin-left: 20px;
+    border-radius: 50%;
+    border: 1px solid black;
+    color: green;
+    cursor: pointer;
+  }
+
 .edit_download {
     display: block;
     height: 60px;
@@ -87,8 +97,9 @@ button:hover {
     padding: 8px;
     display: block;
     font-family: monospace;
-    white-space: pre;
+    width: 350px;
     margin: 1em 0px;
+    z-index: 1000;
 }
 
 .heading_interaction {
@@ -98,12 +109,28 @@ button:hover {
 .crop_button {
     height: auto;
     margin-top: 10px;
+    width: 110px;
+    font-size: 1em;
+}
+
+.spacing {
+    margin-right: 10px;
+}
+
+.recon_button {
+    height: auto;
+    font-size: 1em;
+    height: 40px;
 }
 
 .label {
     color: #FFF;
     font-family: sans-serif;
     padding: 2px;
+}
+
+.edit_warning {
+    color: red;
 }
 
 .x {

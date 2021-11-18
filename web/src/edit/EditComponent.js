@@ -27,6 +27,9 @@ class Edit extends Component {
     this.scene.add(light);
     this.mount.appendChild(renderer.domElement);
 
+    const gridHelper = new THREE.GridHelper( 10, 50 );
+    this.scene.add( gridHelper );
+
     var labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     labelRenderer.domElement.style.position = 'absolute';
@@ -181,12 +184,38 @@ class Edit extends Component {
     this.object = croppedObject;
   }
 
+  cropObjectInverse() {
+    if (!this.object) {
+      return;
+    }
+   
+    this.cropBox.updateMatrix();
+    this.object.updateMatrix();
+    if (!this.object.geometry.attributes.normal) {
+      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
+      this.object.geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), 3)
+      );
+    }
+    const bspObject = CSG.fromMesh(this.object);
+    const bspBox = CSG.fromMesh(this.cropBox);                        
+    const bspResult = bspBox.intersect(bspObject.inverse());
+    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
+    croppedObject.material = this.object.material;
+    this.scene.add(croppedObject);
+    this.scene.remove(this.object);
+    this.object = croppedObject;
+  }
+
   updateValue(attribute, value) {
-    if (attribute === 'ScaleX') {
+    const { t } = this.props;
+
+    if (attribute === t('edit.scale') + 'X') {
       this.object.scale.x = parseFloat(value)
-    } else if (attribute === 'ScaleY') {
+    } else if (attribute === t('edit.scale') + 'Y') {
       this.object.scale.y = parseFloat(value)
-    } else if (attribute === 'ScaleZ') {
+    } else if (attribute === t('edit.scale') + 'Z') {
       this.object.scale.z = parseFloat(value)
     } else if (attribute === 'TranslationX') {
       this.object.position.x = parseFloat(value)
@@ -278,11 +307,27 @@ class Edit extends Component {
     this.zLabel.position.set(0, 0, this.size.z / 2);
   }
 
+  handleRefresh() {
+    const { t } = this.props;
+    // check serverside 
+    const response = 1;
+    if (response == 0) {
+      // load file
+    } else if (response == 1) {
+      // 2.1 Not found
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + document.getElementById('uuid').value
+    } else if (response == 2) {
+      // 2.2 In progress
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + document.getElementById('uuid').value + t('edit.warning.progress_2')
+    }
+  }
+
+  pass() {
+
+  }
+
   render() {
 
-    this._handleRemove = this.handleRemove.bind(this)
-    this._handleDownload = this.handleDownload.bind(this)
-    this._handleFileSelect = this.handleFileSelect.bind(this)
     const { t } = this.props;
 
     return (
@@ -293,44 +338,61 @@ class Edit extends Component {
             <div class='edit_box'>
               <p>{ this.state.name }</p>
               <hr></hr>
-              <p class="heading_interaction">TRANSFORMATIONS</p>
-              <Attribute name='Scale' editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
+              <p class="heading_interaction">{t('edit.conversion')}</p>
+              <button onClick={() => {this.pass()}} class="recon_button">{t('edit.reconstruct')}</button>
+              <hr></hr>
+              <p class="heading_interaction">{t('edit.transformation')}</p>
+              <Attribute name={t('edit.scale')} editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
               <hr></hr>
-              <p class="heading_interaction">CROP</p>
-              <label class="container">Activate
+              <p class="heading_interaction">{t('edit.crop.crop')}</p>
+              <label class="container">{t('edit.activate')}
                 <input id="crop" type="checkbox" onClick={(event) => {
                   this.activateCrop(event.target.checked);
                 }}/>
                 <span class="checkmark"></span>
               </label>
+              <br></br>
               {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button">Crop</button>
+                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.remove')}</button>
+              }
+              {this.state.crop &&
+                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.keep')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button" disabled>Crop</button>
+                <button class="crop_button spacing" disabled>{t('edit.crop.remove')}</button>
+              }
+              {!this.state.crop &&
+                <button class="crop_button" disabled>{t('edit.crop.keep')}</button>
               }
               <hr></hr>
-              <p class="heading_interaction">MEASUREMENT</p>
-              <label class="container">Activate
+              <p class="heading_interaction">{t('edit.measure')}</p>
+              <label class="container">{t('edit.activate')}
                 <input id="measure" type="checkbox" onClick={(event) => {
                   this.activateMeasurement(event.target.checked);
                 }}/>
                 <span class="checkmark"></span>
               </label>
-              <button onClick={this._handleDownload} class='edit_download'><i class="fa fa-download"></i></button>
-              <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
+              <button onClick={() => {this.handleDownload()}} class='edit_download'><i class="fa fa-download"></i></button>
+              <button onClick={() => {this.handleRemove()}} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
           {this._cropValue &&
-            <button onClick={this._handleFileSelect} class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+            <button class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
           {!this._cropValue &&
-            <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+            <button tooltip="Uploaded files won't be saved on the server" onClick={() => {this.handleFileSelect()}} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>
         <div class='infobox'>
+          <label for="uuid" class="formfield">ID</label>
+          <input id="uuid" name="uuid" class="formfield_input"></input>
+          <button onClick={() => {this.handleRefresh()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          <br></br>
+          <small id="uuid_error" class="edit_warning"></small>
+          <br></br>
+          <br></br>
           {t('edit.interaction')}
         </div>
       </div>
