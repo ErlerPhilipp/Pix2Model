@@ -40,16 +40,14 @@ function CustomTabs() {
           TabIndicatorProps={{style: {backgroundColor: "white"}}}>
           <Tab icon={<HomeIcon />}/>
           <Tab label="Image-2-Mesh"/>
-          <Tab label="Ply-2-Mesh"/>
-          <Tab label={t('menu.download')}/>
           <Tab label={t('menu.edit')}/>
       </Tabs>
       <button class='lang en' onClick={() => handleChangeLang('en')}>EN</button>
       <button class='lang de' onClick={() => handleChangeLang('de')}>DE</button>
-      {(index > 0 && index < 4) &&
+      {(index > 0 && index < 2) &&
         <button class='previous' onClick={() => setIndex(index - 1)}><i class="arrow embedded-left"></i></button>
       }
-      {index < 4 &&
+      {index < 2 &&
         <button class='next' onClick={() => setIndex(index + 1)}><i class="arrow embedded-right"></i></button>
       }
 
@@ -59,12 +57,6 @@ function CustomTabs() {
           </div>
           <div>
               <Upload></Upload>
-          </div>
-          <div>
-              <UploadPLY></UploadPLY>
-          </div>
-          <div>
-              <Download></Download>
           </div>
           <div>
               <Edit></Edit>

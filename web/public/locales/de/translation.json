@@ -15,7 +15,23 @@
         "edit": "Bearbeiten"
     },
     "edit": {
-        "interaction": "Lade .ply oder .obj Dateien via drag&drop\noder über die Schaltfläche, um die\nDatei zu bearbeiten. \n \nShortcuts:\nq - Translation\nr - Rotation\ns - Skalierung"
+        "interaction": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\nq - Translation\nr - Rotation\ns - Skalierung",
+        "conversion": "KONVERTIERUNG",
+        "reconstruct": "Mesh Rekonstruktion",
+        "transformation": "TRANSFORMATIONEN",
+        "activate": "Aktivieren",
+        "scale": "Skalierung",
+        "crop": {
+            "crop": "SCHNEIDEN",
+            "keep": "Behalte Überschn.",
+            "remove": "Entferne Überschn."
+        },
+        "measure": "MAßE",
+        "warning": {
+            "progress_1": "Die Datei mit der ID ",
+            "progress_2": " wird momentan erstellt.\nBitte versuchen Sie es später noch einmal",
+            "notfound": "Keine Datei wurde gefunden mit der ID "
+        }
     },
     "upload": {
         "email": "\n[Optional] Benachrichtigungs-Email, sobald die Konvertierung zum Herunterladen bereit steht",

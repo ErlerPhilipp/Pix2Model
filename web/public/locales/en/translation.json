@@ -15,7 +15,23 @@
         "edit": "edit"
     },
     "edit": {
-        "interaction": "Upload .ply or .obj file to view and edit\nvia drag&drop or the upload-button. \n \nShortcuts:\nq - Translate\nr - Rotate\ns - Scale"
+        "interaction": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\nq - Translate\nr - Rotate\ns - Scale",
+        "conversion": "CONVERSION",
+        "reconstruct": "Reconstruct Mesh",
+        "transformation": "TRANSFORMATIONS",
+        "scale": "Scale",
+        "activate": "Activate",
+        "crop": {
+            "crop": "CROP",
+            "keep": "Keep intersections",
+            "remove": "Remove intersections"
+        },
+        "measure": "MEASUREMENT",
+        "warning": {
+            "progress_1": "The file with ID ",
+            "progress_2": " is getting generated.\nPlease try again later by pressing the refresh button",
+            "notfound": "No file found with the ID "
+        }
     },
     "upload": {
         "email": "\n[Optional] Notification email when convertion is done",
