@@ -3,6 +3,7 @@ from typing import Any
 
 from redis import Redis
 from rq import Queue, get_current_job
+from pathlib import Path
 
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
@@ -35,16 +36,19 @@ def task(number: int):
     return decorator
 
 
-def queue_jobs(input_files: Any, user_email) -> int:
+def queue_jobs(input_files: Any, user_email, tasks=[1, 2]) -> int:
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection, default_timeout=18000)
-    j1 = task_queue.enqueue(_structure_from_motion, input_files)
-    j2 = task_queue.enqueue(_mesh_reconstruction, depends_on=j1)
-    j1.meta['mail'] = user_email
-    j1.save_meta()
-    j2.meta['mail'] = user_email
-    j2.save_meta()
-    return j2.id
+    if 1 in tasks:
+        j1 = task_queue.enqueue(_structure_from_motion, input_files)
+        j1.meta['mail'] = user_email
+        j1.save_meta()
+    if 2 in tasks:
+        j2 = task_queue.enqueue(_mesh_reconstruction, depends_on=j1)
+        j2.meta['mail'] = user_email
+        j2.save_meta()
+    print(str(Path(input_files[0]).parent.parent), flush=True)
+    return str(Path(input_files[0]).parent.parent)
 
 
 @task(1)

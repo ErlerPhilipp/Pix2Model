@@ -48,11 +48,17 @@ def file_upload():
         file.save(processed_filename)
 
     user_email = ""
-
     if "user_email" in request.form:
+        print("user email: ", request.form.get("user_email"), flush=True)
         user_email = request.form.get("user_email")
 
-    return process_order.queue_jobs(processed_filenames, user_email)
+    steps = [1, 2]
+    if "step2" in request.form and not int(request.form.get("step2")):
+        print("step 2 won't be processed...", flush=True)
+        steps = [1]
+    
+    return process_order.queue_jobs(processed_filenames, user_email, steps)
+
 
 
 @app.errorhandler(413)

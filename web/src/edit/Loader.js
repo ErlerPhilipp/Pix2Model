@@ -71,13 +71,17 @@ function Loader( editor ) {
 
 			case 'ply':
 				reader.addEventListener( 'load', async function ( event ) {
-
 					var contents = event.target.result;
-
 					var geometry = new PLYLoader().parse( contents );
-					var material = new THREE.MeshStandardMaterial();
-
-					var mesh = new THREE.Mesh( geometry, material );
+					if (geometry.index) {
+						geometry.computeVertexNormals()
+						var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+						var mesh = new THREE.Mesh( geometry, material );
+					} else {
+						var material = new THREE.PointsMaterial( { size: 0.005 } );
+						material.vertexColors = true
+						var mesh = new THREE.Points(geometry, material)
+					}
 					mesh.name = filename;
 
 					editor.addObject( mesh, filename );

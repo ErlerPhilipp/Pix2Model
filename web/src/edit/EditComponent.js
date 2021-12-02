@@ -10,6 +10,7 @@ import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 
 import './EditComponent.css';
+import fs from 'fs';
 
 class Edit extends Component {
   constructor(props) {
@@ -23,8 +24,8 @@ class Edit extends Component {
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     this.scene.background = new THREE.Color(0xfbebc3);
-    const light = new THREE.AmbientLight(0x404040); // soft white light
-    this.scene.add(light);
+    this.light = new THREE.AmbientLight(0x404040); // soft white light
+    this.scene.add(this.light);
     this.mount.appendChild(renderer.domElement);
 
     const gridHelper = new THREE.GridHelper( 10, 50 );
@@ -62,6 +63,12 @@ class Edit extends Component {
         case "s":
           scope.transformControls.setMode("scale")
           break
+        case "+":
+          scope.light.intensity += 0.5;
+          break
+        case "-":
+          scope.light.intensity -= 0.5;
+          break
       }
     })
     window.addEventListener('resize', function() {
@@ -96,6 +103,10 @@ class Edit extends Component {
     this.createLabels();
     this.box3 = new THREE.Box3();
     this.size = new THREE.Vector3();
+    // add object when ID in url is set
+    const id = new URLSearchParams(window.location.search).get('id')
+    
+    //this.loader.loadFiles(this.fileSelector.files);
   }
 
   buildFileSelector(){
@@ -111,10 +122,12 @@ class Edit extends Component {
   }
 
   handleUpload = (event) => {
+    console.log(this.fileSelector.files)
     this.loader.loadFiles(this.fileSelector.files);
   }
 
   addObject(object, filename) {
+    const material = Object.assign({}, object.material)
     if (object.type == 'Group') {
       this.object = object.children[0];
     } else {
@@ -382,7 +395,7 @@ class Edit extends Component {
             <button class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
           {!this._cropValue &&
-            <button tooltip="Uploaded files won't be saved on the server" onClick={() => {this.handleFileSelect()}} class='edit_upload'><i class="fa fa-upload"></i></button>
+            <button tooltip="Uploaded files won't be saved on the server" onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>
         <div class='infobox'>

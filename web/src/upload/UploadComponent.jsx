@@ -25,7 +25,14 @@ class Upload extends Component {
     submitButton.addEventListener("click", eventArgs => {
         document.querySelector("#upload").dropzone.processQueue();
     });
+    document.querySelector("#upload").dropzone.on("sending", function(file, xhr, data) {
+        if (data) {
+          data.append("user_email", document.querySelector("#email").value);
+          data.append("step2", + !document.querySelector("#ply").checked);
+        }
+    });
     document.querySelector("#upload").dropzone.on("success", (file, response) => {
+        console.log('succesful...')
         submitButton.disablwrapper_uploaded = true;
         document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/backend/result?id=${response}">${response}</a>`;
     });
