@@ -8,15 +8,16 @@ import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
+import axios from 'axios';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 
 import './EditComponent.css';
-import fs from 'fs';
 
 class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
+    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}, reconstruct:false};
   }
 
   componentDidMount() {
@@ -105,8 +106,10 @@ class Edit extends Component {
     this.size = new THREE.Vector3();
     // add object when ID in url is set
     const id = new URLSearchParams(window.location.search).get('id')
-    
-    //this.loader.loadFiles(this.fileSelector.files);
+    if (id) {
+      document.getElementById('uuid').value = id
+      this.handleUploadFromServer(id)
+    }
   }
 
   buildFileSelector(){
@@ -122,11 +125,45 @@ class Edit extends Component {
   }
 
   handleUpload = (event) => {
-    console.log(this.fileSelector.files)
     this.loader.loadFiles(this.fileSelector.files);
   }
 
+  handleUploadFromServer() {
+    var id = document.getElementById('uuid').value
+    axios({
+      method: 'get',
+      url: `/backend/latestfile?id=${id}`,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary'
+    })
+      .then(res => {
+        var geometry = new PLYLoader().parse( res.data );
+        geometry.computeVertexNormals()
+        var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+        var mesh = new THREE.Mesh( geometry, material );
+        this.addObject(mesh, res.headers["filename"])
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          axios({
+            method: 'get',
+            url: `/backend/result?id=${id}`
+          })
+          .then(res => {
+            if (res.data.includes('No job')) {
+              this.setFileStatus(1, id)
+            } else {
+              this.setFileStatus(2, id)
+            }
+          })
+        } else {
+          this.setFileStatus(3, id)
+        }
+      })
+  }
+
   addObject(object, filename) {
+    this.handleRemove()
     const material = Object.assign({}, object.material)
     if (object.type == 'Group') {
       this.object = object.children[0];
@@ -253,7 +290,11 @@ class Edit extends Component {
     if (this.boxHelper) {
       this.scene.remove(this.boxHelper);
     }
-    this.setState({loaded: false, name: ''});
+    this.setState({loaded: false, name: '', reconstruct: false});
+  }
+
+  handleReconstruct() {
+    
   }
 
   activateCrop(crop) {
@@ -320,24 +361,21 @@ class Edit extends Component {
     this.zLabel.position.set(0, 0, this.size.z / 2);
   }
 
-  handleRefresh() {
+
+  setFileStatus(response, id) {
     const { t } = this.props;
-    // check serverside 
-    const response = 1;
-    if (response == 0) {
-      // load file
-    } else if (response == 1) {
-      // 2.1 Not found
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + document.getElementById('uuid').value
+    if (response == 1) {
+      // Not found
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + id
     } else if (response == 2) {
-      // 2.2 In progress
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + document.getElementById('uuid').value + t('edit.warning.progress_2')
+      // In progress
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + id + t('edit.warning.progress_2')
+    } else {
+      // 500 error
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.error') + id
     }
   }
 
-  pass() {
-
-  }
 
   render() {
 
@@ -352,7 +390,12 @@ class Edit extends Component {
               <p>{ this.state.name }</p>
               <hr></hr>
               <p class="heading_interaction">{t('edit.conversion')}</p>
-              <button onClick={() => {this.pass()}} class="recon_button">{t('edit.reconstruct')}</button>
+              {this.state.reconstruct &&
+                <button tooltip="Create reconstructed mesh based on the edited mesh. The edited mesh will be saved" onClick={() => {this.handleReconstruct()}} class="recon_button">{t('edit.reconstruct')}</button>
+              }
+              {!this.state.reconstruct &&
+                <button class="recon_button" disabled>{t('edit.reconstruct')}</button>
+              }
               <hr></hr>
               <p class="heading_interaction">{t('edit.transformation')}</p>
               <Attribute name={t('edit.scale')} editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
@@ -391,17 +434,17 @@ class Edit extends Component {
               <button onClick={() => {this.handleRemove()}} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          {this._cropValue &&
+          {this.state.loaded &&
             <button class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
-          {!this._cropValue &&
+          {!this.state.loaded &&
             <button tooltip="Uploaded files won't be saved on the server" onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>
         <div class='infobox'>
           <label for="uuid" class="formfield">ID</label>
           <input id="uuid" name="uuid" class="formfield_input"></input>
-          <button onClick={() => {this.handleRefresh()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          <button onClick={() => {this.handleUploadFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
           <br></br>
           <small id="uuid_error" class="edit_warning"></small>
           <br></br>

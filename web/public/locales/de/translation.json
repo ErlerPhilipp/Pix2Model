@@ -30,7 +30,8 @@
         "warning": {
             "progress_1": "Die Datei mit der ID ",
             "progress_2": " wird momentan erstellt.\nBitte versuchen Sie es später noch einmal",
-            "notfound": "Keine Datei wurde gefunden mit der ID "
+            "notfound": "Keine Datei wurde gefunden mit der ID ",
+            "error": "Ein Fehler trat auf beim Laden der Datei mit ID "
         }
     },
     "upload": {
