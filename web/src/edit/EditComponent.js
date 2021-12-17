@@ -10,6 +10,8 @@ import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 import axios from 'axios';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
 
 import './EditComponent.css';
 
@@ -17,7 +19,7 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}, reconstruct:false};
+    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}, options: undefined, option_versions: undefined, reconstruct: false};
   }
 
   componentDidMount() {
@@ -106,6 +108,7 @@ class Edit extends Component {
     this.size = new THREE.Vector3();
     // add object when ID in url is set
     const id = new URLSearchParams(window.location.search).get('id')
+    // for testing : this.setState({options: {'mesh': ['v001', 'v000', 'v059'], 'pointcloud': ['v002', 'v003', 'v059']}, option_versions: ['v001', 'v000', 'v059']})
     if (id) {
       document.getElementById('uuid').value = id
       this.handleUploadFromServer(id)
@@ -128,20 +131,62 @@ class Edit extends Component {
     this.loader.loadFiles(this.fileSelector.files);
   }
 
-  handleUploadFromServer() {
+
+  loadVersions(step = undefined, version = undefined) {
     var id = document.getElementById('uuid').value
     axios({
       method: 'get',
-      url: `/backend/latestfile?id=${id}`,
+      url: `/backend/versions?id=${id}`
+    })
+      .then(res => {
+        var versions = []
+        if (res.data.mesh && res.data.mesh.length > 0) {
+          versions = res.data.mesh
+        } else if (res.data.pointclound && res.data.pointclound.length > 0) {
+          versions = res.data.pointclound
+        }
+        this.setState({options: res.data, option_versions: versions})
+        if (step && version) {
+          if (step in this.state.options) {
+            // todo: set the dropdown values
+          }
+        }
+      })
+      .catch((error) => {
+        this.setFileStatus(6, id)
+      })
+  }
+
+
+  handleUploadFromServer() {
+    var id = document.getElementById('uuid').value
+    var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
+    var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
+    var url_ = `/backend/file?id=${id}`
+    if (step && version) {
+      url_ = `/backend/file?id=${id}&step=${step}&version=${version}`
+    }
+    axios({
+      method: 'get',
+      url: url_,
       responseType: 'arraybuffer',
       reponseEncoding: 'binary'
     })
       .then(res => {
         var geometry = new PLYLoader().parse( res.data );
-        geometry.computeVertexNormals()
-        var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-        var mesh = new THREE.Mesh( geometry, material );
-        this.addObject(mesh, res.headers["filename"])
+        if (geometry.index) { 
+          geometry.computeVertexNormals()
+          var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          var mesh = new THREE.Mesh( geometry, material );
+          this.addObject(mesh, res.headers["filename"])
+          this.loadVersions(step, version)
+        } else {
+          var material = new THREE.PointsMaterial( { size: 0.005 } );
+          material.vertexColors = true
+          var mesh = new THREE.Points(geometry, material)
+          this.addObject(mesh, res.headers["filename"])
+          this.loadVersions(step, version)
+        }
       })
       .catch((error) => {
         if (error.response && error.response.status == 404) {
@@ -156,6 +201,9 @@ class Edit extends Component {
               this.setFileStatus(2, id)
             }
           })
+          .catch(()=>{
+            this.setFileStatus(3, id)
+          })
         } else {
           this.setFileStatus(3, id)
         }
@@ -164,7 +212,6 @@ class Edit extends Component {
 
   addObject(object, filename) {
     this.handleRemove()
-    const material = Object.assign({}, object.material)
     if (object.type == 'Group') {
       this.object = object.children[0];
     } else {
@@ -284,17 +331,32 @@ class Edit extends Component {
   }
 
   handleRemove() {
+    this.setState({options: undefined, option_versions: undefined})
     this.transformControls.detach(this.object);
     this.scene.remove(this.object);
     this.scene.remove(this.cropBox);
     if (this.boxHelper) {
       this.scene.remove(this.boxHelper);
     }
-    this.setState({loaded: false, name: '', reconstruct: false});
+    this.setState({loaded: false, name: '', options: undefined});
   }
 
   handleReconstruct() {
-    
+    // todo: use filename instead of id in id field
+    /*
+    var id = document.getElementById('uuid').value
+    axios({
+      method: 'post',
+      url: `/backend/savefile?id=${id}`,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary'
+    })
+      .then(res => {
+        
+      })
+      .catch((error) => {
+        
+      })*/
   }
 
   activateCrop(crop) {
@@ -362,6 +424,30 @@ class Edit extends Component {
   }
 
 
+  getDefaultRefreshOption() {
+    if (!this.state.options) {
+      return ['undefined', 'undefined']
+    }
+    var pc_values = this.state.options.pointcloud
+    var mesh_values = this.state.options.mesh
+    if (mesh_values) {
+      return ['mesh', mesh_values.sort()[mesh_values.length - 1]]
+    } else if (pc_values) {
+      return ['pointcloud', pc_values.sort()[pc_values.length - 1]]
+    }
+    return ['undefined', 'undefined']
+  }
+
+
+  handleSlectedStepChange(step) {
+    if (step == 'mesh') {
+      this.setState({option_versions: this.state.options.mesh})
+    } else {
+      this.setState({option_versions: this.state.options.pointcloud})
+    }
+  }
+
+
   setFileStatus(response, id) {
     const { t } = this.props;
     if (response == 1) {
@@ -370,9 +456,23 @@ class Edit extends Component {
     } else if (response == 2) {
       // In progress
       document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + id + t('edit.warning.progress_2')
-    } else {
+    } else if (response == 3) {
       // 500 error
       document.getElementById('uuid_error').innerHTML = t('edit.warning.error') + id
+    } else if (response == 4) {
+      // reconstraction did not work
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.error') + id
+    } else if (response == 5) {
+      // reconstruction in progress
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id
+    } else if (response == 6) {
+      // Error loading versions
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.versions') + id
+    }
+    if (id in [5]) {
+      document.getElementById('uuid_error').style.color = 'green'
+    } else {
+      document.getElementById('uuid_error').style.color = 'red'
     }
   }
 
@@ -447,6 +547,12 @@ class Edit extends Component {
           <button onClick={() => {this.handleUploadFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
           <br></br>
           <small id="uuid_error" class="edit_warning"></small>
+          {this.state.options &&
+            <div class="edit_options_refresh" id="options">
+              <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value)} value={this.getDefaultRefreshOption()[0]} />
+              <Dropdown options={this.state.option_versions} value={this.getDefaultRefreshOption()[1]} />
+            </div>
+          }
           <br></br>
           <br></br>
           {t('edit.interaction')}

@@ -31,7 +31,12 @@
             "progress_1": "The file with ID ",
             "progress_2": " is getting generated.\nPlease try again later by pressing the refresh button",
             "notfound": "No file found with the ID ",
-            "error": "An error occured while loading the file with ID "
+            "error": "An error occured while loading the file with ID ",
+            "versions": "An error occured while loading the current versions of the file with ID ",
+            "reconstruction": {
+                "error": "An error occured while reconstructing the file with ID ",
+                "progress": "The reconstruction is in progress for the file with ID "
+            }
         }
     },
     "upload": {

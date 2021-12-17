@@ -36,19 +36,31 @@ def task(number: int):
     return decorator
 
 
-def queue_jobs(input_files: Any, user_email, tasks=[1, 2]) -> int:
+def queue_step_1(input_files: Any, user_email) -> int:
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection, default_timeout=18000)
-    if 1 in tasks:
-        j1 = task_queue.enqueue(_structure_from_motion, input_files)
-        j1.meta['mail'] = user_email
-        j1.save_meta()
-    if 2 in tasks:
-        j2 = task_queue.enqueue(_mesh_reconstruction, depends_on=j1)
-        j2.meta['mail'] = user_email
-        j2.save_meta()
+    j1 = task_queue.enqueue(_structure_from_motion, input_files)
+    j1.meta['mail'] = user_email
+    j1.save_meta()
     print(str(Path(input_files[0]).parent.parent), flush=True)
     return str(Path(input_files[0]).parent.parent)
+
+
+def queue_step_1_2(input_files: Any, user_email) -> int:
+    connection = Redis(host="redis")
+    task_queue = Queue(connection=connection, default_timeout=18000)
+    j1 = task_queue.enqueue(_structure_from_motion, input_files)
+    j2 = task_queue.enqueue(_mesh_reconstruction, depends_on=j1)
+    j1.meta['mail'] = user_email
+    j1.save_meta()
+    j2.meta['mail'] = user_email
+    j2.save_meta()
+    return str(Path(input_files[0]).parent.parent)
+
+
+def queue_step_2(id):
+    pass
+    #j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, id)
 
 
 @task(1)
@@ -66,3 +78,12 @@ def _mesh_reconstruction(*args, **kwargs):
     current_job = get_current_job(connection)
     first_job_result = current_job.dependency.result
     return process_clouds(first_job_result)
+
+
+'''
+@task(2)
+def _mesh_reconstruction_without_dependency(*args, **kwargs):
+    connection = Redis(host="redis")
+    current_job = get_current_job(connection)
+    first_job_result = PosixPath("/usr/src/app/data") / id / "step1/output/points.ply"
+    return process_clouds(first_job_result)'''

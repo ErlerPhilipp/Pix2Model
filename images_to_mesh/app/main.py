@@ -2,6 +2,7 @@ from pathlib import Path, PosixPath
 from typing import List
 
 from io import BytesIO
+import glob
 
 from flask import Flask, request, render_template, send_file, abort
 from werkzeug.datastructures import FileStorage
@@ -54,12 +55,31 @@ def file_upload():
         print("user email: ", request.form.get("user_email"), flush=True)
         user_email = request.form.get("user_email")
 
-    steps = [1, 2]
     if "step2" in request.form and not int(request.form.get("step2")):
-        print("step 2 won't be processed...", flush=True)
-        steps = [1]
+        return process_order.queue_step_1(processed_filenames, user_email)
+    else:
+        return process_order.queue_step_1_2(processed_filenames, user_email)
     
-    return process_order.queue_jobs(processed_filenames, user_email, steps)
+
+@app.route("/savefile", methods=["POST"])
+def reconstruct_mesh():
+    i = request.args.get("id")
+    return process_order.queue_step_2(i)
+
+
+@app.route("/versions", methods=["GET"])
+def get_versions():
+    i = request.args.get("id")
+    step1_versions = PosixPath("/usr/src/app/data") / i / "step1/*"
+    step2_versions = PosixPath("/usr/src/app/data") / i / "step2/*"
+    step1_step2_versions = glob.glob(str(step1_versions)) + glob.glob(str(step2_versions))
+    versions = {'pointcloud': [], 'mesh': []}
+    for version in step1_step2_versions:
+        if 'step1' in version:
+            versions.get('pointcloud').append(version.rsplit('/', 1)[1])
+        elif 'step2' in version:
+            versions.get('mesh').append(version.rsplit('/', 1)[1])
+    return versions
 
 
 @app.route("/result")
@@ -68,11 +88,35 @@ def get_result():
     return get_job_status(i)
 
 
-@app.route("/latestfile", methods=["GET"])
-def get_latest_file():
+@app.route("/file", methods=["GET"])
+def get_file():
     i = request.args.get("id")
-    file_step_1: Path = PosixPath("/usr/src/app/data") / i / "step1/output/points.ply"
-    file_step_2: Path = PosixPath("/usr/src/app/data") / i / "step2/output/points_out.ply"
+    step = request.args.get("step")
+    version = request.args.get("version")
+    if step == None or version == None:
+        return get_latest_file(i)
+    if step == 'mesh':
+        file_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output/points_out.ply"
+    else:
+        file_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/points.ply"
+    
+    print("user email: ", request.form.get("user_email"), flush=True)
+    if file_path.is_file():
+        filename = i+'_step'+step+'.ply'
+        with open(file_path, 'rb') as fh:
+            buf = BytesIO(fh.read())
+            buf.seek(0)
+        result = send_file(buf, as_attachment=True, attachment_filename=filename, mimetype='application/octet-stream')
+        result.headers['filename'] = filename
+        return result
+    abort(404)
+
+
+def get_latest_file(i):
+    step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
+    step2_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step2/*"))
+    file_step_1: Path = PosixPath("/usr/src/app/data") / i / "step1" / sorted(step1_versions, reverse=True)[0] / "output/points.ply"
+    file_step_2: Path = PosixPath("/usr/src/app/data") / i / "step2" / sorted(step2_versions, reverse=True)[0] / "output/points_out.ply"
     if file_step_2.is_file():
         filename = i+'_step2.ply'
         with open(file_step_2, 'rb') as fh:
@@ -89,7 +133,6 @@ def get_latest_file():
         result = send_file(buf, as_attachment=True, attachment_filename=filename, mimetype='application/octet-stream')
         result.headers['filename'] = filename
         return result
-    abort(404)
 
 
 def get_job_status(i):

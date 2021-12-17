@@ -27,6 +27,12 @@ button:hover {
     background-color: rgb(225, 255, 255);
 }
 
+.edit_options_refresh  {
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+}
+
 .edit_remove {
     display: block;
     height: 35px;
