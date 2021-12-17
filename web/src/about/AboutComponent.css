@@ -27,7 +27,7 @@
     padding: 20px 30px;
     width: calc(100vw - 60px);
     background-color: rgba(38, 50, 56, 1);
-    overflow: scroll;
+    overflow-y: scroll;
     height: 150px;
     display: flex;
     flex-direction: row;

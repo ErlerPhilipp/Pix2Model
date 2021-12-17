@@ -3,7 +3,7 @@ Images2Mesh Web funded by Netidee
 
 ## Colmap Prerequisites
 
-In order to use Colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project:
+In order to use Colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project, according to the NVIDIA guide https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html:
 
 ```bash
 # Add the package repositories
@@ -13,6 +13,7 @@ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.li
 
 # Install nvidia-container-toolkit
 sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo apt-get install -y nvidia-docker2
 sudo systemctl restart docker
 
 # Check that it worked!
@@ -84,3 +85,8 @@ The first processing step performs a point cloud reconstruction from input image
 
 - A points.ply file containing the point cloud data (XYZ positions and RGB colors of each point)
 - A log.txt file containing the log of the reconstruction
+
+## Testing
+
+Images for testing the application can be found here:
+https://colmap.github.io/datasets.html

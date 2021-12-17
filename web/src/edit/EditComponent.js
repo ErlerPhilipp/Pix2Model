@@ -8,6 +8,10 @@ import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
+import axios from 'axios';
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
 
 import './EditComponent.css';
 
@@ -15,7 +19,7 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}};
+    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}, options: undefined, option_versions: undefined, reconstruct: false};
   }
 
   componentDidMount() {
@@ -23,9 +27,12 @@ class Edit extends Component {
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
     this.scene.background = new THREE.Color(0xfbebc3);
-    const light = new THREE.AmbientLight(0x404040); // soft white light
-    this.scene.add(light);
+    this.light = new THREE.AmbientLight(0x404040); // soft white light
+    this.scene.add(this.light);
     this.mount.appendChild(renderer.domElement);
+
+    const gridHelper = new THREE.GridHelper( 10, 50 );
+    this.scene.add( gridHelper );
 
     var labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
@@ -58,6 +65,12 @@ class Edit extends Component {
           break
         case "s":
           scope.transformControls.setMode("scale")
+          break
+        case "+":
+          scope.light.intensity += 0.5;
+          break
+        case "-":
+          scope.light.intensity -= 0.5;
           break
       }
     })
@@ -93,6 +106,13 @@ class Edit extends Component {
     this.createLabels();
     this.box3 = new THREE.Box3();
     this.size = new THREE.Vector3();
+    // add object when ID in url is set
+    const id = new URLSearchParams(window.location.search).get('id')
+    // for testing : this.setState({options: {'mesh': ['v001', 'v000', 'v059'], 'pointcloud': ['v002', 'v003', 'v059']}, option_versions: ['v001', 'v000', 'v059']})
+    if (id) {
+      document.getElementById('uuid').value = id
+      this.handleUploadFromServer(id)
+    }
   }
 
   buildFileSelector(){
@@ -111,7 +131,87 @@ class Edit extends Component {
     this.loader.loadFiles(this.fileSelector.files);
   }
 
+
+  loadVersions(step = undefined, version = undefined) {
+    var id = document.getElementById('uuid').value
+    axios({
+      method: 'get',
+      url: `/backend/versions?id=${id}`
+    })
+      .then(res => {
+        var versions = []
+        if (res.data.mesh && res.data.mesh.length > 0) {
+          versions = res.data.mesh
+        } else if (res.data.pointclound && res.data.pointclound.length > 0) {
+          versions = res.data.pointclound
+        }
+        this.setState({options: res.data, option_versions: versions})
+        if (step && version) {
+          if (step in this.state.options) {
+            // todo: set the dropdown values
+          }
+        }
+      })
+      .catch((error) => {
+        this.setFileStatus(6, id)
+      })
+  }
+
+
+  handleUploadFromServer() {
+    var id = document.getElementById('uuid').value
+    var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
+    var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
+    var url_ = `/backend/file?id=${id}`
+    if (step && version) {
+      url_ = `/backend/file?id=${id}&step=${step}&version=${version}`
+    }
+    axios({
+      method: 'get',
+      url: url_,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary'
+    })
+      .then(res => {
+        var geometry = new PLYLoader().parse( res.data );
+        if (geometry.index) { 
+          geometry.computeVertexNormals()
+          var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          var mesh = new THREE.Mesh( geometry, material );
+          this.addObject(mesh, res.headers["filename"])
+          this.loadVersions(step, version)
+        } else {
+          var material = new THREE.PointsMaterial( { size: 0.005 } );
+          material.vertexColors = true
+          var mesh = new THREE.Points(geometry, material)
+          this.addObject(mesh, res.headers["filename"])
+          this.loadVersions(step, version)
+        }
+      })
+      .catch((error) => {
+        if (error.response && error.response.status == 404) {
+          axios({
+            method: 'get',
+            url: `/backend/result?id=${id}`
+          })
+          .then(res => {
+            if (res.data.includes('No job')) {
+              this.setFileStatus(1, id)
+            } else {
+              this.setFileStatus(2, id)
+            }
+          })
+          .catch(()=>{
+            this.setFileStatus(3, id)
+          })
+        } else {
+          this.setFileStatus(3, id)
+        }
+      })
+  }
+
   addObject(object, filename) {
+    this.handleRemove()
     if (object.type == 'Group') {
       this.object = object.children[0];
     } else {
@@ -181,12 +281,38 @@ class Edit extends Component {
     this.object = croppedObject;
   }
 
+  cropObjectInverse() {
+    if (!this.object) {
+      return;
+    }
+   
+    this.cropBox.updateMatrix();
+    this.object.updateMatrix();
+    if (!this.object.geometry.attributes.normal) {
+      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
+      this.object.geometry.setAttribute(
+        'normal',
+        new THREE.BufferAttribute(new Float32Array(normals), 3)
+      );
+    }
+    const bspObject = CSG.fromMesh(this.object);
+    const bspBox = CSG.fromMesh(this.cropBox);                        
+    const bspResult = bspBox.intersect(bspObject.inverse());
+    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
+    croppedObject.material = this.object.material;
+    this.scene.add(croppedObject);
+    this.scene.remove(this.object);
+    this.object = croppedObject;
+  }
+
   updateValue(attribute, value) {
-    if (attribute === 'ScaleX') {
+    const { t } = this.props;
+
+    if (attribute === t('edit.scale') + 'X') {
       this.object.scale.x = parseFloat(value)
-    } else if (attribute === 'ScaleY') {
+    } else if (attribute === t('edit.scale') + 'Y') {
       this.object.scale.y = parseFloat(value)
-    } else if (attribute === 'ScaleZ') {
+    } else if (attribute === t('edit.scale') + 'Z') {
       this.object.scale.z = parseFloat(value)
     } else if (attribute === 'TranslationX') {
       this.object.position.x = parseFloat(value)
@@ -205,13 +331,32 @@ class Edit extends Component {
   }
 
   handleRemove() {
+    this.setState({options: undefined, option_versions: undefined})
     this.transformControls.detach(this.object);
     this.scene.remove(this.object);
     this.scene.remove(this.cropBox);
     if (this.boxHelper) {
       this.scene.remove(this.boxHelper);
     }
-    this.setState({loaded: false, name: ''});
+    this.setState({loaded: false, name: '', options: undefined});
+  }
+
+  handleReconstruct() {
+    // todo: use filename instead of id in id field
+    /*
+    var id = document.getElementById('uuid').value
+    axios({
+      method: 'post',
+      url: `/backend/savefile?id=${id}`,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary'
+    })
+      .then(res => {
+        
+      })
+      .catch((error) => {
+        
+      })*/
   }
 
   activateCrop(crop) {
@@ -278,11 +423,62 @@ class Edit extends Component {
     this.zLabel.position.set(0, 0, this.size.z / 2);
   }
 
+
+  getDefaultRefreshOption() {
+    if (!this.state.options) {
+      return ['undefined', 'undefined']
+    }
+    var pc_values = this.state.options.pointcloud
+    var mesh_values = this.state.options.mesh
+    if (mesh_values) {
+      return ['mesh', mesh_values.sort()[mesh_values.length - 1]]
+    } else if (pc_values) {
+      return ['pointcloud', pc_values.sort()[pc_values.length - 1]]
+    }
+    return ['undefined', 'undefined']
+  }
+
+
+  handleSlectedStepChange(step) {
+    if (step == 'mesh') {
+      this.setState({option_versions: this.state.options.mesh})
+    } else {
+      this.setState({option_versions: this.state.options.pointcloud})
+    }
+  }
+
+
+  setFileStatus(response, id) {
+    const { t } = this.props;
+    if (response == 1) {
+      // Not found
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + id
+    } else if (response == 2) {
+      // In progress
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + id + t('edit.warning.progress_2')
+    } else if (response == 3) {
+      // 500 error
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.error') + id
+    } else if (response == 4) {
+      // reconstraction did not work
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.error') + id
+    } else if (response == 5) {
+      // reconstruction in progress
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id
+    } else if (response == 6) {
+      // Error loading versions
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.versions') + id
+    }
+    if (id in [5]) {
+      document.getElementById('uuid_error').style.color = 'green'
+    } else {
+      document.getElementById('uuid_error').style.color = 'red'
+    }
+  }
+
+
   render() {
 
-    this._handleRemove = this.handleRemove.bind(this)
-    this._handleDownload = this.handleDownload.bind(this)
-    this._handleFileSelect = this.handleFileSelect.bind(this)
     const { t } = this.props;
 
     return (
@@ -293,44 +489,72 @@ class Edit extends Component {
             <div class='edit_box'>
               <p>{ this.state.name }</p>
               <hr></hr>
-              <p class="heading_interaction">TRANSFORMATIONS</p>
-              <Attribute name='Scale' editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
+              <p class="heading_interaction">{t('edit.conversion')}</p>
+              {this.state.reconstruct &&
+                <button tooltip="Create reconstructed mesh based on the edited mesh. The edited mesh will be saved" onClick={() => {this.handleReconstruct()}} class="recon_button">{t('edit.reconstruct')}</button>
+              }
+              {!this.state.reconstruct &&
+                <button class="recon_button" disabled>{t('edit.reconstruct')}</button>
+              }
+              <hr></hr>
+              <p class="heading_interaction">{t('edit.transformation')}</p>
+              <Attribute name={t('edit.scale')} editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
               <hr></hr>
-              <p class="heading_interaction">CROP</p>
-              <label class="container">Activate
+              <p class="heading_interaction">{t('edit.crop.crop')}</p>
+              <label class="container">{t('edit.activate')}
                 <input id="crop" type="checkbox" onClick={(event) => {
                   this.activateCrop(event.target.checked);
                 }}/>
                 <span class="checkmark"></span>
               </label>
+              <br></br>
               {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button">Crop</button>
+                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.remove')}</button>
+              }
+              {this.state.crop &&
+                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.keep')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button" disabled>Crop</button>
+                <button class="crop_button spacing" disabled>{t('edit.crop.remove')}</button>
+              }
+              {!this.state.crop &&
+                <button class="crop_button" disabled>{t('edit.crop.keep')}</button>
               }
               <hr></hr>
-              <p class="heading_interaction">MEASUREMENT</p>
-              <label class="container">Activate
+              <p class="heading_interaction">{t('edit.measure')}</p>
+              <label class="container">{t('edit.activate')}
                 <input id="measure" type="checkbox" onClick={(event) => {
                   this.activateMeasurement(event.target.checked);
                 }}/>
                 <span class="checkmark"></span>
               </label>
-              <button onClick={this._handleDownload} class='edit_download'><i class="fa fa-download"></i></button>
-              <button onClick={this._handleRemove} class='edit_remove'><i class="fa fa-remove"></i></button>
+              <button onClick={() => {this.handleDownload()}} class='edit_download'><i class="fa fa-download"></i></button>
+              <button onClick={() => {this.handleRemove()}} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
-          {this._cropValue &&
-            <button onClick={this._handleFileSelect} class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+          {this.state.loaded &&
+            <button class='edit_upload' disabled><i class="fa fa-upload"></i></button>
           }
-          {!this._cropValue &&
-            <button onClick={this._handleFileSelect} class='edit_upload'><i class="fa fa-upload"></i></button>
+          {!this.state.loaded &&
+            <button tooltip="Uploaded files won't be saved on the server" onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
           }
         </div>
         <div class='infobox'>
+          <label for="uuid" class="formfield">ID</label>
+          <input id="uuid" name="uuid" class="formfield_input"></input>
+          <button onClick={() => {this.handleUploadFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          <br></br>
+          <small id="uuid_error" class="edit_warning"></small>
+          {this.state.options &&
+            <div class="edit_options_refresh" id="options">
+              <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value)} value={this.getDefaultRefreshOption()[0]} />
+              <Dropdown options={this.state.option_versions} value={this.getDefaultRefreshOption()[1]} />
+            </div>
+          }
+          <br></br>
+          <br></br>
           {t('edit.interaction')}
         </div>
       </div>

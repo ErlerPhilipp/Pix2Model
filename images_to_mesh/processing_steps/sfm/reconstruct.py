@@ -19,14 +19,14 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     :return: Path to file with reconstruction results
     """
 
-    dataset_path: Path = Path(os.path.join(Path(image_list[0]).parent.parent, 'step1'))
+    dataset_path: Path = Path(os.path.join(Path(image_list[0]).parent.parent, 'step1/v000'))
     os.makedirs(dataset_path)
 
     print(f"Starting reconstruction with colmap for dataset path: {str(dataset_path)}")
 
     # Set up project directory for reconstruction
     database_path = str(dataset_path) + '/database.db'
-    image_path = str(dataset_path.parent) + '/input'
+    image_path = str(dataset_path.parent.parent) + '/input'
     sparse_path = str(dataset_path) + '/sparse'
     dense_path = str(dataset_path) + '/dense'
     output_path = str(dataset_path) + '/output'
