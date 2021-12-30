@@ -8,7 +8,8 @@ from images_to_mesh.processing_steps.erros import ReconstructionError
 def process_clouds(file: str) -> str:
     print(f"Got the following result from job 1:\n{file}", flush=True)
 
-    file = "/usr/src/app/" + file
+    if not "/usr/src/app/" in file:
+        file = "/usr/src/app/" + file
 
     dirname = str(os.path.dirname(file))
     if dirname.find("step1") != -1:
