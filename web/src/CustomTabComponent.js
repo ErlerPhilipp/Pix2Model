@@ -7,10 +7,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Upload from "./upload/UploadComponent"
-import UploadPLY from "./uploadPLY/UploadPLYComponent"
 import About from "./about/AboutComponent"
 import Edit from "./edit/EditComponent";
-import Download from "./download/DownloadComponent";
+
+import './index.css';
 
 
 function CustomTabs() {
@@ -52,13 +52,13 @@ function CustomTabs() {
       }
 
       <SwipeableViews index={index} disabled={true} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
-          <div>
+          <div class='swipable_content'>
               <About></About>
           </div>
-          <div>
+          <div class='swipable_content'>
               <Upload></Upload>
           </div>
-          <div>
+          <div class='swipable_content'>
               <Edit></Edit>
           </div>
       </SwipeableViews>

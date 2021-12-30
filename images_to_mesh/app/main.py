@@ -3,6 +3,8 @@ from typing import List
 
 from io import BytesIO
 import glob
+import re
+import os
 
 from flask import Flask, request, render_template, send_file, abort
 from werkzeug.datastructures import FileStorage
@@ -59,9 +61,21 @@ def file_upload():
         return process_order.queue_step_1(processed_filenames, user_email)
     else:
         return process_order.queue_step_1_2(processed_filenames, user_email)
-    
+
 
 @app.route("/savefile", methods=["POST"])
+def save_file():
+    i = request.args.get("id")
+    step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
+    version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0])
+    new_pointcloud_file_path = str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output/points.ply")
+    os.makedirs(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))
+    file = request.files['file']
+    file.save(new_pointcloud_file_path)
+    return new_pointcloud_file_path
+
+
+@app.route("/reconstructmesh", methods=["POST"])
 def reconstruct_mesh():
     i = request.args.get("id")
     return process_order.queue_step_2(i)
@@ -100,9 +114,8 @@ def get_file():
     else:
         file_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/points.ply"
     
-    print("user email: ", request.form.get("user_email"), flush=True)
     if file_path.is_file():
-        filename = i+'_step'+step+'.ply'
+        filename = i+'_'+step+'.ply'
         with open(file_path, 'rb') as fh:
             buf = BytesIO(fh.read())
             buf.seek(0)
@@ -118,7 +131,7 @@ def get_latest_file(i):
     file_step_1: Path = PosixPath("/usr/src/app/data") / i / "step1" / sorted(step1_versions, reverse=True)[0] / "output/points.ply"
     file_step_2: Path = PosixPath("/usr/src/app/data") / i / "step2" / sorted(step2_versions, reverse=True)[0] / "output/points_out.ply"
     if file_step_2.is_file():
-        filename = i+'_step2.ply'
+        filename = i+'_mesh.ply'
         with open(file_step_2, 'rb') as fh:
             buf = BytesIO(fh.read())
             buf.seek(0)
@@ -126,7 +139,7 @@ def get_latest_file(i):
         result.headers['filename'] = filename
         return result
     if file_step_1.is_file():
-        filename = i+'_step1.ply'
+        filename = i+'_pointcloud.ply'
         with open(file_step_1, 'rb') as fh:
             buf = BytesIO(fh.read())
             buf.seek(0)

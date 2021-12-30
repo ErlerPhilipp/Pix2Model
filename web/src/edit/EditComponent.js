@@ -19,7 +19,19 @@ class Edit extends Component {
   constructor(props) {
     super(props);
     this.scene = new THREE.Scene();
-    this.state = {crop: false, loaded: false, name: '', rotation: {x: 0, y: 0, z: 0}, translation: {x: 0, y: 0, z: 0}, scale: {x: 1, y: 1, z: 1}, options: undefined, option_versions: undefined, reconstruct: false};
+    this.state = {
+      crop: false,
+      loaded: false,
+      name: '',
+      rotation: {x: 0, y: 0, z: 0},
+      translation: {x: 0, y: 0, z: 0},
+      scale: {x: 1, y: 1, z: 1},
+      options: {},
+      option_versions: [],
+      selected_version: '',
+      selected_step: '',
+      reconstruct: false
+    };
   }
 
   componentDidMount() {
@@ -52,7 +64,7 @@ class Edit extends Component {
       controls.enabled = true;
     });
     // transformcontrols
-    this._handleUpdate = this.handleUpdate.bind(this)
+    this._handleUpdate = this.updateTransformation.bind(this)
     this.transformControls.addEventListener('change', this._handleUpdate);
     this.scene.add(this.transformControls);
     window.addEventListener('keydown', function (event) {
@@ -111,27 +123,22 @@ class Edit extends Component {
     // for testing : this.setState({options: {'mesh': ['v001', 'v000', 'v059'], 'pointcloud': ['v002', 'v003', 'v059']}, option_versions: ['v001', 'v000', 'v059']})
     if (id) {
       document.getElementById('uuid').value = id
-      this.handleUploadFromServer(id)
+      this.uploadFileFromServer()
     }
   }
 
-  buildFileSelector(){
-    this.fileSelector = document.createElement('input');
-    this.fileSelector.setAttribute('type', 'file');
-    this.handleUpload_ = this.handleUpload.bind(this);
-    this.fileSelector.addEventListener('change', this.handleUpload_, false);
-  }
-
-  handleFileSelect = (e) => {
-    e.preventDefault();
-    this.fileSelector.click();
-  }
-
-  handleUpload = (event) => {
-    this.loader.loadFiles(this.fileSelector.files);
-  }
-
-
+  /**
+   * SERVER CALL
+   * 
+   * Load the versions of the file that is set in the ID field.
+   * Those versions belong to step1 / pointcloud or to step2 / mesh.
+   * The versions are accessible to the user via the dropdown menu.
+   * If the method is called without params, then the dropdown menu
+   * is set to the latest version that is available on the server-side.
+   * 
+   * @param {string} step 'mesh' | 'pointcloud'
+   * @param {string} version 'vxxx'
+   */
   loadVersions(step = undefined, version = undefined) {
     var id = document.getElementById('uuid').value
     axios({
@@ -139,17 +146,19 @@ class Edit extends Component {
       url: `/backend/versions?id=${id}`
     })
       .then(res => {
-        var versions = []
-        if (res.data.mesh && res.data.mesh.length > 0) {
-          versions = res.data.mesh
-        } else if (res.data.pointclound && res.data.pointclound.length > 0) {
-          versions = res.data.pointclound
-        }
-        this.setState({options: res.data, option_versions: versions})
-        if (step && version) {
-          if (step in this.state.options) {
-            // todo: set the dropdown values
+        this.setState({options: res.data})
+        if (step && version && this.state.options && step in this.state.options && this.state.options[step] && this.state.options[step].includes(version)) {
+          this.setState({option_versions: res.data[step], selected_step: step, selected_version: version})
+        } else {
+          var versions = []
+          if (res.data.mesh && res.data.mesh.length > 0) {
+            versions = res.data.mesh
+            step = 'mesh'
+          } else if (res.data.pointclound && res.data.pointclound.length > 0) {
+            versions = res.data.pointclound
+            step = 'pointclound'
           }
+          this.setState({option_versions: versions, selected_version: versions.sort().reverse()[0], selected_step: step})
         }
       })
       .catch((error) => {
@@ -157,8 +166,12 @@ class Edit extends Component {
       })
   }
 
-
-  handleUploadFromServer() {
+  /**
+   * SERVER CALL
+   * 
+   * Upload a file from the server based on the ID within the ID field
+   */
+  uploadFileFromServer() {
     var id = document.getElementById('uuid').value
     var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
     var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
@@ -174,18 +187,20 @@ class Edit extends Component {
     })
       .then(res => {
         var geometry = new PLYLoader().parse( res.data );
-        if (geometry.index) { 
+        if (geometry.index) {
           geometry.computeVertexNormals()
           var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
           var mesh = new THREE.Mesh( geometry, material );
           this.addObject(mesh, res.headers["filename"])
           this.loadVersions(step, version)
+          this.setState({reconstruct: false})
         } else {
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
           this.addObject(mesh, res.headers["filename"])
           this.loadVersions(step, version)
+          this.setState({reconstruct: true})
         }
       })
       .catch((error) => {
@@ -210,8 +225,55 @@ class Edit extends Component {
       })
   }
 
+  /**
+   * SERVER CALL
+   * 
+   * Reconstruct mesh. This feature is only available,
+   * if the current displayed object is a pointcloud (not a mesh),
+   * which was loaded from the server.
+   * 
+   * The current edit-status of the file is stored with a new version 
+   * on the server and then the server starts the reconstruction of the
+   * pointcloud.
+   */
+  reconstructMesh() {
+    var exporter = new PLYExporter();
+    var formData = new FormData();
+    if (this.object.type == 'Points') {
+      var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+      var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
+      formData.append("file", b)
+    } else {
+      formData.append("file", new Blob( [ exporter.parse( this.object, {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
+    }
+    var id = document.getElementById('uuid').value
+    axios({
+      method: 'post',
+      url: `/backend/savefile?id=${id}`,
+      data : formData,
+      header : {
+        'Content-Type' : 'multipart/form-data'
+      }
+    })
+    .then(res => {
+      axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
+    })
+    .catch((error) => {
+      // todo: set correct status warning
+      this.setFileStatus(3, id)
+    })
+  }
+
+  /**
+   * ADD OBJECT
+   * 
+   * Add a given mesh / pointcloud to the scene
+   * 
+   * @param {THREE.js object} object 
+   * @param {string} filename 
+   */
   addObject(object, filename) {
-    this.handleRemove()
+    this.removeObject()
     if (object.type == 'Group') {
       this.object = object.children[0];
     } else {
@@ -222,17 +284,65 @@ class Edit extends Component {
     this.setState({loaded: true, name: filename});
   }
 
-  createCropBox() {
-    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-    var material = new THREE.MeshBasicMaterial({
-      color: 0xff0000,
-      opacity: 0.5,
-      transparent: true
-    });
-    this.cropBox = new THREE.Mesh( geometry, material );
+  /**
+   * ADD OBJECT
+   * 
+   * Create file selector instance to upload
+   * meshes via the upload button
+   */
+  buildFileSelector(){
+    this.fileSelector = document.createElement('input');
+    this.fileSelector.setAttribute('type', 'file');
+    this.fileSelector.addEventListener('change', () => {this.loader.loadFiles(this.fileSelector.files)}, false);
   }
 
-  handleUpdate() {
+  /**
+   * ADD OBJECT
+   */
+  handleFileSelect = (e) => {
+    e.preventDefault();
+    this.fileSelector.click();
+  }
+
+  /**
+   * REMOVE OBJECT
+   */
+  removeObject() {
+    this.transformControls.detach(this.object);
+    this.scene.remove(this.object);
+    this.scene.remove(this.cropBox);
+    if (this.boxHelper) {
+      this.scene.remove(this.boxHelper);
+    }
+    this.setState({loaded: false, name: '', options: {}, option_versions: [], reconstruct: false});
+  }
+
+  /**
+   * DOWNLOAD OBJECT
+   */
+  downloadObject() {
+    var exporter = new PLYExporter();
+    var link = document.createElement( 'a' );
+    if ( link.href ) {
+      URL.revokeObjectURL( link.href );
+    }
+    if (this.object.type == 'Points') {
+      var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+      var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
+      link.href = URL.createObjectURL(b);
+    } else {
+      link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
+    }
+    link.download = "model.ply";
+    link.dispatchEvent( new MouseEvent( 'click' ) );
+  }
+
+  /**
+   * FEATURE: Transformation
+   * 
+   * Update Transformation via the gizmo / transformcontrols 
+   */
+  updateTransformation() {
     if (!this.object) {
       return;
     }
@@ -246,17 +356,77 @@ class Edit extends Component {
     }
   }
 
-  handleDownload() {
-    var exporter = new PLYExporter();
-    var link = document.createElement( 'a' );
-    if ( link.href ) {
-      URL.revokeObjectURL( link.href );
+  /**
+   * FEATURE: Transformation
+   * 
+   * Update Transformation via the UI numberfield boxes
+   */
+  updateValue(attribute, value) {
+    const { t } = this.props;
+
+    if (attribute === t('edit.scale') + 'X') {
+      this.object.scale.x = parseFloat(value)
+    } else if (attribute === t('edit.scale') + 'Y') {
+      this.object.scale.y = parseFloat(value)
+    } else if (attribute === t('edit.scale') + 'Z') {
+      this.object.scale.z = parseFloat(value)
+    } else if (attribute === 'TranslationX') {
+      this.object.position.x = parseFloat(value)
+    } else if (attribute === 'TranslationY') {
+      this.object.position.y = parseFloat(value)
+    } else if (attribute === 'TranslationZ') {
+      this.object.position.z = parseFloat(value)
+    } else if (attribute === 'RotationX') {
+      this.object.rotation.x = parseFloat(value) * Math.PI / 180
+    } else if (attribute === 'RotationY') {
+      this.object.rotation.y = parseFloat(value) * Math.PI / 180
+    } else if (attribute === 'RotationZ') {
+      this.object.rotation.z = parseFloat(value) * Math.PI / 180
     }
-    link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
-    link.download = "model.ply";
-    link.dispatchEvent( new MouseEvent( 'click' ) );
+    this.updateTransformation();
   }
 
+  /**
+   * FEATURE: Crop
+   * 
+   * Activate the crop feature.
+   * It displays a box that can be transformed by the user. 
+   * The user can then cut away or leave the intersection between
+   * the box and the mesh / pointcloud
+   */
+  activateCrop(crop) {
+    this.setState({crop: crop});
+    if (crop) {
+      this.scene.add(this.cropBox);
+      this.transformControls.detach(this.object);
+      this.transformControls.attach(this.cropBox);
+    } else {
+      this.transformControls.detach(this.cropBox);
+      this.scene.remove(this.cropBox);
+      this.transformControls.attach(this.object);
+    }
+  }
+
+  /**
+   * FEATURE: Crop
+   * 
+   * Create the cropbox, which is used to cut away parts of the displayed mesh / pointcloud
+   */
+  createCropBox() {
+    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    var material = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      opacity: 0.5,
+      transparent: true
+    });
+    this.cropBox = new THREE.Mesh( geometry, material );
+  }
+  
+  /**
+   * FEATURE: Crop
+   * 
+   * Cut away the intersection between the cropbox and the mesh / pointcloud
+   */
   cropObject() {
     if (!this.object) {
       return;
@@ -281,6 +451,12 @@ class Edit extends Component {
     this.object = croppedObject;
   }
 
+  /**
+   * FEATURE: Crop
+   * 
+   * Cut away the intersection everything outside the intersection of
+   * the cropbox and the mesh / pointcloud
+   */
   cropObjectInverse() {
     if (!this.object) {
       return;
@@ -305,73 +481,13 @@ class Edit extends Component {
     this.object = croppedObject;
   }
 
-  updateValue(attribute, value) {
-    const { t } = this.props;
-
-    if (attribute === t('edit.scale') + 'X') {
-      this.object.scale.x = parseFloat(value)
-    } else if (attribute === t('edit.scale') + 'Y') {
-      this.object.scale.y = parseFloat(value)
-    } else if (attribute === t('edit.scale') + 'Z') {
-      this.object.scale.z = parseFloat(value)
-    } else if (attribute === 'TranslationX') {
-      this.object.position.x = parseFloat(value)
-    } else if (attribute === 'TranslationY') {
-      this.object.position.y = parseFloat(value)
-    } else if (attribute === 'TranslationZ') {
-      this.object.position.z = parseFloat(value)
-    } else if (attribute === 'RotationX') {
-      this.object.rotation.x = parseFloat(value) * Math.PI / 180
-    } else if (attribute === 'RotationY') {
-      this.object.rotation.y = parseFloat(value) * Math.PI / 180
-    } else if (attribute === 'RotationZ') {
-      this.object.rotation.z = parseFloat(value) * Math.PI / 180
-    }
-    this.handleUpdate();
-  }
-
-  handleRemove() {
-    this.setState({options: undefined, option_versions: undefined})
-    this.transformControls.detach(this.object);
-    this.scene.remove(this.object);
-    this.scene.remove(this.cropBox);
-    if (this.boxHelper) {
-      this.scene.remove(this.boxHelper);
-    }
-    this.setState({loaded: false, name: '', options: undefined});
-  }
-
-  handleReconstruct() {
-    // todo: use filename instead of id in id field
-    /*
-    var id = document.getElementById('uuid').value
-    axios({
-      method: 'post',
-      url: `/backend/savefile?id=${id}`,
-      responseType: 'arraybuffer',
-      reponseEncoding: 'binary'
-    })
-      .then(res => {
-        
-      })
-      .catch((error) => {
-        
-      })*/
-  }
-
-  activateCrop(crop) {
-    this.setState({crop: crop});
-    if (crop) {
-      this.scene.add(this.cropBox);
-      this.transformControls.detach(this.object);
-      this.transformControls.attach(this.cropBox);
-    } else {
-      this.transformControls.detach(this.cropBox);
-      this.scene.remove(this.cropBox);
-      this.transformControls.attach(this.object);
-    }
-  }
-
+  /**
+   * FEATURE: Measurement
+   * 
+   * Activate the measurement feature.
+   * It displays a boundingbox for the visible mesh / pointcloud and
+   * adds labels with the measurements to the boundingbox
+   */
   activateMeasurement(measure) {
     if (measure) {
       this.boxHelper = new THREE.BoxHelper( this.object, 0x37474F );
@@ -388,6 +504,12 @@ class Edit extends Component {
     }
   }
 
+  /**
+   * FEATURE: Measurement
+   * 
+   * Create labels for the measurements of a mesh / pointcloud
+   * Only visible if the corresponding checkbox is checked 
+   */
   createLabels() {
     this.xDiv = document.createElement( 'div' );
     this.xDiv.className = 'label x';
@@ -405,6 +527,11 @@ class Edit extends Component {
     this.zLabel = new CSS2DObject( this.zDiv );
   }
 
+  /**
+   * FEATURE: Measurement
+   * 
+   * Update labels for the measurements of a mesh / pointcloud
+   */
   updateLabels() {
     if (!this.boxHelper) {
       return;
@@ -423,27 +550,19 @@ class Edit extends Component {
     this.zLabel.position.set(0, 0, this.size.z / 2);
   }
 
-
-  getDefaultRefreshOption() {
-    if (!this.state.options) {
-      return ['undefined', 'undefined']
-    }
-    var pc_values = this.state.options.pointcloud
-    var mesh_values = this.state.options.mesh
-    if (mesh_values) {
-      return ['mesh', mesh_values.sort()[mesh_values.length - 1]]
-    } else if (pc_values) {
-      return ['pointcloud', pc_values.sort()[pc_values.length - 1]]
-    }
-    return ['undefined', 'undefined']
-  }
-
-
+  /**
+   * DROPDOWN
+   * 
+   * Set the versions that are available for a step (step1 / pointcloud or step2 / mesh)
+   * whenever the user toggles the step in the first dropdown box
+   * 
+   * @param {string} step : 'mesh' | 'pointcloud'
+   */
   handleSlectedStepChange(step) {
     if (step == 'mesh') {
-      this.setState({option_versions: this.state.options.mesh})
+      this.setState({option_versions: this.state.options.mesh, selected_version: this.state.options.mesh.sort().reverse()[0]})
     } else {
-      this.setState({option_versions: this.state.options.pointcloud})
+      this.setState({option_versions: this.state.options.pointcloud, selected_version: this.state.options.pointcloud.sort().reverse()[0]})
     }
   }
 
@@ -491,7 +610,7 @@ class Edit extends Component {
               <hr></hr>
               <p class="heading_interaction">{t('edit.conversion')}</p>
               {this.state.reconstruct &&
-                <button tooltip="Create reconstructed mesh based on the edited mesh. The edited mesh will be saved" onClick={() => {this.handleReconstruct()}} class="recon_button">{t('edit.reconstruct')}</button>
+                <button tooltip="Create reconstructed mesh based on the edited mesh. The edited mesh will be saved" onClick={() => {this.reconstructMesh()}} class="recon_button">{t('edit.reconstruct')}</button>
               }
               {!this.state.reconstruct &&
                 <button class="recon_button" disabled>{t('edit.reconstruct')}</button>
@@ -530,8 +649,8 @@ class Edit extends Component {
                 }}/>
                 <span class="checkmark"></span>
               </label>
-              <button onClick={() => {this.handleDownload()}} class='edit_download'><i class="fa fa-download"></i></button>
-              <button onClick={() => {this.handleRemove()}} class='edit_remove'><i class="fa fa-remove"></i></button>
+              <button onClick={() => {this.downloadObject()}} class='edit_download'><i class="fa fa-download"></i></button>
+              <button onClick={() => {this.removeObject()}} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
           {this.state.loaded &&
@@ -544,13 +663,13 @@ class Edit extends Component {
         <div class='infobox'>
           <label for="uuid" class="formfield">ID</label>
           <input id="uuid" name="uuid" class="formfield_input"></input>
-          <button onClick={() => {this.handleUploadFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
           <br></br>
           <small id="uuid_error" class="edit_warning"></small>
-          {this.state.options &&
+          {Object.keys(this.state.options).length !== 0 &&
             <div class="edit_options_refresh" id="options">
-              <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value)} value={this.getDefaultRefreshOption()[0]} />
-              <Dropdown options={this.state.option_versions} value={this.getDefaultRefreshOption()[1]} />
+              <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value.value)} value={this.state.selected_step} />
+              <Dropdown options={this.state.option_versions} value={this.state.selected_version} />
             </div>
           }
           <br></br>

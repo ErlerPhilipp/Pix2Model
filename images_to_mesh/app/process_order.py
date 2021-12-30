@@ -1,3 +1,7 @@
+import glob
+
+from pathlib import PosixPath
+
 from functools import wraps
 from typing import Any
 
@@ -58,9 +62,13 @@ def queue_step_1_2(input_files: Any, user_email) -> int:
     return str(Path(input_files[0]).parent.parent)
 
 
-def queue_step_2(id):
-    pass
-    #j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, id)
+def queue_step_2(iid):
+    connection = Redis(host="redis")
+    task_queue = Queue(connection=connection, default_timeout=18000)
+    step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / iid / "step1/*"))
+    pointcloud_file = str(PosixPath("/usr/src/app/data") / iid / "step1" / sorted(step1_versions, reverse=True)[0] / "output/points.ply")
+    j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, path=pointcloud_file)
+    return pointcloud_file
 
 
 @task(1)
@@ -80,10 +88,8 @@ def _mesh_reconstruction(*args, **kwargs):
     return process_clouds(first_job_result)
 
 
-'''
 @task(2)
 def _mesh_reconstruction_without_dependency(*args, **kwargs):
-    connection = Redis(host="redis")
-    current_job = get_current_job(connection)
-    first_job_result = PosixPath("/usr/src/app/data") / id / "step1/output/points.ply"
-    return process_clouds(first_job_result)'''
+    pointcloud_file = kwargs.get('path')
+    print('pointcloud_file:', pointcloud_file, flush=True)
+    return process_clouds(pointcloud_file)
