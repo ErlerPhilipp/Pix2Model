@@ -30,7 +30,8 @@ class Edit extends Component {
       option_versions: [],
       selected_version: '',
       selected_step: '',
-      reconstruct: false
+      reconstruct: false,
+      loading: false
     };
   }
 
@@ -141,6 +142,7 @@ class Edit extends Component {
    */
   loadVersions(step = undefined, version = undefined) {
     var id = document.getElementById('uuid').value
+    this.setState({loading: true})
     axios({
       method: 'get',
       url: `/backend/versions?id=${id}`
@@ -160,9 +162,12 @@ class Edit extends Component {
           }
           this.setState({option_versions: versions, selected_version: versions.sort().reverse()[0], selected_step: step})
         }
+        this.setState({loading: false})
+        this.setFileStatus(0)
       })
       .catch((error) => {
         this.setFileStatus(6, id)
+        this.setState({loading: false})
       })
   }
 
@@ -179,6 +184,7 @@ class Edit extends Component {
     if (step && version) {
       url_ = `/backend/file?id=${id}&step=${step}&version=${version}`
     }
+    this.setState({loading: true})
     axios({
       method: 'get',
       url: url_,
@@ -222,6 +228,7 @@ class Edit extends Component {
         } else {
           this.setFileStatus(3, id)
         }
+        this.setState({loading: false})
       })
   }
 
@@ -247,6 +254,7 @@ class Edit extends Component {
       formData.append("file", new Blob( [ exporter.parse( this.object, {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
     }
     var id = document.getElementById('uuid').value
+    this.setState({loading: true})
     axios({
       method: 'post',
       url: `/backend/savefile?id=${id}`,
@@ -257,10 +265,12 @@ class Edit extends Component {
     })
     .then(res => {
       axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
+      this.setState({loading: false})
+      this.setFileStatus(5, id)
     })
     .catch((error) => {
-      // todo: set correct status warning
-      this.setFileStatus(3, id)
+      this.setFileStatus(4, id)
+      this.setState({loading: false})
     })
   }
 
@@ -425,7 +435,7 @@ class Edit extends Component {
   /**
    * FEATURE: Crop
    * 
-   * Cut away the intersection between the cropbox and the mesh / pointcloud
+   * Keep the intersection between the cropbox and the mesh / pointcloud and cut away everything else
    */
   cropObject() {
     if (!this.object) {
@@ -454,8 +464,7 @@ class Edit extends Component {
   /**
    * FEATURE: Crop
    * 
-   * Cut away the intersection everything outside the intersection of
-   * the cropbox and the mesh / pointcloud
+   * Cut away the intersection between the cropbox and the mesh / pointcloud
    */
   cropObjectInverse() {
     if (!this.object) {
@@ -567,9 +576,12 @@ class Edit extends Component {
   }
 
 
-  setFileStatus(response, id) {
+  setFileStatus(response, id=undefined) {
     const { t } = this.props;
-    if (response == 1) {
+    if (response == 0) {
+      // Remove warning
+      document.getElementById('uuid_error').innerHTML = ''
+    } else if (response == 1) {
       // Not found
       document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + id
     } else if (response == 2) {
@@ -583,7 +595,7 @@ class Edit extends Component {
       document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.error') + id
     } else if (response == 5) {
       // reconstruction in progress
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id + '.\n' + t('edit.warning.reconstruction.progress_2')
     } else if (response == 6) {
       // Error loading versions
       document.getElementById('uuid_error').innerHTML = t('edit.warning.versions') + id
@@ -630,16 +642,16 @@ class Edit extends Component {
               </label>
               <br></br>
               {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.remove')}</button>
+                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
               }
               {this.state.crop &&
-                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.keep')}</button>
+                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.remove')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button spacing" disabled>{t('edit.crop.remove')}</button>
+                <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button" disabled>{t('edit.crop.keep')}</button>
+                <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
               }
               <hr></hr>
               <p class="heading_interaction">{t('edit.measure')}</p>
@@ -663,7 +675,12 @@ class Edit extends Component {
         <div class='infobox'>
           <label for="uuid" class="formfield">ID</label>
           <input id="uuid" name="uuid" class="formfield_input"></input>
-          <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          {!this.state.loading &&
+            <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          }
+          {this.state.loading &&
+            <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh loading'><i class="fa fa-refresh"></i></button>
+          }
           <br></br>
           <small id="uuid_error" class="edit_warning"></small>
           {Object.keys(this.state.options).length !== 0 &&

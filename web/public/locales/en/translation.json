@@ -35,7 +35,8 @@
             "versions": "An error occured while loading the current versions of the file with ID ",
             "reconstruction": {
                 "error": "An error occured while reconstructing the file with ID ",
-                "progress": "The reconstruction is in progress for the file with ID "
+                "progress": "The reconstruction is in progress for the file with ID ",
+                "progress_2": "Reload the mesh in a couple of minutes to load the newest versions"
             }
         }
     },

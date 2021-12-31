@@ -35,7 +35,8 @@
             "versions": "Ein Fehler ist aufgetreten beim Laden der Versionen der Datei mit ID ",
             "reconstruction": {
                 "error": "Ein Fehler ist aufgetreten bei der Rekonstruktion der Datei mit ID ",
-                "progress": "Die Rekonstruktion wurde erfolgreich begonnen für die Datei mit ID "
+                "progress": "Die Rekonstruktion wurde erfolgreich begonnen für die Datei mit ID ",
+                "progress_2": "Laden Sie in ein paar Minuten das Modell neu, um die neusten Versionen zu sehen"
             }
         }
     },
