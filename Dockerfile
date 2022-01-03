@@ -14,7 +14,9 @@ RUN pipenv install --dev
 
 COPY . .
 
-RUN mkdir data
+RUN if ! test -d data; then \
+      mkdir data; \
+    fi
 
 ENV PYTHONPATH "/usr/src/app"
 ENV FLASK_APP "images_to_mesh.app.main"
