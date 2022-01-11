@@ -51,6 +51,8 @@
             "drop": "Drop files here to upload",
             "support": "Supports "
         },
-        "submit": "Submit files"
+        "submit": "Submit files",
+        "new": "New Reconstruction",
+        "reset": "Reset"
     }
 }

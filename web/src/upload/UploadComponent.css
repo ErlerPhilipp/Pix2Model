@@ -44,10 +44,6 @@
     right: calc((100vw / 2) - 300px);
 }
 
-#submit_upload {
-    margin-top: 2rem;
-}
-
 #response_field {
     margin-top: 1rem;
     display: block;
@@ -55,4 +51,10 @@
 
 .hint {
     color: 	#808080;
+}
+
+.edit_buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
 }
