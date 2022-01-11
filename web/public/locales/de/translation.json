@@ -51,6 +51,8 @@
             "drop": "Dateien zum Hochladen hier ablegen",
             "support": "Unterstützt "
         },
-        "submit": "Dateien übertragen"
+        "submit": "Dateien übertragen",
+        "new": "Neue Rekonstruktion",
+        "reset": "Zurücksetzen"
     }
 }
