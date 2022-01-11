@@ -7,14 +7,14 @@
 }
 
 .text {
-    width: calc(100vw - 220px);
-    margin-left: 30px;
+    width: calc(100vw - 120px);
     margin-top: 45px;
     padding: 20px 30px;
     border-radius: 5px;
-    overflow: scroll;
-    height: calc(100vh - 400px);
+    overflow-y: scroll;
+    height: calc(100vh - 100px);
     text-align: justify;
+    overflow-x: hidden;
 }
 
 .subheading {
@@ -24,16 +24,10 @@
 }
 
 .team {
-    padding: 20px 30px;
-    width: calc(100vw - 60px);
-    background-color: rgba(38, 50, 56, 1);
-    overflow-y: scroll;
-    height: 150px;
+    overflow-x: scroll;
+    overflow-y: hidden;
     display: flex;
     flex-direction: row;
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
 }
 
 .team_member {
@@ -41,13 +35,13 @@
 }
 
 .team_member_description {
-    color: white;
+    color: black;
 }
 
 .team_images {
     max-width: 100%;
     max-height: 100px;
-    border: 1px solid white;
+    border: 1px solid black;
 }
 
 .seperator {

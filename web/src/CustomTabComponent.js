@@ -38,28 +38,22 @@ function CustomTabs() {
           fullWidth
           onChange={handleChange}
           TabIndicatorProps={{style: {backgroundColor: "white"}}}>
-          <Tab icon={<HomeIcon />}/>
           <Tab label="Image-2-Mesh"/>
           <Tab label={t('menu.edit')}/>
+          <Tab icon={t('menu.about')}/>
       </Tabs>
       <button class='lang en' onClick={() => handleChangeLang('en')}>EN</button>
       <button class='lang de' onClick={() => handleChangeLang('de')}>DE</button>
-      {(index > 0 && index < 2) &&
-        <button class='previous' onClick={() => setIndex(index - 1)}><i class="arrow embedded-left"></i></button>
-      }
-      {index < 2 &&
-        <button class='next' onClick={() => setIndex(index + 1)}><i class="arrow embedded-right"></i></button>
-      }
 
       <SwipeableViews index={index} disabled={true} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
-          <div class='swipable_content'>
-              <About></About>
-          </div>
           <div class='swipable_content'>
               <Upload></Upload>
           </div>
           <div class='swipable_content'>
               <Edit></Edit>
+          </div>
+          <div class='swipable_content'>
+              <About></About>
           </div>
       </SwipeableViews>
       </div>
