@@ -435,59 +435,84 @@ class Edit extends Component {
   /**
    * FEATURE: Crop
    * 
-   * Keep the intersection between the cropbox and the mesh / pointcloud and cut away everything else
+   * Cut the intersection between the cropbox and the mesh / pointcloud
    */
   cropObject() {
     if (!this.object) {
       return;
     }
-   
+    console.log('loading')
+    this.setState({loading: true})
+    this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
+    this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
+    this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
     this.object.updateMatrix();
-    if (!this.object.geometry.attributes.normal) {
-      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
-      this.object.geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(normals), 3)
-      );
+    var points = false
+    var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+    var material_points = new THREE.PointsMaterial( { size: 0.005 } );
+    if (this.object.type == 'Points') {
+      points = true
+      this.object = new THREE.Mesh(this.object.geometry, material_mesh)
     }
     const bspObject = CSG.fromMesh(this.object);
     const bspBox = CSG.fromMesh(this.cropBox);                        
     const bspResult = bspBox.inverse().intersect(bspObject.inverse());
     const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    croppedObject.material = this.object.material;
+    if (points) {
+      material_points.vertexColors = true
+      croppedObject = new THREE.Points(croppedObject.geometry, material_points)
+    } else {
+      croppedObject.geometry.computeVertexNormals()
+      croppedObject.material = material_mesh;
+    }
     this.scene.add(croppedObject);
     this.scene.remove(this.object);
     this.object = croppedObject;
+    this.setState({loading: false})
+    console.log('not loading')
   }
 
   /**
    * FEATURE: Crop
    * 
-   * Cut away the intersection between the cropbox and the mesh / pointcloud
+   * Keep the intersection between the cropbox and the mesh / pointcloud and cut away everything else
    */
   cropObjectInverse() {
     if (!this.object) {
       return;
     }
-   
+    console.log('loading')
+    this.setState({loading: true})
+    this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
+    this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
+    this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
+    console.log(this.cropBox)
     this.object.updateMatrix();
-    if (!this.object.geometry.attributes.normal) {
-      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
-      this.object.geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(normals), 3)
-      );
+    var points = false
+    var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+    var material_points = new THREE.PointsMaterial( { size: 0.005 } );
+    if (this.object.type == 'Points') {
+      points = true
+      this.object = new THREE.Mesh(this.object.geometry, material_mesh)
     }
     const bspObject = CSG.fromMesh(this.object);
     const bspBox = CSG.fromMesh(this.cropBox);                        
     const bspResult = bspBox.intersect(bspObject.inverse());
     const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    croppedObject.material = this.object.material;
+    if (points) {
+      material_points.vertexColors = true
+      croppedObject = new THREE.Points(croppedObject.geometry, material_points)
+    } else {
+      croppedObject.geometry.computeVertexNormals()
+      croppedObject.material = material_mesh;
+    }
     this.scene.add(croppedObject);
     this.scene.remove(this.object);
     this.object = croppedObject;
+    this.setState({loading: false})
+    console.log('not loading')
   }
 
   /**
@@ -642,10 +667,10 @@ class Edit extends Component {
               </label>
               <br></br>
               {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
+                <button onClick={() => {this.cropObjectInverse()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
               }
               {this.state.crop &&
-                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.remove')}</button>
+                <button onClick={() => {this.cropObject()}} class="crop_button">{t('edit.crop.remove')}</button>
               }
               {!this.state.crop &&
                 <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
