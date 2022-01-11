@@ -30,7 +30,8 @@ class Edit extends Component {
       option_versions: [],
       selected_version: '',
       selected_step: '',
-      reconstruct: false
+      reconstruct: false,
+      loading: false
     };
   }
 
@@ -141,6 +142,7 @@ class Edit extends Component {
    */
   loadVersions(step = undefined, version = undefined) {
     var id = document.getElementById('uuid').value
+    this.setState({loading: true})
     axios({
       method: 'get',
       url: `/backend/versions?id=${id}`
@@ -160,9 +162,12 @@ class Edit extends Component {
           }
           this.setState({option_versions: versions, selected_version: versions.sort().reverse()[0], selected_step: step})
         }
+        this.setState({loading: false})
+        this.setFileStatus(0)
       })
       .catch((error) => {
         this.setFileStatus(6, id)
+        this.setState({loading: false})
       })
   }
 
@@ -179,6 +184,7 @@ class Edit extends Component {
     if (step && version) {
       url_ = `/backend/file?id=${id}&step=${step}&version=${version}`
     }
+    this.setState({loading: true})
     axios({
       method: 'get',
       url: url_,
@@ -222,6 +228,7 @@ class Edit extends Component {
         } else {
           this.setFileStatus(3, id)
         }
+        this.setState({loading: false})
       })
   }
 
@@ -247,6 +254,7 @@ class Edit extends Component {
       formData.append("file", new Blob( [ exporter.parse( this.object, {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
     }
     var id = document.getElementById('uuid').value
+    this.setState({loading: true})
     axios({
       method: 'post',
       url: `/backend/savefile?id=${id}`,
@@ -257,10 +265,12 @@ class Edit extends Component {
     })
     .then(res => {
       axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
+      this.setState({loading: false})
+      this.setFileStatus(5, id)
     })
     .catch((error) => {
-      // todo: set correct status warning
-      this.setFileStatus(3, id)
+      this.setFileStatus(4, id)
+      this.setState({loading: false})
     })
   }
 
@@ -413,7 +423,7 @@ class Edit extends Component {
    * Create the cropbox, which is used to cut away parts of the displayed mesh / pointcloud
    */
   createCropBox() {
-    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = new THREE.MeshBasicMaterial({
       color: 0xff0000,
       opacity: 0.5,
@@ -425,60 +435,139 @@ class Edit extends Component {
   /**
    * FEATURE: Crop
    * 
-   * Cut away the intersection between the cropbox and the mesh / pointcloud
+   * Cut the intersection between the cropbox and the mesh / pointcloud
    */
   cropObject() {
     if (!this.object) {
       return;
     }
-   
+    this.setState({loading: true})
+    this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
+    this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
+    this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
-    this.object.updateMatrix();
-    if (!this.object.geometry.attributes.normal) {
-      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
-      this.object.geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(normals), 3)
-      );
+    var croppedObject
+    const that = this
+    setTimeout(function() {
+      try {
+        if (that.object.type == 'Points') {
+          croppedObject = that.removePointsInsideBox(that)
+        } else {
+          that.object.updateMatrix();
+          var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          const bspObject = CSG.fromMesh(that.object);
+          const bspBox = CSG.fromMesh(that.cropBox);                        
+          const bspResult = bspBox.inverse().intersect(bspObject.inverse());
+          croppedObject = CSG.toMesh(bspResult, that.object.matrix);
+          croppedObject.geometry.computeVertexNormals()
+          croppedObject.material = material_mesh;
+        }
+        that.scene.add(croppedObject);
+        that.scene.remove(that.object);
+        that.object = croppedObject;
+        that.setState({loading: false})
+      } catch (error) {
+        that.setState({loading: false})
+        // set status message
+      }
+    }, 100);
+  }
+
+  removePointsInsideBox(that) {
+    var geometry = new THREE.BufferGeometry();
+    that.cropBox.updateMatrix()
+    const dx = new THREE.Vector3(that.cropBox.normalMatrix.elements[0], that.cropBox.normalMatrix.elements[1], that.cropBox.normalMatrix.elements[2]).normalize()
+    const dy = new THREE.Vector3(that.cropBox.normalMatrix.elements[3], that.cropBox.normalMatrix.elements[4], that.cropBox.normalMatrix.elements[5]).normalize()
+    const dz = new THREE.Vector3(that.cropBox.normalMatrix.elements[6], that.cropBox.normalMatrix.elements[7], that.cropBox.normalMatrix.elements[8]).normalize()
+    var positions = that.object.geometry.attributes.position.array
+    var updatedPositions = []
+    var colors = that.object.geometry.attributes.color.array
+    var updatedColors = []
+    var normals = that.object.geometry.attributes.normal.array
+    var updatedNormals = []
+    for (var i = 0; i < positions.length; i += 3) {
+      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(that.cropBox.position);
+      if (!(Math.abs(d.dot(dx)) <= (that.cropBox.scale.x / 2) && Math.abs(d.dot(dy)) <= (that.cropBox.scale.y / 2) && Math.abs(d.dot(dz)) <= (that.cropBox.scale.z / 2))) {
+        updatedPositions.push(positions[i], positions[i+1], positions[i+2])
+        updatedColors.push(colors[i], colors[i+1], colors[i+2])
+        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+      }
     }
-    const bspObject = CSG.fromMesh(this.object);
-    const bspBox = CSG.fromMesh(this.cropBox);                        
-    const bspResult = bspBox.inverse().intersect(bspObject.inverse());
-    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    croppedObject.material = this.object.material;
-    this.scene.add(croppedObject);
-    this.scene.remove(this.object);
-    this.object = croppedObject;
+    geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));
+    var material = new THREE.PointsMaterial( { size: 0.005 } );
+		material.vertexColors = true
+    return new THREE.Points(geometry, material);
   }
 
   /**
    * FEATURE: Crop
    * 
-   * Cut away the intersection everything outside the intersection of
-   * the cropbox and the mesh / pointcloud
+   * Keep the intersection between the cropbox and the mesh / pointcloud and cut away everything else
    */
   cropObjectInverse() {
     if (!this.object) {
       return;
     }
-   
+    this.setState({loading: true})
+    this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
+    this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
+    this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
-    this.object.updateMatrix();
-    if (!this.object.geometry.attributes.normal) {
-      const normals = new Array(this.object.geometry.attributes.position.len).fill([0, 0, 0]);
-      this.object.geometry.setAttribute(
-        'normal',
-        new THREE.BufferAttribute(new Float32Array(normals), 3)
-      );
+    var croppedObject
+    const that = this
+    setTimeout(function() {
+      try {
+        if (that.object.type == 'Points') {
+          croppedObject = that.keepPointsInsideBox(that)
+        } else {
+          that.object.updateMatrix();
+          var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          const bspObject = CSG.fromMesh(that.object);
+          const bspBox = CSG.fromMesh(that.cropBox);                        
+          const bspResult = bspBox.intersect(bspObject.inverse());
+          croppedObject = CSG.toMesh(bspResult, that.object.matrix);
+          croppedObject.geometry.computeVertexNormals()
+          croppedObject.material = material_mesh;
+        }
+        that.scene.add(croppedObject);
+        that.scene.remove(that.object);
+        that.object = croppedObject;
+        that.setState({loading: false})
+      } catch (error) {
+        that.setState({loading: false})
+        // set status message
+      }
+    }, 100);
+  }
+
+  keepPointsInsideBox(that) {
+    var geometry = new THREE.BufferGeometry();
+    that.cropBox.updateMatrix()
+    const dx = new THREE.Vector3(that.cropBox.normalMatrix.elements[0], that.cropBox.normalMatrix.elements[1], that.cropBox.normalMatrix.elements[2]).normalize()
+    const dy = new THREE.Vector3(that.cropBox.normalMatrix.elements[3], that.cropBox.normalMatrix.elements[4], that.cropBox.normalMatrix.elements[5]).normalize()
+    const dz = new THREE.Vector3(that.cropBox.normalMatrix.elements[6], that.cropBox.normalMatrix.elements[7], that.cropBox.normalMatrix.elements[8]).normalize()
+    var positions = that.object.geometry.attributes.position.array
+    var updatedPositions = []
+    var colors = that.object.geometry.attributes.color.array
+    var updatedColors = []
+    var normals = that.object.geometry.attributes.normal.array
+    var updatedNormals = []
+    for (var i = 0; i < positions.length; i += 3) {
+      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(that.cropBox.position);
+      if (Math.abs(d.dot(dx)) <= (that.cropBox.scale.x / 2) && Math.abs(d.dot(dy)) <= (that.cropBox.scale.y / 2) && Math.abs(d.dot(dz)) <= (that.cropBox.scale.z / 2)) {
+        updatedPositions.push(positions[i], positions[i+1], positions[i+2])
+        updatedColors.push(colors[i], colors[i+1], colors[i+2])
+        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+      }
     }
-    const bspObject = CSG.fromMesh(this.object);
-    const bspBox = CSG.fromMesh(this.cropBox);                        
-    const bspResult = bspBox.intersect(bspObject.inverse());
-    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    croppedObject.material = this.object.material;
-    this.scene.add(croppedObject);
-    this.scene.remove(this.object);
-    this.object = croppedObject;
+    geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));
+    var material = new THREE.PointsMaterial( { size: 0.005 } );
+		material.vertexColors = true
+    return new THREE.Points(geometry, material);
   }
 
   /**
@@ -567,9 +656,12 @@ class Edit extends Component {
   }
 
 
-  setFileStatus(response, id) {
+  setFileStatus(response, id=undefined) {
     const { t } = this.props;
-    if (response == 1) {
+    if (response == 0) {
+      // Remove warning
+      document.getElementById('uuid_error').innerHTML = ''
+    } else if (response == 1) {
       // Not found
       document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + id
     } else if (response == 2) {
@@ -583,7 +675,7 @@ class Edit extends Component {
       document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.error') + id
     } else if (response == 5) {
       // reconstruction in progress
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id
+      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id + '.\n' + t('edit.warning.reconstruction.progress_2')
     } else if (response == 6) {
       // Error loading versions
       document.getElementById('uuid_error').innerHTML = t('edit.warning.versions') + id
@@ -630,16 +722,16 @@ class Edit extends Component {
               </label>
               <br></br>
               {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button spacing">{t('edit.crop.remove')}</button>
+                <button onClick={() => {this.cropObjectInverse()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
               }
               {this.state.crop &&
-                <button onClick={() => {this.cropObjectInverse()}} class="crop_button">{t('edit.crop.keep')}</button>
+                <button onClick={() => {this.cropObject()}} class="crop_button">{t('edit.crop.remove')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button spacing" disabled>{t('edit.crop.remove')}</button>
+                <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
               }
               {!this.state.crop &&
-                <button class="crop_button" disabled>{t('edit.crop.keep')}</button>
+                <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
               }
               <hr></hr>
               <p class="heading_interaction">{t('edit.measure')}</p>
@@ -663,7 +755,12 @@ class Edit extends Component {
         <div class='infobox'>
           <label for="uuid" class="formfield">ID</label>
           <input id="uuid" name="uuid" class="formfield_input"></input>
-          <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          {!this.state.loading &&
+            <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+          }
+          {this.state.loading &&
+            <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh loading'><i class="fa fa-refresh"></i></button>
+          }
           <br></br>
           <small id="uuid_error" class="edit_warning"></small>
           {Object.keys(this.state.options).length !== 0 &&
