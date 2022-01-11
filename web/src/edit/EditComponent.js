@@ -423,7 +423,7 @@ class Edit extends Component {
    * Create the cropbox, which is used to cut away parts of the displayed mesh / pointcloud
    */
   createCropBox() {
-    var geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = new THREE.MeshBasicMaterial({
       color: 0xff0000,
       opacity: 0.5,
@@ -441,36 +441,64 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    console.log('loading')
     this.setState({loading: true})
     this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
     this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
     this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
-    this.object.updateMatrix();
-    var points = false
-    var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-    var material_points = new THREE.PointsMaterial( { size: 0.005 } );
-    if (this.object.type == 'Points') {
-      points = true
-      this.object = new THREE.Mesh(this.object.geometry, material_mesh)
+    var croppedObject
+    const that = this
+    setTimeout(function() {
+      try {
+        if (that.object.type == 'Points') {
+          croppedObject = that.removePointsInsideBox(that)
+        } else {
+          that.object.updateMatrix();
+          var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          const bspObject = CSG.fromMesh(that.object);
+          const bspBox = CSG.fromMesh(that.cropBox);                        
+          const bspResult = bspBox.inverse().intersect(bspObject.inverse());
+          croppedObject = CSG.toMesh(bspResult, that.object.matrix);
+          croppedObject.geometry.computeVertexNormals()
+          croppedObject.material = material_mesh;
+        }
+        that.scene.add(croppedObject);
+        that.scene.remove(that.object);
+        that.object = croppedObject;
+        that.setState({loading: false})
+      } catch (error) {
+        that.setState({loading: false})
+        // set status message
+      }
+    }, 100);
+  }
+
+  removePointsInsideBox(that) {
+    var geometry = new THREE.BufferGeometry();
+    that.cropBox.updateMatrix()
+    const dx = new THREE.Vector3(that.cropBox.normalMatrix.elements[0], that.cropBox.normalMatrix.elements[1], that.cropBox.normalMatrix.elements[2]).normalize()
+    const dy = new THREE.Vector3(that.cropBox.normalMatrix.elements[3], that.cropBox.normalMatrix.elements[4], that.cropBox.normalMatrix.elements[5]).normalize()
+    const dz = new THREE.Vector3(that.cropBox.normalMatrix.elements[6], that.cropBox.normalMatrix.elements[7], that.cropBox.normalMatrix.elements[8]).normalize()
+    var positions = that.object.geometry.attributes.position.array
+    var updatedPositions = []
+    var colors = that.object.geometry.attributes.color.array
+    var updatedColors = []
+    var normals = that.object.geometry.attributes.normal.array
+    var updatedNormals = []
+    for (var i = 0; i < positions.length; i += 3) {
+      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(that.cropBox.position);
+      if (!(Math.abs(d.dot(dx)) <= (that.cropBox.scale.x / 2) && Math.abs(d.dot(dy)) <= (that.cropBox.scale.y / 2) && Math.abs(d.dot(dz)) <= (that.cropBox.scale.z / 2))) {
+        updatedPositions.push(positions[i], positions[i+1], positions[i+2])
+        updatedColors.push(colors[i], colors[i+1], colors[i+2])
+        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+      }
     }
-    const bspObject = CSG.fromMesh(this.object);
-    const bspBox = CSG.fromMesh(this.cropBox);                        
-    const bspResult = bspBox.inverse().intersect(bspObject.inverse());
-    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    if (points) {
-      material_points.vertexColors = true
-      croppedObject = new THREE.Points(croppedObject.geometry, material_points)
-    } else {
-      croppedObject.geometry.computeVertexNormals()
-      croppedObject.material = material_mesh;
-    }
-    this.scene.add(croppedObject);
-    this.scene.remove(this.object);
-    this.object = croppedObject;
-    this.setState({loading: false})
-    console.log('not loading')
+    geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));
+    var material = new THREE.PointsMaterial( { size: 0.005 } );
+		material.vertexColors = true
+    return new THREE.Points(geometry, material);
   }
 
   /**
@@ -482,37 +510,64 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    console.log('loading')
     this.setState({loading: true})
     this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
     this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
     this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
-    console.log(this.cropBox)
-    this.object.updateMatrix();
-    var points = false
-    var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-    var material_points = new THREE.PointsMaterial( { size: 0.005 } );
-    if (this.object.type == 'Points') {
-      points = true
-      this.object = new THREE.Mesh(this.object.geometry, material_mesh)
+    var croppedObject
+    const that = this
+    setTimeout(function() {
+      try {
+        if (that.object.type == 'Points') {
+          croppedObject = that.keepPointsInsideBox(that)
+        } else {
+          that.object.updateMatrix();
+          var material_mesh = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          const bspObject = CSG.fromMesh(that.object);
+          const bspBox = CSG.fromMesh(that.cropBox);                        
+          const bspResult = bspBox.intersect(bspObject.inverse());
+          croppedObject = CSG.toMesh(bspResult, that.object.matrix);
+          croppedObject.geometry.computeVertexNormals()
+          croppedObject.material = material_mesh;
+        }
+        that.scene.add(croppedObject);
+        that.scene.remove(that.object);
+        that.object = croppedObject;
+        that.setState({loading: false})
+      } catch (error) {
+        that.setState({loading: false})
+        // set status message
+      }
+    }, 100);
+  }
+
+  keepPointsInsideBox(that) {
+    var geometry = new THREE.BufferGeometry();
+    that.cropBox.updateMatrix()
+    const dx = new THREE.Vector3(that.cropBox.normalMatrix.elements[0], that.cropBox.normalMatrix.elements[1], that.cropBox.normalMatrix.elements[2]).normalize()
+    const dy = new THREE.Vector3(that.cropBox.normalMatrix.elements[3], that.cropBox.normalMatrix.elements[4], that.cropBox.normalMatrix.elements[5]).normalize()
+    const dz = new THREE.Vector3(that.cropBox.normalMatrix.elements[6], that.cropBox.normalMatrix.elements[7], that.cropBox.normalMatrix.elements[8]).normalize()
+    var positions = that.object.geometry.attributes.position.array
+    var updatedPositions = []
+    var colors = that.object.geometry.attributes.color.array
+    var updatedColors = []
+    var normals = that.object.geometry.attributes.normal.array
+    var updatedNormals = []
+    for (var i = 0; i < positions.length; i += 3) {
+      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(that.cropBox.position);
+      if (Math.abs(d.dot(dx)) <= (that.cropBox.scale.x / 2) && Math.abs(d.dot(dy)) <= (that.cropBox.scale.y / 2) && Math.abs(d.dot(dz)) <= (that.cropBox.scale.z / 2)) {
+        updatedPositions.push(positions[i], positions[i+1], positions[i+2])
+        updatedColors.push(colors[i], colors[i+1], colors[i+2])
+        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+      }
     }
-    const bspObject = CSG.fromMesh(this.object);
-    const bspBox = CSG.fromMesh(this.cropBox);                        
-    const bspResult = bspBox.intersect(bspObject.inverse());
-    const croppedObject = CSG.toMesh(bspResult, this.object.matrix);
-    if (points) {
-      material_points.vertexColors = true
-      croppedObject = new THREE.Points(croppedObject.geometry, material_points)
-    } else {
-      croppedObject.geometry.computeVertexNormals()
-      croppedObject.material = material_mesh;
-    }
-    this.scene.add(croppedObject);
-    this.scene.remove(this.object);
-    this.object = croppedObject;
-    this.setState({loading: false})
-    console.log('not loading')
+    geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));
+    var material = new THREE.PointsMaterial( { size: 0.005 } );
+		material.vertexColors = true
+    return new THREE.Points(geometry, material);
   }
 
   /**
