@@ -72,7 +72,7 @@ code {
   width: 400px;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
   margin-bottom: 80px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   height: calc(100vh - 200px);
 }
