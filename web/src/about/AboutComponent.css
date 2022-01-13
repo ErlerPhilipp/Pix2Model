@@ -11,10 +11,7 @@
     margin-top: 45px;
     padding: 20px 30px;
     border-radius: 5px;
-    overflow-y: scroll;
-    height: calc(100vh - 100px);
     text-align: justify;
-    overflow-x: hidden;
 }
 
 .subheading {
@@ -24,7 +21,7 @@
 }
 
 .team {
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: hidden;
     display: flex;
     flex-direction: row;

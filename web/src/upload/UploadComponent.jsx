@@ -18,6 +18,7 @@ class Upload extends Component {
   init() {
     const that = this
     setTimeout(function() {
+      const { t } = that.props;
       var dropzoneOptions = {
         paramName: "file",
         autoProcessQueue: false,
@@ -43,9 +44,15 @@ class Upload extends Component {
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
           that.setState({success: true})
           submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field").innerHTML = `Upload successful!\nJob created with id:<br/><a href="/backend/result?id=${response}">${response}</a>`;
+          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}">${window.location.href}?id=${response.replace('data/','')}</a>`;
       });
     }, 0);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.t !== prevProps.t && this.dropzone) {
+      // change the default dict for the dropdown
+    }
   }
 
   componentDidMount() {
@@ -92,7 +99,7 @@ class Upload extends Component {
             </div>
             <hr></hr>
             <div class="formfield">
-            <label for="email" class="formfield">Email <big><sup>*</sup></big></label>
+            <label for="email" class="formfield">Email </label>
             <input type="email" id="email" name="email" class="formfield_input"></input>
             <small class="hint"><br></br>{t('upload.email')}<br></br></small>
             </div>

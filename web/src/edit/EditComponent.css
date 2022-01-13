@@ -105,7 +105,7 @@ button:hover {
     background-color: #37474F;
     color: white;
     max-height: calc(100vh - 255px);
-    overflow: scroll;
+    overflow: auto;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none; /* Firefox */
 }
