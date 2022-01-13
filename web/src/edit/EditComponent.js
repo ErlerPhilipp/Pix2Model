@@ -474,19 +474,11 @@ class Edit extends Component {
   }
 
   removePointsInsideBox(that) {
-    console.log('new gam')
-    console.log(that.cropBox)
-    console.log(that.object)
     var geometry = new THREE.BufferGeometry();
     that.cropBox.updateMatrix()
     const dx = new THREE.Vector3(1, 0, 0).applyEuler(that.cropBox.rotation).normalize()
     const dy = new THREE.Vector3(0, 1, 0).applyEuler(that.cropBox.rotation).normalize()
     const dz = new THREE.Vector3(0, 0, 1).applyEuler(that.cropBox.rotation).normalize()
-    console.log('new gam 2')
-    console.log(that.cropBox.rotation)
-    console.log(dx)
-    console.log(dy)
-    console.log(dz)
     var positions = that.object.geometry.attributes.position.array
     var updatedPositions = []
     var colors = that.object.geometry.attributes.color.array
@@ -554,9 +546,9 @@ class Edit extends Component {
   keepPointsInsideBox(that) {
     var geometry = new THREE.BufferGeometry();
     that.cropBox.updateMatrix()
-    const dx = new THREE.Vector3(that.cropBox.normalMatrix.elements[0], that.cropBox.normalMatrix.elements[1], that.cropBox.normalMatrix.elements[2]).normalize()
-    const dy = new THREE.Vector3(that.cropBox.normalMatrix.elements[3], that.cropBox.normalMatrix.elements[4], that.cropBox.normalMatrix.elements[5]).normalize()
-    const dz = new THREE.Vector3(that.cropBox.normalMatrix.elements[6], that.cropBox.normalMatrix.elements[7], that.cropBox.normalMatrix.elements[8]).normalize()
+    const dx = new THREE.Vector3(1, 0, 0).applyEuler(that.cropBox.rotation).normalize()
+    const dy = new THREE.Vector3(0, 1, 0).applyEuler(that.cropBox.rotation).normalize()
+    const dz = new THREE.Vector3(0, 0, 1).applyEuler(that.cropBox.rotation).normalize()
     var positions = that.object.geometry.attributes.position.array
     var updatedPositions = []
     var colors = that.object.geometry.attributes.color.array
@@ -564,9 +556,10 @@ class Edit extends Component {
     var normals = that.object.geometry.attributes.normal.array
     var updatedNormals = []
     for (var i = 0; i < positions.length; i += 3) {
-      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(that.cropBox.position);
-      if (Math.abs(d.dot(dx)) <= (that.cropBox.scale.x / 2) && Math.abs(d.dot(dy)) <= (that.cropBox.scale.y / 2) && Math.abs(d.dot(dz)) <= (that.cropBox.scale.z / 2)) {
-        updatedPositions.push(positions[i], positions[i+1], positions[i+2])
+      const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
+      if ((Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
+        const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
+        updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
         updatedNormals.push(normals[i], normals[i+1], normals[i+2])
       }
