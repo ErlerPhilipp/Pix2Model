@@ -21,4 +21,4 @@ docker rmi $(docker images -f dangling=true -q) &>/dev/null
 
 # build new images and start
 echo "Starting Images2Mesh ..."
-docker-compose --profile develop up
+docker-compose --profile deploy up
