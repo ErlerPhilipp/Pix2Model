@@ -1,5 +1,5 @@
-# PixToModel
-PixToModel funded by Netidee
+# Pix2Model
+Pix2Model funded by Netidee
 
 ## Colmap Prerequisites
 
