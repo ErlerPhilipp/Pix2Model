@@ -1,5 +1,5 @@
 # PixToModel
-Images2Mesh Web funded by Netidee
+PixToModel funded by Netidee
 
 ## Colmap Prerequisites
 
