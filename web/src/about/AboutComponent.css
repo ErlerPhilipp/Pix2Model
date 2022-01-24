@@ -45,3 +45,12 @@
     border-color: black;
     margin-bottom: 20px;
 }
+
+.mobile_text {
+    margin: 45px 0px;
+    padding: 20px 30px;
+    border-radius: 5px;
+    text-align: justify;
+    height: calc(100vh - 80px);
+    overflow: scroll;
+}

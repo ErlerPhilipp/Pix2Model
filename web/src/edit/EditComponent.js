@@ -13,6 +13,8 @@ import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
 import { FaInfoCircle } from 'react-icons/fa'; 
+import { isMobile } from 'react-device-detect';
+
 import 'react-dropdown/style.css';
 
 import './EditComponent.css';
@@ -38,6 +40,9 @@ class Edit extends Component {
   }
 
   componentDidMount() {
+    if (isMobile) {
+      return
+    }
     var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 75), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
@@ -702,6 +707,10 @@ class Edit extends Component {
   render() {
 
     const { t } = this.props;
+
+    if (isMobile) {
+      return <div class="edit_unavailable"> This content is unavailable on mobile</div>
+    }
 
     return (
       <div class='content' ref={ref => (this.mount = ref)}>

@@ -11,8 +11,8 @@
         "sophie": "Frontend"
     },
     "menu": {
-        "download": "download",
-        "edit": "edit",
+        "download": "Download",
+        "edit": "Edit",
         "about": "Project"
     },
     "edit": {
