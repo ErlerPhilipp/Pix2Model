@@ -127,8 +127,18 @@ button:hover {
     z-index: 1000;
 }
 
-.heading_interaction {
+.heading_interaction_wrapper {
     background: black;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    height: 20px;
+    margin-bottom: 20px;
+    padding: 3px 10px;
+}
+
+.heading_interaction {
+    margin: 0px;
 }
 
 .crop_button {
