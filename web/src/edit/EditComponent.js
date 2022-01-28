@@ -9,8 +9,13 @@ import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 import axios from 'axios';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import Dropdown from 'react-dropdown';
+import ReactTooltip from 'react-tooltip';
+import { FaInfoCircle } from 'react-icons/fa'; 
+import { isMobile } from 'react-device-detect';
+
 import 'react-dropdown/style.css';
 
 import './EditComponent.css';
@@ -30,12 +35,15 @@ class Edit extends Component {
       option_versions: [],
       selected_version: '',
       selected_step: '',
-      reconstruct: false,
-      loading: false
+      loading: false,
+      pointcloud: false
     };
   }
 
   componentDidMount() {
+    if (isMobile) {
+      return
+    }
     var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 75), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
@@ -128,6 +136,30 @@ class Edit extends Component {
     }
   }
 
+  loadTestBunnyWithTexture() {
+    const objLoader = new OBJLoader()
+    objLoader.load(
+      '/testfiles/bunny.obj',
+    (object) => {
+      const texture = new THREE.TextureLoader().load( '/testfiles/bunny-atlas.jpg' );
+      const material = new THREE.MeshBasicMaterial( { map: texture} );
+      
+      object.traverse( function ( child ) {
+        if ( child instanceof THREE.Mesh ) {
+          child.material = material;
+        }
+      });
+      console.log(object)
+      this.scene.add(object);
+    },
+    (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+    },
+    (error) => {
+        console.log(error)
+    })
+  }
+
   /**
    * SERVER CALL
    * 
@@ -199,14 +231,12 @@ class Edit extends Component {
           var mesh = new THREE.Mesh( geometry, material );
           this.addObject(mesh, res.headers["filename"])
           this.loadVersions(step, version)
-          this.setState({reconstruct: false})
         } else {
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
           this.addObject(mesh, res.headers["filename"])
           this.loadVersions(step, version)
-          this.setState({reconstruct: true})
         }
       })
       .catch((error) => {
@@ -289,6 +319,9 @@ class Edit extends Component {
     } else {
       this.object = object;
     }
+    if (this.object.type == 'Points') {
+      this.setState({pointcloud: true});
+    }
     this.scene.add(this.object);
     this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
@@ -324,7 +357,7 @@ class Edit extends Component {
     if (this.boxHelper) {
       this.scene.remove(this.boxHelper);
     }
-    this.setState({loaded: false, name: '', options: {}, option_versions: [], reconstruct: false});
+    this.setState({loaded: false, name: '', options: {}, option_versions: [], pointcloud: false});
   }
 
   /**
@@ -689,10 +722,20 @@ class Edit extends Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    if(prevProps.showItem !== this.props.showItem) {
+      ReactTooltip.rebuild();
+    }
+  }
+
 
   render() {
 
     const { t } = this.props;
+
+    if (isMobile) {
+      return <div class="edit_unavailable"> This content is unavailable on mobile</div>
+    }
 
     return (
       <div class='content' ref={ref => (this.mount = ref)}>
@@ -701,21 +744,35 @@ class Edit extends Component {
           {this.state.loaded &&
             <div class='edit_box'>
               <p>{ this.state.name }</p>
-              <hr></hr>
-              <p class="heading_interaction">{t('edit.conversion')}</p>
-              {this.state.reconstruct &&
-                <button tooltip="Create reconstructed mesh based on the edited mesh. The edited mesh will be saved" onClick={() => {this.reconstructMesh()}} class="recon_button">{t('edit.reconstruct')}</button>
+              {this.state.pointcloud &&
+                <div>
+                  <hr></hr>
+                  <div class="heading_interaction_wrapper">
+                    <p class="heading_interaction">{t('edit.conversion')}</p>
+                    <FaInfoCircle data-tip data-for='tooltip_conversion'/>
+                    <ReactTooltip id='tooltip_conversion' backgroundColor='rgb(34,102,153)'>
+                      <span>Create reconstructed mesh based on the edited mesh. The edited mesh will be saved with a new version number</span>
+                    </ReactTooltip>
+                  </div>
+                  <button onClick={() => {this.reconstructMesh()}} class="recon_button">{t('edit.reconstruct')}</button>
+                </div>
               }
-              {!this.state.reconstruct &&
-                <button class="recon_button" disabled>{t('edit.reconstruct')}</button>
-              }
               <hr></hr>
-              <p class="heading_interaction">{t('edit.transformation')}</p>
+              <div class="heading_interaction_wrapper">
+                <p class="heading_interaction">{t('edit.transformation')}</p>
+              </div>
               <Attribute name={t('edit.scale')} editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
               <hr></hr>
-              <p class="heading_interaction">{t('edit.crop.crop')}</p>
+              <div class="heading_interaction_wrapper">
+                <p class="heading_interaction">{t('edit.crop.crop')}</p>
+                <FaInfoCircle data-tip data-for='tooltip_crop'/>
+                <ReactTooltip id='tooltip_crop' backgroundColor='rgb(34,102,153)'>
+                  <span>When activated, a box appears on the canvas, which can be transformed using the gizmo. Use the intersecting area between the box and the mesh to crop the mesh.
+                  </span>
+                </ReactTooltip>
+              </div>
               <label class="container">{t('edit.activate')}
                 <input id="crop" type="checkbox" onClick={(event) => {
                   this.activateCrop(event.target.checked);
@@ -736,22 +793,42 @@ class Edit extends Component {
                 <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
               }
               <hr></hr>
-              <p class="heading_interaction">{t('edit.measure')}</p>
+              <div class="heading_interaction_wrapper">
+                <p class="heading_interaction">{t('edit.measure')}</p>
+                <FaInfoCircle data-tip data-for='tooltip_measure'/>
+                <ReactTooltip id='tooltip_measure' backgroundColor='rgb(34,102,153)'>
+                  <span>The measurements display the size of the bouding box in x, y and z direction.
+                  </span>
+                </ReactTooltip>
+              </div>
               <label class="container">{t('edit.activate')}
                 <input id="measure" type="checkbox" onClick={(event) => {
                   this.activateMeasurement(event.target.checked);
                 }}/>
                 <span class="checkmark"></span>
               </label>
-              <button onClick={() => {this.downloadObject()}} class='edit_download'><i class="fa fa-download"></i></button>
+              <button data-tip data-for='tooltip_download' onClick={() => {this.downloadObject()}} class='edit_download'><i class="fa fa-download"></i></button>
+              <ReactTooltip id='tooltip_download' backgroundColor='rgb(34,102,153)'>
+                <span>Download this file with the applied modifications</span>
+              </ReactTooltip>
               <button onClick={() => {this.removeObject()}} class='edit_remove'><i class="fa fa-remove"></i></button>
             </div>
           }
           {this.state.loaded &&
-            <button class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+            <div>
+              <button data-tip data-for='tooltip_upload_disabled' class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+              <ReactTooltip id='tooltip_upload_disabled' backgroundColor='rgb(34,102,153)'>
+                <span>Remove current file to upload a new one</span>
+              </ReactTooltip>
+            </div>
           }
           {!this.state.loaded &&
-            <button tooltip="Uploaded files won't be saved on the server" onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
+            <div>
+            <button data-tip data-for='tooltip_upload' onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
+            <ReactTooltip id='tooltip_upload' backgroundColor='rgb(34,102,153)'>
+              <span>Uploaded files won't be stored on the server</span>
+            </ReactTooltip>
+          </div>
           }
         </div>
         <div class='infobox'>
@@ -773,7 +850,16 @@ class Edit extends Component {
           }
           <br></br>
           <br></br>
-          {t('edit.interaction')}
+          {!this.state.pointcloud &&
+            <div>
+              {t('edit.interaction')}
+            </div>
+          }
+          {this.state.pointcloud &&
+            <div>
+              {t('edit.interaction_no_lights')}
+            </div>  
+          }
         </div>
       </div>
     )

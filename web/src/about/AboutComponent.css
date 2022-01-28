@@ -4,6 +4,7 @@
     height: -moz-fit-content;
     height: calc(100vh - 60px);
     width: 100vw;
+    white-space: pre-wrap;
 }
 
 .text {
@@ -25,6 +26,7 @@
     overflow-y: hidden;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .team_member {
@@ -32,16 +34,34 @@
 }
 
 .team_member_description {
-    color: black;
+    color: rgb(34,102,153);
+    width: 100px;
+}
+
+.title {
+    color: #373a47;
 }
 
 .team_images {
-    max-width: 100%;
-    max-height: 100px;
-    border: 1px solid black;
+    border: 2px solid #263238;
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius: 5%;
+    background: rgb(34,102,153);
+
 }
 
 .seperator {
     border-color: black;
     margin-bottom: 20px;
+}
+
+.mobile_text {
+    margin: 45px 0px;
+    padding: 20px 30px;
+    border-radius: 5px;
+    text-align: justify;
+    height: calc(100vh - 80px);
+    overflow: scroll;
 }

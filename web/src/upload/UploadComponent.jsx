@@ -2,6 +2,7 @@ import 'dropzone/dist/dropzone.css'
 import './UploadComponent.css';
 import React, { Component } from 'react';
 import Dropzone from 'dropzone'
+import { BrowserView, MobileView } from 'react-device-detect';
 
 import { withTranslation } from 'react-i18next';
 
@@ -73,50 +74,101 @@ class Upload extends Component {
   render() {
     const { t } = this.props;
     return (
-      <div class='content'>
-        <div class='wrapper_centered_box'>
-        {!this.state.success &&
-          <div>
-            <img src='images3.png' class='images'/>
-            <img src='mesh.png' class='mesh'/>
-            <i class="arrow first"></i>
-            <i class="arrow second"></i>
-            <i class="arrow third"></i>
-            <i class="arrow fourth"></i>
-            <form class="dropzone" method="POST" action="/backend/" id="upload">
-            </form>
-            <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
-            <div class="edit_buttons">
-              <button id="submit_upload" class="button_small">{t('upload.submit')}</button>
-              <button onClick={() => {this.resetDropbox()}} class="button_small">{t('upload.reset')}</button>
-            </div>
-            <br />
-            <hr></hr>
-            <div class="formfield">
-            <input type="checkbox" id="ply" name="ply"></input>
-            <label for="ply" class="formfield">{t('upload.pc.label')}</label>
-            <small class="hint"><br></br>{t('upload.pc.hint')}</small>
-            </div>
-            <hr></hr>
-            <div class="formfield">
-            <label for="email" class="formfield">Email </label>
-            <input type="email" id="email" name="email" class="formfield_input"></input>
-            <small class="hint"><br></br>{t('upload.email')}<br></br></small>
+      <div>
+        <BrowserView>
+          <div class='content'>
+            <div class='wrapper_centered_box'>
+            {!this.state.success &&
+              <div>
+                <img src='images3.png' class='images'/>
+                <img src='mesh.png' class='mesh'/>
+                <i class="arrow first"></i>
+                <i class="arrow second"></i>
+                <i class="arrow third"></i>
+                <i class="arrow fourth"></i>
+                <form class="dropzone" method="POST" action="/backend/" id="upload">
+                </form>
+                <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
+                <div class="edit_buttons">
+                  <button id="submit_upload" class="button_small">{t('upload.submit')}</button>
+                  <button onClick={() => {this.resetDropbox()}} class="button_small">{t('upload.reset')}</button>
+                </div>
+                <br />
+                <hr></hr>
+                <div class="formfield">
+                <input type="checkbox" id="ply" name="ply"></input>
+                <label for="ply" class="formfield">{t('upload.pc.label')}</label>
+                <small class="hint"><br></br>{t('upload.pc.hint')}</small>
+                </div>
+                <hr></hr>
+                <div class="formfield">
+                <label for="email" class="formfield">Email </label>
+                <input type="email" id="email" name="email" class="formfield_input"></input>
+                <small class="hint"><br></br>{t('upload.email')}<br></br></small>
+                </div>
+              </div>
+            }
+            {this.state.success &&
+              <div>
+                <h2>SUCCESS
+                </h2>
+                <hr></hr>
+                <p id="response_field">
+                </p>
+                <hr></hr>
+                <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+              </div>
+            }
             </div>
           </div>
-        }
-        {this.state.success &&
-          <div>
-            <h2>SUCCESS
-            </h2>
-            <hr></hr>
-            <p id="response_field">
-            </p>
-            <hr></hr>
-            <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+        </BrowserView>
+        <MobileView>
+        <div>
+            <div class='mobile_wrapper_upload'>
+            {!this.state.success &&
+              <div>
+                <img src='images3.png' class='images'/>
+                <img src='mesh.png' class='mesh'/>
+                <i class="arrow first"></i>
+                <i class="arrow second"></i>
+                <i class="arrow third"></i>
+                <i class="arrow fourth"></i>
+                <form class="dropzone" method="POST" action="/backend/" id="upload">
+                </form>
+                <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
+                <div class="edit_buttons">
+                  <button id="submit_upload" class="button_small">{t('upload.submit')}</button>
+                  <button onClick={() => {this.resetDropbox()}} class="button_small">{t('upload.reset')}</button>
+                </div>
+                <br />
+                <hr></hr>
+                <div class="formfield">
+                <input type="checkbox" id="ply" name="ply"></input>
+                <label for="ply" class="formfield">{t('upload.pc.label')}</label>
+                <small class="hint"><br></br>{t('upload.pc.hint')}</small>
+                </div>
+                <hr></hr>
+                <div class="formfield">
+                <label for="email" class="formfield">Email </label>
+                <input type="email" id="email" name="email" class="formfield_input"></input>
+                <small class="hint"><br></br>{t('upload.email')}<br></br></small>
+                </div>
+              </div>
+            }
+            {this.state.success &&
+              <div>
+                <h2>SUCCESS
+                </h2>
+                <hr></hr>
+                <p id="response_field">
+                </p>
+                <hr></hr>
+                <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+              </div>
+            }
+            </div>
           </div>
-        }
-        </div>
+        </MobileView>
       </div>
     )
   }
