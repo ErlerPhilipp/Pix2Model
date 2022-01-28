@@ -9,6 +9,7 @@ import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 import axios from 'axios';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
@@ -133,6 +134,30 @@ class Edit extends Component {
       document.getElementById('uuid').value = id
       this.uploadFileFromServer()
     }
+  }
+
+  loadTestBunnyWithTexture() {
+    const objLoader = new OBJLoader()
+    objLoader.load(
+      '/testfiles/bunny.obj',
+    (object) => {
+      const texture = new THREE.TextureLoader().load( '/testfiles/bunny-atlas.jpg' );
+      const material = new THREE.MeshBasicMaterial( { map: texture} );
+      
+      object.traverse( function ( child ) {
+        if ( child instanceof THREE.Mesh ) {
+          child.material = material;
+        }
+      });
+      console.log(object)
+      this.scene.add(object);
+    },
+    (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+    },
+    (error) => {
+        console.log(error)
+    })
   }
 
   /**
