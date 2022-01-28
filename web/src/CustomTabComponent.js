@@ -41,7 +41,7 @@ function CustomTabs() {
               fullWidth
               onChange={handleChange}
               TabIndicatorProps={{style: {backgroundColor: "white"}}}>
-              <Tab label="Image-2-Mesh"/>
+              <Tab label="Pics-2-Model"/>
               <Tab label={t('menu.edit')}/>
               <Tab icon={t('menu.about')}/>
           </Tabs>
