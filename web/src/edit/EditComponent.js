@@ -376,7 +376,7 @@ class Edit extends Component {
     } else {
       link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
     }
-    link.download = "model.ply";
+    link.download = this.state.name;
     link.dispatchEvent( new MouseEvent( 'click' ) );
   }
 
