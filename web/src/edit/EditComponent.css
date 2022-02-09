@@ -166,6 +166,17 @@ button:hover {
 
 .edit_warning {
     color: red;
+    border: none;
+    background: none;
+    font-size: 11px;
+}
+
+.customHoverButton:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.customHoverDiv:hover {
+    background: none;
 }
 
 .x {

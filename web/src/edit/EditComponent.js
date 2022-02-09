@@ -195,10 +195,11 @@ class Edit extends Component {
           this.setState({option_versions: versions, selected_version: versions.sort().reverse()[0], selected_step: step})
         }
         this.setState({loading: false})
-        this.setFileStatus(0)
+        this.setFileStatus('')
       })
       .catch((error) => {
-        this.setFileStatus(6, id)
+        const { t } = this.props;
+        this.setFileStatus(t('edit.warning.versions') + id)
         this.setState({loading: false})
       })
   }
@@ -209,6 +210,7 @@ class Edit extends Component {
    * Upload a file from the server based on the ID within the ID field
    */
   uploadFileFromServer() {
+    const { t } = this.props;
     var id = document.getElementById('uuid').value
     var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
     var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
@@ -243,20 +245,29 @@ class Edit extends Component {
         if (error.response && error.response.status == 404) {
           axios({
             method: 'get',
-            url: `/backend/result?id=${id}`
+            url: `/backend/filestatus?id=${id}`
           })
           .then(res => {
-            if (res.data.includes('No job')) {
-              this.setFileStatus(1, id)
-            } else {
-              this.setFileStatus(2, id)
+            if (res.status == 201) {
+              console.log("201")
+              this.setFileStatus(t('edit.warning.progress.file').replace('{id}', id), 'yellow')
             }
           })
-          .catch(()=>{
-            this.setFileStatus(3, id)
+          .catch((error)=>{
+            if (error.response.status == 404 || error.response.status == 405) {
+              console.log("404")
+              this.setFileStatus(t('edit.error.filenotfound').replace('{id}', id), 'red')
+            } else if (error.response.status == 400) {
+              console.log("error")
+              this.setFileStatus(error.response.data, 'red', true)
+            } else {
+              console.log("sserverfile error 1")
+              this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
+            }
           })
         } else {
-          this.setFileStatus(3, id)
+          console.log("serverfile error 2")
+          this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
         }
         this.setState({loading: false})
       })
@@ -274,6 +285,7 @@ class Edit extends Component {
    * pointcloud.
    */
   reconstructMesh() {
+    const { t } = this.props;
     var exporter = new PLYExporter();
     var formData = new FormData();
     if (this.object.type == 'Points') {
@@ -296,13 +308,47 @@ class Edit extends Component {
     .then(res => {
       axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
       this.setState({loading: false})
-      this.setFileStatus(5, id)
+      this.setFileStatus(t('edit.warning.progress.reconstruction').replace('{id}', id), 'green')
     })
     .catch((error) => {
-      this.setFileStatus(4, id)
+      this.setFileStatus(t('edit.error.server.reconstruction').replace('{id}', id), 'red')
       this.setState({loading: false})
     })
   }
+
+
+  /**
+   * SERVER CALL
+   * 
+   * Download logfile from server
+   */
+  downloadLogfile() {
+    var id = document.getElementById('uuid').value
+    var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
+    var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
+    var url_ = `/backend/logfile?id=${id}`
+    if (step && version) {
+      url_ = `/backend/logfile?id=${id}&step=${step}&version=${version}`
+    }
+    axios({
+      method: 'get',
+      url: url_
+    })
+      .then(res => {
+        if (!res.data) {
+          return
+        }
+        var link = document.createElement( 'a' );
+        if ( link.href ) {
+          URL.revokeObjectURL( link.href );
+        }
+        link.href = URL.createObjectURL( new Blob( [ res.data ], { type: 'text/plain' } ) );
+        window.open(link,'_blank');
+      })
+      .catch((error) => {
+      })
+  }
+
 
   /**
    * ADD OBJECT
@@ -690,35 +736,17 @@ class Edit extends Component {
     }
   }
 
-
-  setFileStatus(response, id=undefined) {
-    const { t } = this.props;
-    if (response == 0) {
-      // Remove warning
-      document.getElementById('uuid_error').innerHTML = ''
-    } else if (response == 1) {
-      // Not found
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.notfound') + id
-    } else if (response == 2) {
-      // In progress
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.progress_1') + id + t('edit.warning.progress_2')
-    } else if (response == 3) {
-      // 500 error
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.error') + id
-    } else if (response == 4) {
-      // reconstraction did not work
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.error') + id
-    } else if (response == 5) {
-      // reconstruction in progress
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.reconstruction.progress') + id + '.\n' + t('edit.warning.reconstruction.progress_2')
-    } else if (response == 6) {
-      // Error loading versions
-      document.getElementById('uuid_error').innerHTML = t('edit.warning.versions') + id
-    }
-    if (id in [5]) {
-      document.getElementById('uuid_error').style.color = 'green'
+  setFileStatus(message, color='red', downloadable = false) {
+    document.getElementById('uuid_error').innerHTML = message
+    document.getElementById('uuid_error').style.color = color
+    if (downloadable) {
+      document.getElementById('uuid_error').style.cursor = 'pointer'
+      document.getElementById('uuid_error').classList.add('customHoverButton');
+      document.getElementById('uuid_error').classList.remove('customHoverDiv');
     } else {
-      document.getElementById('uuid_error').style.color = 'red'
+      document.getElementById('uuid_error').style.cursor = 'unset'
+      document.getElementById('uuid_error').classList.remove('customHoverButton');
+      document.getElementById('uuid_error').classList.add('customHoverDiv');
     }
   }
 
@@ -841,7 +869,7 @@ class Edit extends Component {
             <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh loading'><i class="fa fa-refresh"></i></button>
           }
           <br></br>
-          <small id="uuid_error" class="edit_warning"></small>
+          <button id="uuid_error" onClick={() => {this.downloadLogfile()}} class="edit_warning"></button>
           {Object.keys(this.state.options).length !== 0 &&
             <div class="edit_options_refresh" id="options">
               <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value.value)} value={this.state.selected_step} />

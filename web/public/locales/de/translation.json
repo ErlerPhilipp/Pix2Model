@@ -33,15 +33,17 @@
         },
         "measure": "MAßE",
         "warning": {
-            "progress_1": "Die Datei mit der ID ",
-            "progress_2": " wird momentan erstellt.\nBitte versuchen Sie es später noch einmal",
-            "notfound": "Keine Datei wurde gefunden mit der ID ",
-            "error": "Ein Fehler trat auf beim Laden der Datei mit ID ",
-            "versions": "Ein Fehler ist aufgetreten beim Laden der Versionen der Datei mit ID ",
-            "reconstruction": {
-                "error": "Ein Fehler ist aufgetreten bei der Rekonstruktion der Datei mit ID ",
-                "progress": "Die Rekonstruktion wurde erfolgreich begonnen für die Datei mit ID ",
-                "progress_2": "Laden Sie in ein paar Minuten das Modell neu, um die neusten Versionen zu sehen"
+            "progress": {
+                "file": "Die Datei {id} wird momentan erstellt.\nBitte versuchen Sie es später noch einmal",
+                "reconstruction": "Die Rekonstruktion für die Datei {id} wurde erfolgreich gestartet.\nLaden Sie in ein paar Minuten das Modell neu, um die neusten Versionen zu sehen"
+            }
+        },
+        "error": {
+            "filenotfound": "Keine Datei mit der ID {id} wurde gefunden",
+            "server": {
+                "file": "Ein Fehler trat auf beim Laden der Datei {id}",
+                "versions": "Ein Fehler ist aufgetreten beim Laden der Versionen der Datei {id}",
+                "reconstruction": "Ein Fehler ist bei der Rekonstruktion der Datei {id} aufgetreten"
             }
         }
     },
