@@ -33,15 +33,17 @@
         },
         "measure": "MEASUREMENT",
         "warning": {
-            "progress_1": "The file with ID ",
-            "progress_2": " is getting generated.\nPlease try again later by pressing the refresh button",
-            "notfound": "No file found with the ID ",
-            "error": "An error occured while loading the file with ID ",
-            "versions": "An error occured while loading the current versions of the file with ID ",
-            "reconstruction": {
-                "error": "An error occured while reconstructing the file with ID ",
-                "progress": "The reconstruction is in progress for the file with ID ",
-                "progress_2": "Reload the mesh in a couple of minutes to load the newest versions"
+            "progress": {
+                "file": "The file with ID {id} is getting generated.\nPlease try again later by pressing the refresh button",
+                "reconstruction": "The reconstruction is in progress for the file with ID {id}.\nReload the mesh in a couple of minutes to load the newest versions"
+            }
+        },
+        "error": {
+            "filenotfound": "No file found with the ID {id}",
+            "server": {
+                "file": "An error occured while loading the file with ID {id}",
+                "versions": "An error occured while loading the current versions of the file with ID {id}",
+                "reconstruction": "An error occured while reconstructing the file with ID {id}"
             }
         }
     },
