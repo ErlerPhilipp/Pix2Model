@@ -60,15 +60,15 @@ function CustomTabs() {
                   <About></About>
               </div>
               <div class='swipable_content'>
-                  <Impressum></Impressum>
+                  <Privacy></Privacy>
               </div>
               <div class='swipable_content'>
-                  <Privacy></Privacy>
+                  <Impressum></Impressum>
               </div>
           </SwipeableViews>
           <footer className="footer">
-              <button onClick={() => setIndex(3)}>{t('footer.impressum')}</button>
-              <button onClick={() => setIndex(4)}>{t('footer.privacy')}</button>
+              <button onClick={() => setIndex(4)}>{t('footer.impressum')}</button>
+              <button onClick={() => setIndex(3)}>{t('footer.privacy')}</button>
           </footer>
           </div>
         </BrowserView>
