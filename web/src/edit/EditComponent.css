@@ -5,7 +5,7 @@ canvas {
 
 .edit_toolbar {
     background-color: #263238;
-    height: calc(100vh - 75px);
+    height: calc(100vh - 105px);
     width: 270px;
     position: absolute;
     right: 10px;

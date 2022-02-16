@@ -1,0 +1,8 @@
+.impressum {
+    display: flex;
+    flex-direction: column;
+    height: -moz-fit-content;
+    height: calc(100vh - 60px);
+    width: 100vw;
+    white-space: pre-wrap;
+}

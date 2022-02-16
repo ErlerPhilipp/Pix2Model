@@ -44,9 +44,9 @@ class Edit extends Component {
     if (isMobile) {
       return
     }
-    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 75), 0.1, 1000);
+    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     this.scene.background = new THREE.Color(0xfbebc3);
     this.light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(this.light);
@@ -56,7 +56,7 @@ class Edit extends Component {
     this.scene.add( gridHelper );
 
     var labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0px';
     this.mount.appendChild(labelRenderer.domElement);
@@ -96,9 +96,9 @@ class Edit extends Component {
       }
     })
     window.addEventListener('resize', function() {
-      camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 75);
+      camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+      renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     })
     // animation
     var animate = function () {
@@ -540,6 +540,8 @@ class Edit extends Component {
           croppedObject = CSG.toMesh(bspResult, that.object.matrix);
           croppedObject.geometry.computeVertexNormals()
           croppedObject.material = material_mesh;
+          console.log(that.object)
+          console.log(croppedObject)
         }
         that.scene.add(croppedObject);
         that.scene.remove(that.object);
@@ -793,34 +795,38 @@ class Edit extends Component {
               <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
               <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
               <hr></hr>
-              <div class="heading_interaction_wrapper">
-                <p class="heading_interaction">{t('edit.crop.crop')}</p>
-                <FaInfoCircle data-tip data-for='tooltip_crop'/>
-                <ReactTooltip id='tooltip_crop' backgroundColor='rgb(34,102,153)'>
-                  <span>When activated, a box appears on the canvas, which can be transformed using the gizmo. Use the intersecting area between the box and the mesh to crop the mesh.
-                  </span>
-                </ReactTooltip>
+              {this.state.pointcloud &&
+              <div>
+                <div class="heading_interaction_wrapper">
+                  <p class="heading_interaction">{t('edit.crop.crop')}</p>
+                  <FaInfoCircle data-tip data-for='tooltip_crop'/>
+                  <ReactTooltip id='tooltip_crop' backgroundColor='rgb(34,102,153)'>
+                    <span>When activated, a box appears on the canvas, which can be transformed using the gizmo. Use the intersecting area between the box and the mesh to crop the mesh.
+                    </span>
+                  </ReactTooltip>
+                </div>
+                <label class="container">{t('edit.activate')}
+                  <input id="crop" type="checkbox" onClick={(event) => {
+                    this.activateCrop(event.target.checked);
+                  }}/>
+                  <span class="checkmark"></span>
+                </label>
+                <br></br>
+                {this.state.crop &&
+                  <button onClick={() => {this.cropObjectInverse()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
+                }
+                {this.state.crop &&
+                  <button onClick={() => {this.cropObject()}} class="crop_button">{t('edit.crop.remove')}</button>
+                }
+                {!this.state.crop &&
+                  <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
+                }
+                {!this.state.crop &&
+                  <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
+                }
+                <hr></hr>
               </div>
-              <label class="container">{t('edit.activate')}
-                <input id="crop" type="checkbox" onClick={(event) => {
-                  this.activateCrop(event.target.checked);
-                }}/>
-                <span class="checkmark"></span>
-              </label>
-              <br></br>
-              {this.state.crop &&
-                <button onClick={() => {this.cropObjectInverse()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
               }
-              {this.state.crop &&
-                <button onClick={() => {this.cropObject()}} class="crop_button">{t('edit.crop.remove')}</button>
-              }
-              {!this.state.crop &&
-                <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
-              }
-              {!this.state.crop &&
-                <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
-              }
-              <hr></hr>
               <div class="heading_interaction_wrapper">
                 <p class="heading_interaction">{t('edit.measure')}</p>
                 <FaInfoCircle data-tip data-for='tooltip_measure'/>

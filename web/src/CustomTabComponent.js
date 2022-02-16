@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import Upload from "./upload/UploadComponent"
 import About from "./about/AboutComponent"
 import Edit from "./edit/EditComponent";
+import Impressum from './impressum/ImpressumComponent';
+import Privacy from './privacy/PrivacyComponent';
 
 import './index.css';
 
@@ -41,13 +43,12 @@ function CustomTabs() {
               fullWidth
               onChange={handleChange}
               TabIndicatorProps={{style: {backgroundColor: "white"}}}>
-              <Tab label="Pics-2-Model"/>
+              <Tab label="Pics-2-Model (Beta)"/>
               <Tab label={t('menu.edit')}/>
               <Tab icon={t('menu.about')}/>
           </Tabs>
           <button class='lang en' onClick={() => handleChangeLang('en')}>EN</button>
           <button class='lang de' onClick={() => handleChangeLang('de')}>DE</button>
-
           <SwipeableViews index={index} disabled={true} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
               <div class='swipable_content'>
                   <Upload></Upload>
@@ -58,7 +59,17 @@ function CustomTabs() {
               <div class='swipable_content'>
                   <About></About>
               </div>
+              <div class='swipable_content'>
+                  <Privacy></Privacy>
+              </div>
+              <div class='swipable_content'>
+                  <Impressum></Impressum>
+              </div>
           </SwipeableViews>
+          <footer className="footer">
+              <button onClick={() => setIndex(4)}>{t('footer.impressum')}</button>
+              <button onClick={() => setIndex(3)}>{t('footer.privacy')}</button>
+          </footer>
           </div>
         </BrowserView>
         <MobileView>
