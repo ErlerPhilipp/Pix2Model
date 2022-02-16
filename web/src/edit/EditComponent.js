@@ -44,9 +44,9 @@ class Edit extends Component {
     if (isMobile) {
       return
     }
-    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 75), 0.1, 1000);
+    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     this.scene.background = new THREE.Color(0xfbebc3);
     this.light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(this.light);
@@ -56,7 +56,7 @@ class Edit extends Component {
     this.scene.add( gridHelper );
 
     var labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0px';
     this.mount.appendChild(labelRenderer.domElement);
@@ -96,9 +96,9 @@ class Edit extends Component {
       }
     })
     window.addEventListener('resize', function() {
-      camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 75);
+      camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth - 300, window.innerHeight - 75);
+      renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     })
     // animation
     var animate = function () {

@@ -46,6 +46,31 @@ code {
   filter: brightness(1.05) blur(7px) grayscale(100%);
 }
 
+.footer {
+  background-color: #263238;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  color: white;
+  font-size: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.footer button {
+  background: transparent;
+  color: white;
+  border: none;
+  height: 35px;
+  font-size: 14px;
+  width: 100px;
+  cursor: pointer;
+}
+
+.footer button:hover {
+  background: transparent;
+}
+
 .button_small {
   width: 190px;
   height: 40px;
