@@ -14,7 +14,7 @@
     position: absolute;
     top: 80px;
     height: 300px;
-    right: calc((100vw / 2) - 480px);
+    right: calc((100vw / 2) - 700px);
 }
 
 .ply {

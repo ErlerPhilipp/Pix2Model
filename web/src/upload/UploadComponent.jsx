@@ -80,7 +80,7 @@ class Upload extends Component {
             <div class='wrapper_centered_box'>
             {!this.state.success &&
               <div>
-                <img src='images3.png' class='images'/>
+                <img src='images.png' class='images'/>
                 <img src='mesh.png' class='mesh'/>
                 <i class="arrow first"></i>
                 <i class="arrow second"></i>
@@ -127,7 +127,7 @@ class Upload extends Component {
             <div class='mobile_wrapper_upload'>
             {!this.state.success &&
               <div>
-                <img src='images3.png' class='images'/>
+                <img src='images.png' class='images'/>
                 <img src='mesh.png' class='mesh'/>
                 <i class="arrow first"></i>
                 <i class="arrow second"></i>
