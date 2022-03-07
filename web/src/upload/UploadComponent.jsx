@@ -100,12 +100,12 @@ class Upload extends Component {
                 <label for="ply" class="formfield">{t('upload.pc.label')}</label>
                 <small class="hint"><br></br>{t('upload.pc.hint')}</small>
                 </div>
-                <hr></hr>
+                {/*<hr></hr>
                 <div class="formfield">
                 <label for="email" class="formfield">Email </label>
                 <input type="email" id="email" name="email" class="formfield_input"></input>
                 <small class="hint"><br></br>{t('upload.email')}<br></br></small>
-                </div>
+                </div>*/}
               </div>
             }
             {this.state.success &&
