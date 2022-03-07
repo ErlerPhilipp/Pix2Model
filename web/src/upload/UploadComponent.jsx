@@ -45,7 +45,7 @@ class Upload extends Component {
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
           that.setState({success: true})
           submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}">${window.location.href}?id=${response.replace('data/','')}</a>`;
+          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}&page=1">${window.location.href}?id=${response.replace('data/','')}&page=1</a>`;
       });
     }, 0);
   }
