@@ -22,7 +22,7 @@
     "menu": {
         "download": "Download",
         "edit": "Edit",
-        "about": "Project"
+        "about": "Info"
     },
     "edit": {
         "interaction": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\nt   Translate\nr   Rotate\ns   Scale\n+   Increase light intesity\n-   Decrease light intesity",
