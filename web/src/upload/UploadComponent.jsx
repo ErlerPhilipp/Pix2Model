@@ -28,7 +28,8 @@ class Upload extends Component {
         maxFilesize: 50,
         maxFiles: 100,
         acceptedFiles: ".png, .jpg, .jpeg",
-        dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>"
+        dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>",
+        addRemoveLinks: true
       };
       var uploader = document.querySelector('#upload');
       that.dropzone = new Dropzone(uploader, dropzoneOptions);
@@ -45,7 +46,7 @@ class Upload extends Component {
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
           that.setState({success: true})
           submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}">${window.location.href}?id=${response.replace('data/','')}</a>`;
+          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}&page=1">${window.location.href}?id=${response.replace('data/','')}&page=1</a>`;
       });
     }, 0);
   }
@@ -80,7 +81,7 @@ class Upload extends Component {
             <div class='wrapper_centered_box'>
             {!this.state.success &&
               <div>
-                <img src='images3.png' class='images'/>
+                <img src='images.png' class='images'/>
                 <img src='mesh.png' class='mesh'/>
                 <i class="arrow first"></i>
                 <i class="arrow second"></i>
@@ -100,12 +101,12 @@ class Upload extends Component {
                 <label for="ply" class="formfield">{t('upload.pc.label')}</label>
                 <small class="hint"><br></br>{t('upload.pc.hint')}</small>
                 </div>
-                <hr></hr>
+                {/*<hr></hr>
                 <div class="formfield">
                 <label for="email" class="formfield">Email </label>
                 <input type="email" id="email" name="email" class="formfield_input"></input>
                 <small class="hint"><br></br>{t('upload.email')}<br></br></small>
-                </div>
+                </div>*/}
               </div>
             }
             {this.state.success &&
@@ -127,7 +128,7 @@ class Upload extends Component {
             <div class='mobile_wrapper_upload'>
             {!this.state.success &&
               <div>
-                <img src='images3.png' class='images'/>
+                <img src='images.png' class='images'/>
                 <img src='mesh.png' class='mesh'/>
                 <i class="arrow first"></i>
                 <i class="arrow second"></i>

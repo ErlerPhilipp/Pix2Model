@@ -149,7 +149,6 @@ class Edit extends Component {
           child.material = material;
         }
       });
-      console.log(object)
       this.scene.add(object);
     },
     (xhr) => {
@@ -249,24 +248,19 @@ class Edit extends Component {
           })
           .then(res => {
             if (res.status == 201) {
-              console.log("201")
               this.setFileStatus(t('edit.warning.progress.file').replace('{id}', id), 'yellow')
             }
           })
           .catch((error)=>{
             if (error.response.status == 404 || error.response.status == 405) {
-              console.log("404")
               this.setFileStatus(t('edit.error.filenotfound').replace('{id}', id), 'red')
             } else if (error.response.status == 400) {
-              console.log("error")
               this.setFileStatus(error.response.data, 'red', true)
             } else {
-              console.log("sserverfile error 1")
               this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
             }
           })
         } else {
-          console.log("serverfile error 2")
           this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
         }
         this.setState({loading: false})
@@ -540,8 +534,6 @@ class Edit extends Component {
           croppedObject = CSG.toMesh(bspResult, that.object.matrix);
           croppedObject.geometry.computeVertexNormals()
           croppedObject.material = material_mesh;
-          console.log(that.object)
-          console.log(croppedObject)
         }
         that.scene.add(croppedObject);
         that.scene.remove(that.object);
@@ -570,9 +562,10 @@ class Edit extends Component {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if (!(Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
+        const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
-        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+        updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
@@ -640,9 +633,10 @@ class Edit extends Component {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if ((Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
+        const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
-        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+        updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));

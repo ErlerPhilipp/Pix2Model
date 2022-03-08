@@ -22,7 +22,7 @@
     "menu": {
         "download": "Herunterladen",
         "edit": "Bearbeiten",
-        "about": "Projekt"
+        "about": "Info"
     },
     "edit": {
         "interaction": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\nt   Translation\nr   Rotation\ns   Skalierung\n+   Lichtintensität erhöhen\n-   Lichtintensität reduzieren",

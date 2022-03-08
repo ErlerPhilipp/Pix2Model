@@ -20,7 +20,7 @@ import './index.css';
 function CustomTabs() {
   const { t, i18n } = useTranslation();
   const [state, setState] = useState('upload')
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(new URLSearchParams(window.location.search).get('page') ? new URLSearchParams(window.location.search).get('page') : 0);
 
   function handleChangeLang(lang) {
     i18n.changeLanguage(lang)
