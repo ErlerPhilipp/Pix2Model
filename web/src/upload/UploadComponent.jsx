@@ -28,7 +28,8 @@ class Upload extends Component {
         maxFilesize: 50,
         maxFiles: 100,
         acceptedFiles: ".png, .jpg, .jpeg",
-        dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>"
+        dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>",
+        addRemoveLinks: true
       };
       var uploader = document.querySelector('#upload');
       that.dropzone = new Dropzone(uploader, dropzoneOptions);
