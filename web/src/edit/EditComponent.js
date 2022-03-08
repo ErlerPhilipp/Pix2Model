@@ -570,9 +570,10 @@ class Edit extends Component {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if (!(Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
+        const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
-        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+        updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
@@ -640,9 +641,10 @@ class Edit extends Component {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if ((Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
+        const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
-        updatedNormals.push(normals[i], normals[i+1], normals[i+2])
+        updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
