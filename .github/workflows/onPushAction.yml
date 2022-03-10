@@ -19,4 +19,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            bash /opt/netidee-server/deploy.sh
+            bash /home/netidee-server/Server/deploy.sh
