@@ -33,6 +33,14 @@ button:hover {
     background-color: rgb(225, 255, 255);
 }
 
+.transformation_button {
+    background-color: lightblue;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    font-size: 1em;
+}
+
 .edit_options_refresh  {
     display: flex;
     justify-content: space-between;

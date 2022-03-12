@@ -7,6 +7,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 import axios from 'axios';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -77,23 +78,7 @@ class Edit extends Component {
     this.transformControls.addEventListener('change', this._handleUpdate);
     this.scene.add(this.transformControls);
     window.addEventListener('keydown', function (event) {
-      switch (event.key) {
-        case "t":
-          scope.transformControls.setMode("translate")
-          break
-        case "r":
-          scope.transformControls.setMode("rotate")
-          break
-        case "s":
-          scope.transformControls.setMode("scale")
-          break
-        case "+":
-          scope.light.intensity += 0.5;
-          break
-        case "-":
-          scope.light.intensity -= 0.5;
-          break
-      }
+      scope.setTransformation(scope, event.key)
     })
     window.addEventListener('resize', function() {
       camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
@@ -133,6 +118,26 @@ class Edit extends Component {
     if (id) {
       document.getElementById('uuid').value = id
       this.uploadFileFromServer()
+    }
+  }
+
+  setTransformation(scope, transformation) {
+    switch (transformation) {
+      case "t":
+        scope.transformControls.setMode("translate")
+        break
+      case "r":
+        scope.transformControls.setMode("rotate")
+        break
+      case "s":
+        scope.transformControls.setMode("scale")
+        break
+      case "+":
+        scope.light.intensity += 0.5;
+        break
+      case "-":
+        scope.light.intensity -= 0.5;
+        break
     }
   }
 
@@ -752,6 +757,10 @@ class Edit extends Component {
     }
   }
 
+  disatest()  {
+    console.log('test')
+  }
+
 
   render() {
 
@@ -880,12 +889,22 @@ class Edit extends Component {
           <br></br>
           {!this.state.pointcloud &&
             <div>
-              {t('edit.interaction')}
+              <Trans i18nKey='edit.interaction' components={
+                { button_translation: <button class="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
+                  button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
+                  button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
+                  button_increase_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
+                  button_decrease_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "-")} />
+                }}/>
             </div>
           }
           {this.state.pointcloud &&
             <div>
-              {t('edit.interaction_no_lights')}
+              <Trans i18nKey='edit.interaction_no_lights' components={
+                { button_translation: <button class="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
+                  button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
+                  button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />
+              }}/>
             </div>  
           }
         </div>
