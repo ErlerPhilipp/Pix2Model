@@ -65,6 +65,11 @@
         },
         "submit": "Submit files",
         "new": "New Reconstruction",
+        "abort": {
+            "button": "Abort Reconstruction",
+            "success": "The reconstruction with ID {id} was successfully canceled",
+            "error": "Something went wrong while aborting the reconstruction with ID {id}"
+        },
         "reset": "Reset",
         "info": "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>",
         "success": "Upload successful!\nJob will be available with this link under EDIT when ready:\n"
