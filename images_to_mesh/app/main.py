@@ -158,6 +158,11 @@ def get_status():
         return first_line_error_log, 400
     return i, 404
 
+@app.route("/abort", methods=["POST"])
+def abort_job():
+    job_id = request.args.get("id")
+    result = process_order.abort_job(job_id)
+    return "", 200 if result else 500
 
 @app.route("/logfile", methods=["GET"])
 def get_log_file():

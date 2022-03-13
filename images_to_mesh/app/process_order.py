@@ -7,6 +7,7 @@ from typing import Any
 
 from redis import Redis
 from rq import Queue, get_current_job
+from rq.command import send_stop_job_command
 from pathlib import Path
 
 from images_to_mesh.app.email.email_config import Order_state
@@ -38,6 +39,15 @@ def task(number: int):
         return inner_func
 
     return decorator
+
+def abort_job(job_id) -> bool:
+    connection = Redis(host="redis")
+    try:
+        send_stop_job_command(connection, job_id)
+    except Exception:
+        return False
+
+    return True
 
 
 def queue_step_1(input_files: Any, user_email) -> int:
