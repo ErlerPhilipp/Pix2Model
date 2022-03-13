@@ -7,7 +7,7 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import Attribute from "./AttributeComponent";
 import { Loader } from './Loader.js';
 import { withTranslation } from 'react-i18next';
-import { Trans, useTranslation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import { CSG } from 'three-csg-ts';
 import axios from 'axios';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -756,11 +756,6 @@ class Edit extends Component {
       ReactTooltip.rebuild();
     }
   }
-
-  disatest()  {
-    console.log('test')
-  }
-
 
   render() {
 
