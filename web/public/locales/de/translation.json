@@ -65,6 +65,11 @@
         },
         "submit": "Dateien übertragen",
         "new": "Neue Rekonstruktion",
+        "abort": {
+            "button": "Rekonstruktion abbrechen",
+            "success": "Die Rekonstruktion mit der Job-ID {id} wurde erfolgreich abgebrochen",
+            "error": "Etwas ist fehlgeschlagen bei Abbrechen der Rekonstruktion mit der Job-ID {id}"
+        },
         "reset": "Zurücksetzen",
         "info": "Legen Sie Dateien zum Hochladen hier ab<br/><small>Max 100 Dateien, 10MB pro Datei</small>",
         "success": "Hochladen war erfolgreich!\nDas Mesh wird über folgenden Link unter BEARBEITEN bereitgestellt, sobald es fertiggestellt ist:\n"

@@ -2,6 +2,7 @@ import 'dropzone/dist/dropzone.css'
 import './UploadComponent.css';
 import React, { Component } from 'react';
 import Dropzone from 'dropzone'
+import axios from 'axios';
 import { BrowserView, MobileView } from 'react-device-detect';
 
 import { withTranslation } from 'react-i18next';
@@ -12,7 +13,8 @@ class Upload extends Component {
     super(props);
     Dropzone.autoDiscover = false;
     this.state = {
-      success: false
+      success: false,
+      id: ''
     };
   }
 
@@ -39,14 +41,15 @@ class Upload extends Component {
       });
       document.querySelector("#upload").dropzone.on("sending", function(file, xhr, data) {
           if (data) {
-            data.append("user_email", document.querySelector("#email").value);
+            //data.append("user_email", document.querySelector("#email").value);
             data.append("step2", + !document.querySelector("#ply").checked);
           }
       });
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
-          that.setState({success: true})
+          that.setState({success: true, id: response.replace('data/','')})
           submitButton.disablwrapper_uploaded = true;
           document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}&page=1">${window.location.href}?id=${response.replace('data/','')}&page=1</a>`;
+
       });
     }, 0);
   }
@@ -66,6 +69,20 @@ class Upload extends Component {
   reset() {
     this.setState({success: false})
     this.init()
+  }
+
+  abort() {
+    const { t } = this.props;
+    axios({
+      method: 'post',
+      url: `/backend/abort?id=${this.state.id}`
+    })
+      .then(res => {
+        document.querySelector("#response_field").innerHTML = t('upload.abort.success').replace('{id}', this.state.id);
+      })
+      .catch((error) => {
+        document.querySelector("#response_field").innerHTML = t('upload.abort.error').replace('{id}', this.state.id);
+      })
   }
 
   resetDropbox() {
@@ -117,7 +134,10 @@ class Upload extends Component {
                 <p id="response_field">
                 </p>
                 <hr></hr>
-                <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+                <div class="edit_buttons">
+                  <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+                  <button onClick={() => {this.abort()}} class="button_small">{t('upload.abort.button')}</button><br />
+                </div>
               </div>
             }
             </div>
@@ -164,7 +184,10 @@ class Upload extends Component {
                 <p id="response_field">
                 </p>
                 <hr></hr>
-                <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+                <div class="edit_buttons">
+                  <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
+                  <button onClick={() => {this.abort()}} class="button_small">{t('upload.abort')}</button><br />
+                </div>
               </div>
             }
             </div>
