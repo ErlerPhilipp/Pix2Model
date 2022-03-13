@@ -25,8 +25,8 @@
         "about": "Info"
     },
     "edit": {
-        "interaction": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\nt   Translation\nr   Rotation\ns   Skalierung\n+   Lichtintensität erhöhen\n-   Lichtintensität reduzieren",
-        "interaction_no_lights": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\nt   Translation\nr   Rotation\ns   Skalierung",
+        "interaction": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\n<button_translation>t</button_translation>   Translation\n<button_rotation>r</button_rotation>   Rotation\n<button_scale>s</button_scale>   Skalierung\n<button_increase_light>+</button_increase_light>   Lichtintensität erhöhen\n<button_decrease_light>-</button_decrease_light>   Lichtintensität reduzieren",
+        "interaction_no_lights": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\n<button_translation>t</button_translation>   Translation\n<button_rotation>r</button_rotation>   Rotation\n<button_scale>s</button_scale>   Skalierung",
         "conversion": "KONVERTIERUNG",
         "reconstruct": "Mesh Rekonstruktion",
         "transformation": "TRANSFORMATIONEN",
