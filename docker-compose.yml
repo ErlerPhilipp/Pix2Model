@@ -26,13 +26,16 @@ services:
       context: ./web
       dockerfile: ./Dockerfile.nginx
     ports:
-      - "80:80"
+      - "443:443"
     depends_on:
       - backend
     volumes:
       - type: bind
         target: /usr/src/app/data
         source: ${UPLOAD_FOLDER}    
+      - type: bind
+        target: /etc/ssl
+        source: ${SSL_CERT_FOLDER}
     profiles:
       - deploy
   backend:
