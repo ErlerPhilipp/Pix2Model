@@ -84,8 +84,8 @@ def reconstruct_mesh():
 @app.route("/versions", methods=["GET"])
 def get_versions():
     i = request.args.get("id")
-    step1_versions = PosixPath("/usr/src/app/data") / i / "step1/*"
-    step2_versions = PosixPath("/usr/src/app/data") / i / "step2/*"
+    step1_versions = PosixPath("/usr/src/app/data") / i / "step1/v???"
+    step2_versions = PosixPath("/usr/src/app/data") / i / "step2/v???"
     step1_step2_versions = glob.glob(str(step1_versions)) + glob.glob(str(step2_versions))
     versions = {'pointcloud': [], 'mesh': []}
     for version in step1_step2_versions:
