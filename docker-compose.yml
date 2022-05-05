@@ -58,6 +58,8 @@ services:
       - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
       - RQ_DASHBOARD_USERNAME=${RQ_DASHBOARD_USERNAME}
       - RQ_DASHBOARD_PASSWORD=${RQ_DASHBOARD_PASSWORD}
+    ports:
+      - "9181:9181"
   worker:
     build: .
     depends_on:
