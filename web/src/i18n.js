@@ -14,6 +14,7 @@ i18n
     fallback: 'en',
     debug: true,
     Whitelist: Languages,
+    useCookie: false,
     interpolation: {
       escapeValue: false // react already safes from xss
     }

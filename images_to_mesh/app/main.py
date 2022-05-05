@@ -42,7 +42,8 @@ def file_upload():
         else:
             return "Invalid file extension", 400
 
-    folder: Path = app.config["UPLOAD_FOLDER"] / str(uuid4()) / "input"
+    job_id: str = str(uuid4())
+    folder: Path = app.config["UPLOAD_FOLDER"] / job_id / "input"
     if not folder.exists():
         folder.mkdir(parents=True)
 
@@ -58,9 +59,9 @@ def file_upload():
         user_email = request.form.get("user_email")
 
     if "step2" in request.form and not int(request.form.get("step2")):
-        return process_order.queue_step_1(processed_filenames, user_email)
+        return process_order.queue_step_1(processed_filenames, user_email, job_id)
     else:
-        return process_order.queue_step_1_2(processed_filenames, user_email)
+        return process_order.queue_step_1_2(processed_filenames, user_email, job_id)
 
 
 @app.route("/savefile", methods=["POST"])
@@ -84,8 +85,8 @@ def reconstruct_mesh():
 @app.route("/versions", methods=["GET"])
 def get_versions():
     i = request.args.get("id")
-    step1_versions = PosixPath("/usr/src/app/data") / i / "step1/*"
-    step2_versions = PosixPath("/usr/src/app/data") / i / "step2/*"
+    step1_versions = PosixPath("/usr/src/app/data") / i / "step1/v???"
+    step2_versions = PosixPath("/usr/src/app/data") / i / "step2/v???"
     step1_step2_versions = glob.glob(str(step1_versions)) + glob.glob(str(step2_versions))
     versions = {'pointcloud': [], 'mesh': []}
     for version in step1_step2_versions:
