@@ -58,6 +58,7 @@ services:
       - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
       - RQ_DASHBOARD_USERNAME=${RQ_DASHBOARD_USERNAME}
       - RQ_DASHBOARD_PASSWORD=${RQ_DASHBOARD_PASSWORD}
+      - RQ_DASHBOARD_URL_PREFIX=/dashboard
     expose:
       - "9181"
   worker:
