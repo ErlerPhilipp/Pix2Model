@@ -221,3 +221,22 @@ button:hover {
     align-content: center;
     flex-direction: column;
 }
+
+.edit_undo_redo_box {
+    position: absolute;
+    right: 300px;
+    top: 10px;
+    z-index: 2000;
+}
+
+.edit_undo_redo_button {
+    width:30px;
+    background: transparent;
+    border: None
+}
+
+.edit_undo_redo_button:hover:enabled {
+    color: blue;
+    background: transparent;
+    cursor: pointer;
+}

@@ -14,12 +14,12 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
-import { FaInfoCircle } from 'react-icons/fa'; 
+import { FaInfoCircle, FaTheRedYeti } from 'react-icons/fa'; 
 import { isMobile } from 'react-device-detect';
 
 import 'react-dropdown/style.css';
-
 import './EditComponent.css';
+
 
 class Edit extends Component {
   constructor(props) {
@@ -37,7 +37,13 @@ class Edit extends Component {
       selected_version: '',
       selected_step: '',
       loading: false,
-      pointcloud: false
+      pointcloud: false,
+      model: {
+        past: [],
+        future: [],
+        canUndo: false,
+        canRedo: false
+      }
     };
   }
 
@@ -75,7 +81,7 @@ class Edit extends Component {
     });
     // transformcontrols
     this._handleUpdate = this.updateTransformation.bind(this)
-    this.transformControls.addEventListener('change', this._handleUpdate);
+    this.transformControls.addEventListener('mouseUp', () => this.updateTransformation(false));
     this.scene.add(this.transformControls);
     window.addEventListener('keydown', function (event) {
       scope.setTransformation(scope, event.key)
@@ -360,9 +366,9 @@ class Edit extends Component {
   addObject(object, filename) {
     this.removeObject()
     if (object.type == 'Group') {
-      this.object = object.children[0];
+      this.object = object.children[0]
     } else {
-      this.object = object;
+      this.object = object
     }
     if (this.object.type == 'Points') {
       this.setState({pointcloud: true});
@@ -402,7 +408,13 @@ class Edit extends Component {
     if (this.boxHelper) {
       this.scene.remove(this.boxHelper);
     }
-    this.setState({loaded: false, name: '', options: {}, option_versions: [], pointcloud: false});
+    var model = {
+      past: [],
+      future: [],
+      canUndo: false,
+      canRedo: false
+    }
+    this.setState({loaded: false, name: '', options: {}, option_versions: [], pointcloud: false, model: model});
   }
 
   /**
@@ -430,9 +442,25 @@ class Edit extends Component {
    * 
    * Update Transformation via the gizmo / transformcontrols 
    */
-  updateTransformation() {
+  updateTransformation(stateUpdated) {
     if (!this.object) {
       return;
+    }
+    if (!stateUpdated) {
+      var past = this.state.model.past
+      var oldModel = this.object.clone()
+      oldModel.position.x = this.state.translation.x
+      oldModel.position.y = this.state.translation.y
+      oldModel.position.z = this.state.translation.z
+      oldModel.rotation.x = this.state.rotation.x / 180 * Math.PI
+      oldModel.rotation.y = this.state.rotation.y / 180 * Math.PI
+      oldModel.rotation.z = this.state.rotation.z / 180 * Math.PI
+      oldModel.scale.x = this.state.scale.x
+      oldModel.scale.y = this.state.scale.y
+      oldModel.scale.z = this.state.scale.z
+      past.push(oldModel)
+      var model = {...this.state.model, past, canUndo: true, future: [], canRedo: false}
+      this.setState({model: model})
     }
     var rotation = {x: this.object.rotation.x * 180 / Math.PI, y: this.object.rotation.y * 180 / Math.PI, z: this.object.rotation.z * 180 / Math.PI};
     var scale = {x: this.object.scale.x, y: this.object.scale.y, z: this.object.scale.z};
@@ -442,6 +470,7 @@ class Edit extends Component {
       this.boxHelper.update();
       this.updateLabels();
     }
+    
   }
 
   /**
@@ -451,7 +480,10 @@ class Edit extends Component {
    */
   updateValue(attribute, value) {
     const { t } = this.props;
-
+    var past = this.state.model.past
+    past.push(this.object.clone())
+    var model = {...this.state.model, past, canUndo: true, future: [], canRedo: false}
+    this.setState({model: model})
     if (attribute === t('edit.scale') + 'X') {
       this.object.scale.x = parseFloat(value)
     } else if (attribute === t('edit.scale') + 'Y') {
@@ -471,7 +503,7 @@ class Edit extends Component {
     } else if (attribute === 'RotationZ') {
       this.object.rotation.z = parseFloat(value) * Math.PI / 180
     }
-    this.updateTransformation();
+    this.updateTransformation(true);
   }
 
   /**
@@ -519,7 +551,7 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    this.setState({loading: true})
+    this.setState({ loading: true})
     this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
     this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
     this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
@@ -543,7 +575,10 @@ class Edit extends Component {
         that.scene.add(croppedObject);
         that.scene.remove(that.object);
         that.object = croppedObject;
-        that.setState({loading: false})
+        var past = that.state.model.past
+        past.push(this.object.clone())
+        var model = {...that.state.model, past, canUndo: true, future: [], canRedo: false}
+        that.setState({model: model, loading: false})
       } catch (error) {
         that.setState({loading: false})
         // set status message
@@ -590,12 +625,12 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
-    this.setState({loading: true})
     this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
     this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
     this.cropBox.scale.z = Math.abs(this.cropBox.scale.z)
     this.cropBox.updateMatrix();
     var croppedObject
+    this.setState({loading: true})
     const that = this
     setTimeout(function() {
       try {
@@ -614,7 +649,10 @@ class Edit extends Component {
         that.scene.add(croppedObject);
         that.scene.remove(that.object);
         that.object = croppedObject;
-        that.setState({loading: false})
+        var past = that.state.model.past
+        past.push(this.object.clone())
+        var model = {...that.state.model, past, future: [], canUndo: true, canRedo: false}
+        that.setState({model: model, loading: false})
       } catch (error) {
         that.setState({loading: false})
         // set status message
@@ -749,6 +787,44 @@ class Edit extends Component {
       document.getElementById('uuid_error').classList.remove('customHoverButton');
       document.getElementById('uuid_error').classList.add('customHoverDiv');
     }
+  }
+
+  undo() {
+    var past = this.state.model.past
+    var future = this.state.model.future
+    future.push(this.object.clone())
+
+    var object = past.pop()
+    this.scene.add(object);
+    this.scene.remove(this.object);
+    this.object = object;
+    this.object.updateMatrix()
+    this.transformControls.attach(this.object)
+
+    var canUndo = past.length > 0 ? true : false
+    var canRedo = true
+    var model = {future, past, canUndo, canRedo}
+    this.updateTransformation(true);
+    this.setState({model: model})
+  }
+
+  redo() {
+    var future = this.state.model.future
+    var past = this.state.model.past
+    past.push(this.object.clone())
+
+    var object = future.pop()
+    this.scene.add(object);
+    this.scene.remove(this.object);
+    this.object = object;
+    this.object.updateMatrix()
+    this.transformControls.attach(this.object)
+
+    var canUndo = true
+    var canRedo = future.length > 0 ? true : false
+    var model = {future, past, canUndo, canRedo}
+    this.updateTransformation(true);
+    this.setState({model: model})
   }
 
   componentDidUpdate(prevProps) {
@@ -902,6 +978,10 @@ class Edit extends Component {
               }}/>
             </div>  
           }
+        </div>
+        <div class='edit_undo_redo_box'>
+          <button disabled={!this.state.model.canUndo} key="undo" onClick={() => this.undo()} class='edit_undo_redo_button'><i class="fa fa-undo"></i></button>
+          <button disabled={!this.state.model.canRedo} key="redo" onClick={() => this.redo()} class='edit_undo_redo_button'><i class="fa fa-undo" style={{transform: 'scaleX(-1)'}}></i></button>
         </div>
       </div>
     )
