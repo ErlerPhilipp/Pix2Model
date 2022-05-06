@@ -50,20 +50,20 @@ def abort_job(job_id) -> bool:
     return True
 
 
-def queue_step_1(input_files: Any, user_email) -> int:
+def queue_step_1(input_files: Any, user_email, job_id: str = None) -> int:
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection, default_timeout=18000)
-    j1 = task_queue.enqueue(_structure_from_motion, input_files)
+    j1 = task_queue.enqueue(_structure_from_motion, input_files, job_id=job_id)
     j1.meta['mail'] = user_email
     j1.save_meta()
     print(str(Path(input_files[0]).parent.parent), flush=True)
     return str(Path(input_files[0]).parent.parent)
 
 
-def queue_step_1_2(input_files: Any, user_email) -> int:
+def queue_step_1_2(input_files: Any, user_email, job_id: str = None) -> int:
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection, default_timeout=18000)
-    j1 = task_queue.enqueue(_structure_from_motion, input_files)
+    j1 = task_queue.enqueue(_structure_from_motion, input_files, job_id=job_id)
     j2 = task_queue.enqueue(_mesh_reconstruction, depends_on=j1)
     j1.meta['mail'] = user_email
     j1.save_meta()
@@ -72,12 +72,12 @@ def queue_step_1_2(input_files: Any, user_email) -> int:
     return str(Path(input_files[0]).parent.parent)
 
 
-def queue_step_2(iid):
+def queue_step_2(iid, job_id: str = None):
     connection = Redis(host="redis")
     task_queue = Queue(connection=connection, default_timeout=18000)
     step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / iid / "step1/*"))
     pointcloud_file = str(PosixPath("/usr/src/app/data") / iid / "step1" / sorted(step1_versions, reverse=True)[0] / "output/points.ply")
-    j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, path=pointcloud_file)
+    j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, path=pointcloud_file, job_id=job_id)
     return pointcloud_file
 
 
