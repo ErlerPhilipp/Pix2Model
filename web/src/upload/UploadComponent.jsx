@@ -26,7 +26,7 @@ class Upload extends Component {
         paramName: "file",
         autoProcessQueue: false,
         uploadMultiple: true,
-        parallelUploads: 1,
+        parallelUploads: 100,
         maxFilesize: 50,
         maxFiles: 100,
         acceptedFiles: ".png, .jpg, .jpeg",
