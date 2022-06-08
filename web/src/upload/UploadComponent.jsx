@@ -34,6 +34,21 @@ class Upload extends Component {
         addRemoveLinks: true
       };
       var uploader = document.querySelector('#upload');
+      Dropzone.prototype.cancelUpload = function (file) {
+        var groupedFile, groupedFiles, _i, _j, _len, _len1, _ref;
+        if (file.status === Dropzone.UPLOADING) {
+            this.emit("canceled", file);
+        } else if ((_ref = file.status) === Dropzone.ADDED || _ref === Dropzone.QUEUED) {
+            file.status = Dropzone.CANCELED;
+            this.emit("canceled", file);
+            if (this.options.uploadMultiple) {
+                this.emit("canceledmultiple", [file]);
+            }
+        }
+        if (this.options.autoProcessQueue) {
+            return this.processQueue();
+        }
+      };
       that.dropzone = new Dropzone(uploader, dropzoneOptions);
       const submitButton = document.querySelector("#submit_upload");
       submitButton.addEventListener("click", eventArgs => {
