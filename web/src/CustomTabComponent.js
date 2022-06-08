@@ -13,6 +13,7 @@ import About from "./about/AboutComponent"
 import Edit from "./edit/EditComponent";
 import Impressum from './impressum/ImpressumComponent';
 import Privacy from './privacy/PrivacyComponent';
+import Support from './support/SupportComponent';
 
 import './index.css';
 
@@ -60,6 +61,9 @@ function CustomTabs() {
                   <About></About>
               </div>
               <div class='swipable_content'>
+                  <Support></Support>
+              </div>
+              <div class='swipable_content'>
                   <Privacy></Privacy>
               </div>
               <div class='swipable_content'>
@@ -67,8 +71,9 @@ function CustomTabs() {
               </div>
           </SwipeableViews>
           <footer className="footer">
-              <button onClick={() => setIndex(4)}>{t('footer.impressum')}</button>
-              <button onClick={() => setIndex(3)}>{t('footer.privacy')}</button>
+              <button onClick={() => setIndex(5)}>{t('footer.impressum')}</button>
+              <button onClick={() => setIndex(4)}>{t('footer.privacy')}</button>
+              <button onClick={() => setIndex(3)}>{t('footer.support')}</button>
           </footer>
           </div>
         </BrowserView>
