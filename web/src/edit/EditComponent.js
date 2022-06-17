@@ -73,10 +73,10 @@ class Edit extends Component {
     this.loader = new Loader(this);
     var scope = this;
     this.transformControls.addEventListener('mouseDown', function () {
-      this.controls.enabled = false;
+      scope.controls.enabled = false;
     });
     this.transformControls.addEventListener('mouseUp', function () {
-      this.controls.enabled = true;
+      scope.controls.enabled = true;
     });
     // transformcontrols
     this._handleUpdate = this.updateTransformation.bind(this)
