@@ -51,7 +51,6 @@ class Edit extends Component {
     if (isMobile) {
       return
     }
-    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     this.scene.background = new THREE.Color(0xfbebc3);
@@ -61,7 +60,7 @@ class Edit extends Component {
 
     const gridHelper = new THREE.GridHelper( 10, 50 );
     this.scene.add( gridHelper );
-
+    var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
     var labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     labelRenderer.domElement.style.position = 'absolute';
@@ -69,15 +68,15 @@ class Edit extends Component {
     this.mount.appendChild(labelRenderer.domElement);
 
     camera.position.z = 5;
-    const controls = new OrbitControls(camera, labelRenderer.domElement);
+    this.controls = new OrbitControls(camera, labelRenderer.domElement);
     this.transformControls = new TransformControls(camera, labelRenderer.domElement);
     this.loader = new Loader(this);
     var scope = this;
     this.transformControls.addEventListener('mouseDown', function () {
-      controls.enabled = false;
+      this.controls.enabled = false;
     });
     this.transformControls.addEventListener('mouseUp', function () {
-      controls.enabled = true;
+      this.controls.enabled = true;
     });
     // transformcontrols
     this._handleUpdate = this.updateTransformation.bind(this)
@@ -96,7 +95,7 @@ class Edit extends Component {
       requestAnimationFrame(animate);
       renderer.render(scope.scene, camera);
       labelRenderer.render( scope.scene, camera );
-      controls.update();
+      scope.controls.update();
     };
     animate();
     // loader
@@ -137,6 +136,9 @@ class Edit extends Component {
         break
       case "s":
         scope.transformControls.setMode("scale")
+        break
+      case "f":
+        scope.frameObject(scope);
         break
       case "+":
         scope.light.intensity += 0.5;
@@ -376,6 +378,7 @@ class Edit extends Component {
     this.scene.add(this.object);
     this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
+    this.frameObject(this)
   }
 
   /**
@@ -827,6 +830,36 @@ class Edit extends Component {
     this.setState({model: model})
   }
 
+  frameObject(scope) {
+    if (!scope.object) {
+      return
+    }
+
+    scope.object.geometry.computeBoundingBox();
+    const boundingBox = new THREE.Box3();
+    boundingBox.copy( scope.object.geometry.boundingBox ).applyMatrix4( scope.object.matrixWorld );
+    const size = new THREE.Vector3();
+    boundingBox.getSize(size);
+    const center = new THREE.Vector3();
+    boundingBox.getCenter(center);
+
+    scope.controls.target.set(center.x, center.y, center.z)
+    scope.controls.update()
+
+    const maxDim = Math.max( size.x, size.y, size.z );
+    const fov = scope.controls.object.fov * ( Math.PI / 180 );
+    let cameraZ = Math.abs( (maxDim / 2) / Math.tan( fov / 2 ) );
+    cameraZ *= 1.5;
+    
+    var directionVector = new THREE.Vector3()
+    directionVector.copy(scope.controls.object.position)
+    directionVector = directionVector.sub(center)
+    const unitDirectionVector = directionVector.normalize().multiplyScalar(cameraZ).add(center)
+    
+    scope.controls.object.position.set(unitDirectionVector.x, unitDirectionVector.y, unitDirectionVector.z)
+    scope.controls.update()
+  }
+
   componentDidUpdate(prevProps) {
     if(prevProps.showItem !== this.props.showItem) {
       ReactTooltip.rebuild();
@@ -965,7 +998,8 @@ class Edit extends Component {
                   button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
                   button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
                   button_increase_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
-                  button_decrease_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "-")} />
+                  button_decrease_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "-")} />,
+                  button_frame: <button class="transformation_button" onClick={() => this.frameObject(this)} />
                 }}/>
             </div>
           }
@@ -974,7 +1008,8 @@ class Edit extends Component {
               <Trans i18nKey='edit.interaction_no_lights' components={
                 { button_translation: <button class="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
                   button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
-                  button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />
+                  button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
+                  button_frame: <button class="transformation_button" onClick={() => this.frameObject(this)} />
               }}/>
             </div>  
           }

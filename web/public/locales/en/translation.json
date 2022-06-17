@@ -27,8 +27,8 @@
         "about": "Info"
     },
     "edit": {
-        "interaction": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale\n<button_increase_light>+</button_increase_light>   Increase light intesity\n<button_decrease_light>-</button_decrease_light>   Decrease light intesity",
-        "interaction_no_lights": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale",
+        "interaction": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale\n<button_frame>f</button_frame>   Frame object\n<button_increase_light>+</button_increase_light>   Increase light intesity\n<button_decrease_light>-</button_decrease_light>   Decrease light intesity",
+        "interaction_no_lights": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale\n<button_frame>f</button_frame>   Frame object",
         "conversion": "CONVERSION",
         "reconstruct": "Reconstruct Mesh",
         "transformation": "TRANSFORMATIONS",
