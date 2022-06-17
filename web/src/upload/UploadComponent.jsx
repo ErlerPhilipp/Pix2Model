@@ -34,6 +34,21 @@ class Upload extends Component {
         addRemoveLinks: true
       };
       var uploader = document.querySelector('#upload');
+      Dropzone.prototype.cancelUpload = function (file) {
+        var groupedFile, groupedFiles, _i, _j, _len, _len1, _ref;
+        if (file.status === Dropzone.UPLOADING) {
+            this.emit("canceled", file);
+        } else if ((_ref = file.status) === Dropzone.ADDED || _ref === Dropzone.QUEUED) {
+            file.status = Dropzone.CANCELED;
+            this.emit("canceled", file);
+            if (this.options.uploadMultiple) {
+                this.emit("canceledmultiple", [file]);
+            }
+        }
+        if (this.options.autoProcessQueue) {
+            return this.processQueue();
+        }
+      };
       that.dropzone = new Dropzone(uploader, dropzoneOptions);
       const submitButton = document.querySelector("#submit_upload");
       submitButton.addEventListener("click", eventArgs => {
@@ -48,8 +63,9 @@ class Upload extends Component {
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
           that.setState({success: true, id: response.replace('data/','')})
           submitButton.disablwrapper_uploaded = true;
-          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.href}?id=${response.replace('data/','')}&page=1">${window.location.href}?id=${response.replace('data/','')}&page=1</a>`;
-
+          var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${response.replace('data/','')}`;    
+          window.history.pushState({ path: refresh }, '', refresh);
+          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1">${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1</a>`;
       });
     }, 0);
   }
