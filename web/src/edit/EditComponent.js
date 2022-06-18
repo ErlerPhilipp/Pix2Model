@@ -378,7 +378,31 @@ class Edit extends Component {
     this.scene.add(this.object);
     this.transformControls.attach(this.object);
     this.setState({loaded: true, name: filename});
-    this.frameObject(this)
+    this.frameObject(this);
+    this.centerPivotPointWithinBoundingBox(this)
+  }
+
+  centerPivotPointWithinBoundingBox(scope) {
+    if (!scope.object) {
+      return
+    }
+    scope.object.geometry.computeBoundingBox();
+    const boundingBox = new THREE.Box3();
+    boundingBox.copy( scope.object.geometry.boundingBox ).applyMatrix4( scope.object.matrixWorld );
+    const center = new THREE.Vector3();
+    boundingBox.getCenter(center);
+
+    const updatedObjectPosition = scope.object.position.add(center)
+    scope.object.position.set(updatedObjectPosition.x, updatedObjectPosition.y, updatedObjectPosition.z);
+    var positions = scope.object.geometry.attributes.position.array
+    var updatedPositions = []
+    for (var i = 0; i < positions.length; i += 3) {
+      const uPos = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).sub(scope.object.position)
+      updatedPositions.push(uPos.x, uPos.y, uPos.z)
+    }
+    scope.object.geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+    scope.object.updateMatrix();
+    scope.updateTransformation(true);
   }
 
   /**
@@ -431,7 +455,16 @@ class Edit extends Component {
     }
     if (this.object.type == 'Points') {
       var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-      var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
+      var geometry = this.object.geometry.clone()
+      var positions = this.object.geometry.attributes.position.array
+      var updatedPositions = []
+      for (var i = 0; i < positions.length; i += 3) {
+        const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(this.object.matrixWorld)
+        updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
+      }
+      geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
+
+      var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
       link.href = URL.createObjectURL(b);
     } else {
       link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
@@ -579,9 +612,11 @@ class Edit extends Component {
         that.scene.remove(that.object);
         that.object = croppedObject;
         var past = that.state.model.past
-        past.push(this.object.clone())
+        past.push(that.object.clone())
         var model = {...that.state.model, past, canUndo: true, future: [], canRedo: false}
         that.setState({model: model, loading: false})
+        that.centerPivotPointWithinBoundingBox(that)
+        that.updateTransformation(true);
       } catch (error) {
         that.setState({loading: false})
         // set status message
@@ -653,9 +688,11 @@ class Edit extends Component {
         that.scene.remove(that.object);
         that.object = croppedObject;
         var past = that.state.model.past
-        past.push(this.object.clone())
+        past.push(that.object.clone())
         var model = {...that.state.model, past, future: [], canUndo: true, canRedo: false}
         that.setState({model: model, loading: false})
+        that.centerPivotPointWithinBoundingBox(that)
+        that.updateTransformation(true);
       } catch (error) {
         that.setState({loading: false})
         // set status message
