@@ -50,30 +50,30 @@ class Edit extends Component {
   }
 
   componentDidMount() {
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
     this.scene.background = new THREE.Color(0xfbebc3);
     this.light = new THREE.AmbientLight(0x404040); // soft white light
     this.scene.add(this.light);
-    this.mount.appendChild(renderer.domElement);
+    this.mount.appendChild(this.renderer.domElement);
 
     const gridHelper = new THREE.GridHelper( 10, 50 );
     this.scene.add( gridHelper );
     if (isMobile) {
-      var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 1000);
-      renderer.setPixelRatio(window.devicePixelRatio);
+      this.camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 1000);
+      this.renderer.setPixelRatio(window.devicePixelRatio);
     } else {
-      var camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
+      this.camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
     }
-    var labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
-    labelRenderer.domElement.style.position = 'absolute';
-    labelRenderer.domElement.style.top = '0px';
-    this.mount.appendChild(labelRenderer.domElement);
+    this.labelRenderer = new CSS2DRenderer();
+    this.labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+    this.labelRenderer.domElement.style.position = 'absolute';
+    this.labelRenderer.domElement.style.top = '0px';
+    this.mount.appendChild(this.labelRenderer.domElement);
 
-    camera.position.z = 5;
-    this.controls = new OrbitControls(camera, labelRenderer.domElement);
-    this.transformControls = new TransformControls(camera, labelRenderer.domElement);
+    this.camera.position.z = 5;
+    this.controls = new OrbitControls(this.camera, this.labelRenderer.domElement);
+    this.transformControls = new TransformControls(this.camera, this.labelRenderer.domElement);
     this.loader = new Loader(this);
     var scope = this;
     this.transformControls.addEventListener('mouseDown', function () {
@@ -82,6 +82,12 @@ class Edit extends Component {
     this.transformControls.addEventListener('mouseUp', function () {
       scope.controls.enabled = true;
     });
+    this.transformControls.addEventListener('change', function () {
+      scope.renderScene(scope)
+    });
+    this.controls.addEventListener('change', function() {
+      scope.renderScene(scope)
+    })
     // transformcontrols
     this._handleUpdate = this.updateTransformation.bind(this)
     this.transformControls.addEventListener('mouseUp', () => this.updateTransformation(false));
@@ -91,25 +97,17 @@ class Edit extends Component {
     })
     if (isMobile) {
       window.addEventListener('resize', function() {
-        camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+        scope.camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
+        scope.camera.updateProjectionMatrix();
+        scope.renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
       })
     } else {
       window.addEventListener('resize', function() {
-        camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+        scope.camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
+        scope.camera.updateProjectionMatrix();
+        scope.renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
       })
     }
-    // animation
-    var animate = function () {
-      requestAnimationFrame(animate);
-      renderer.render(scope.scene, camera);
-      labelRenderer.render( scope.scene, camera );
-      scope.controls.update();
-    };
-    animate();
     // loader
     document.addEventListener('dragover', function (event) {
       event.preventDefault();
@@ -136,6 +134,12 @@ class Edit extends Component {
       document.getElementById('uuid').value = id
       this.uploadFileFromServer()
     }
+    this.renderScene(this)
+  }
+
+  renderScene(scope) {
+    scope.renderer.render(scope.scene, scope.camera);
+    scope.labelRenderer.render( scope.scene, scope.camera );
   }
 
   setTransformation(scope, transformation) {
@@ -292,6 +296,7 @@ class Edit extends Component {
       })
   }
 
+
   /**
    * SERVER CALL
    * 
@@ -394,6 +399,7 @@ class Edit extends Component {
     this.setState({loaded: true, name: filename});
     this.frameObject(this);
     this.centerPivotPointWithinBoundingBox(this)
+    this.renderScene(this)
   }
 
   centerPivotPointWithinBoundingBox(scope) {
@@ -456,6 +462,7 @@ class Edit extends Component {
       canRedo: false
     }
     this.setState({loaded: false, name: '', options: {}, option_versions: [], pointcloud: false, model: model});
+    this.renderScene(this)
   }
 
   /**
@@ -520,7 +527,7 @@ class Edit extends Component {
       this.boxHelper.update();
       this.updateLabels();
     }
-    
+    this.renderScene(this);
   }
 
   /**
@@ -575,6 +582,7 @@ class Edit extends Component {
       this.scene.remove(this.cropBox);
       this.transformControls.attach(this.object);
     }
+    this.renderScene(this);
   }
 
   /**
@@ -631,6 +639,7 @@ class Edit extends Component {
         that.setState({model: model, loading: false})
         that.centerPivotPointWithinBoundingBox(that)
         that.updateTransformation(true);
+        that.renderScene(that);
       } catch (error) {
         that.setState({loading: false})
         // set status message
@@ -707,6 +716,7 @@ class Edit extends Component {
         that.setState({model: model, loading: false})
         that.centerPivotPointWithinBoundingBox(that)
         that.updateTransformation(true);
+        that.renderScene(that);
       } catch (error) {
         that.setState({loading: false})
         // set status message
@@ -765,6 +775,7 @@ class Edit extends Component {
       this.object.remove(this.yLabel);
       this.object.remove(this.zLabel);
     }
+    this.renderScene(this);
   }
 
   /**
@@ -788,6 +799,7 @@ class Edit extends Component {
     this.zDiv.className = 'label z';
     this.zDiv.style.marginTop = '-1em';
     this.zLabel = new CSS2DObject( this.zDiv );
+    this.renderScene(this);
   }
 
   /**
@@ -811,6 +823,7 @@ class Edit extends Component {
 
     this.zDiv.textContent = this.size.z;
     this.zLabel.position.set(0, 0, this.size.z / 2);
+    this.renderScene(this);
   }
 
   /**
@@ -863,6 +876,7 @@ class Edit extends Component {
     var model = {future, past, canUndo, canRedo}
     this.updateTransformation(true);
     this.setState({model: model})
+    this.renderScene(this);
   }
 
   redo() {
@@ -885,6 +899,7 @@ class Edit extends Component {
     var model = {future, past, canUndo, canRedo}
     this.updateTransformation(true);
     this.setState({model: model})
+    this.renderScene(this);
   }
 
   frameObject(scope) {
