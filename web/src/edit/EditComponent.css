@@ -3,6 +3,14 @@ canvas {
     margin-left: 10px;
 }
 
+@media screen and (max-width: 540px) {
+    canvas {
+        width: calc(100vw - 20px) !important;
+        height: calc(100vh - 20px) !important;
+        margin: 10px;
+    }
+}
+
 .edit_toolbar {
     background-color: #263238;
     height: calc(100vh - 105px);
@@ -103,6 +111,28 @@ button:hover {
     cursor: pointer;
     left: calc(50% - 30px);
     bottom: 40px;
+    position: absolute;  
+}
+
+.edit_download_mobile {
+    margin-top: 10px;
+    margin-left: calc(100vw - 80px);
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.edit_upload_mobile {
+    margin-top: 10px;
+    margin-left: calc(100vw - 150px);
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
     position: absolute;  
 }
 
