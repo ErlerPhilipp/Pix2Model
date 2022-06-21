@@ -13,7 +13,7 @@ class Upload extends Component {
     super(props);
     Dropzone.autoDiscover = false;
     this.state = {
-      success: false,
+      success: true,
       id: ''
     };
   }
