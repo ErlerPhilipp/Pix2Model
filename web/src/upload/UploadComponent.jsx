@@ -95,6 +95,8 @@ class Upload extends Component {
     })
       .then(res => {
         document.querySelector("#response_field").innerHTML = t('upload.abort.success').replace('{id}', this.state.id);
+        // disable abort button
+        document.querySelector("#abort_button").disabled = true;
       })
       .catch((error) => {
         document.querySelector("#response_field").innerHTML = t('upload.abort.error').replace('{id}', this.state.id);
@@ -152,7 +154,7 @@ class Upload extends Component {
                 <hr></hr>
                 <div class="edit_buttons">
                   <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
-                  <button onClick={() => {this.abort()}} class="button_small">{t('upload.abort.button')}</button><br />
+                  <button id="abort_button" onClick={() => {this.abort()}} class="button_small">{t('upload.abort.button')}</button><br />
                 </div>
               </div>
             }
@@ -202,7 +204,7 @@ class Upload extends Component {
                 <hr></hr>
                 <div class="edit_buttons">
                   <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
-                  <button onClick={() => {this.abort()}} class="button_small">{t('upload.abort')}</button><br />
+                  <button id="abort_button" onClick={() => {this.abort()}} class="button_small">{t('upload.abort')}</button><br />
                 </div>
               </div>
             }
