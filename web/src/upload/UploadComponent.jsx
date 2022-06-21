@@ -84,6 +84,7 @@ class Upload extends Component {
 
   reset() {
     this.setState({success: false})
+    document.querySelector("#abort_button").disabled = true;
     this.init()
   }
 
