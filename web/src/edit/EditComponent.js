@@ -100,12 +100,14 @@ class Edit extends Component {
         scope.camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
         scope.camera.updateProjectionMatrix();
         scope.renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+        scope.renderScene(scope)
       })
     } else {
       window.addEventListener('resize', function() {
         scope.camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
         scope.camera.updateProjectionMatrix();
         scope.renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+        scope.renderScene(scope)
       })
     }
     // loader
@@ -163,6 +165,7 @@ class Edit extends Component {
         scope.light.intensity -= 0.5;
         break
     }
+    scope.renderScene(scope)
   }
 
   loadTestBunnyWithTexture() {
