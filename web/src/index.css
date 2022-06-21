@@ -87,6 +87,13 @@ code {
   transition: background-color 0.5s ease;
 }
 
+.button_small:disabled,
+.button_small[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+}
+
 .wrapper_centered_box {
   justify-content: center;
   border-radius: 5px;
