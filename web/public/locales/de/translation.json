@@ -1,0 +1,79 @@
+{
+    "about": {
+        "team": "Projektteam",
+        "netidee": {
+            "top": "Pics2Model Web (Beta Version)",
+            "sub": "gefördert von Netidee"
+        },
+        "content": "<bold>Was ist Pics2Model?</bold>\nPics2Model ist ein kostenloser Webservice, mit dem ihr einige Bilder in ein 3D-Modell umwandeln könnt. Ihr müsst dazu nichts installieren, nur eure Bilder hochladen und unser Server übernimmt den Rest. Mit unserem Online-Editor könnt ihr das Modell rotieren, bewegen, skalieren und zuschneiden. Schließlich könnt ihr das erzeugte Modell herunterladen und bei Bedarf mit einem Modeling-Tool eurer Wahl verfeinern.\n\n<bold>Für wen ist Pics2Model?</bold>\nPics2Model ist gedacht für alle, die schnell und einfach ein 3D-Modell aus Bildern generieren wollen. Hier einige Beispiele: Künstler*innen können z.B. digitale Kopien ihrer Skulpturen auf einer Website anzeigen. So können ganze Online-Kataloge for Museen und Läden entstehen. Vermieter*innen können mit Pics2Model virtuelle Besichtigungen anbieten. Ihr könnte das Modell für 3D-Druck verwenden (etwas Nachbearbeitung wird nötig sein). Stadtplaner*innen können mit dem Modell mögliche Änderungen kommunizieren. Unsere 3D-Modelle können auch die Basis für Meshes für Spiele sein.\n\n<bold>Wie kann man gute Ergebnisse bekommen?</bold>\nIhr werdet überraschend viele Fotos benötigen, abhängig von der Größe und Komplexität des Zielobjekts. Als grobe Richtlinie, ihr braucht 50+ Bilder für einzelne Objekte und 100+ für einen Raum. Die Fotos sollten mindestens zu 50% überlappen und das Objekt aus allen Richtungen zeigen. Wenn möglich, verwendet die gleiche Kamera und sorgt für ähnliche Lichtverhältnisse. Vermeidet Objekte mit sehr gleichmäßiger Oberfläche, mit stark glänzendem oder transparentem Material. \n\n<bold>Wie funktioniert Pics2Model?</bold>\nDie Verarbeitungsschritte sind:\nBilder >> Structure from Motion (SfM) >> Multi-View Stereo (MVS) >> Rekonstruktion >> 3D Modell\nUnser Webservice verwendet SfM und MVS von <a href='https://colmap.github.io/'>COLMAP</a> und Screened Poisson Surface Reconstruction von <a href='https://www.meshlab.net/'>Meshlab</a>, um die bestmögliche Qualität mit minimalen Einschränkungen zu ermöglichen. Ihr habt auch direkten Zugriff auf die Punktwolke, ein Zwischenergebnis zwischen MVS und Rekonstruktion.\n\n<bold>Welche Einschränkungen gibt es?</bold>\nDie Ressourcen des Servers sind limitiert. Damit es fair bleibt müssen wir die Rechenzeit für jedes Objekt begrenzen. Das tun wir, indem wir die Anzahl der Bilder und deren Gesamtgröße limitieren. Wenn ihr diese Begrenzung für besonders große Objekte oder besonders genaue Modelle überschreiten müsst, kontaktiert uns bitte. Wir können wahrscheinlich eine Lösung finden.\n\n<bold>Warum ist Pics2Model kostenlos?</bold>\nVielen Dank and <a href='https://www.netidee.at/images2mesh-web'>Netidee</a> für die Förderung dieses Projekts! Netidee ist ein Förderprogramm der <a href='https://www.internetstiftung.at/'>Internet Stiftung Österreich</a>, die damit das freie Internet unterstützt. Dieses Projekt wird an der TU WIEN, hauptsächlich bei der <a href='https://www.cg.tuwien.ac.at/'>Forschungsgruppe für Computergraphik</a> von Angestellten und Studierenden durchgeführt.",
+        "stefan": "Planung",
+        "philipp": "Projekt Organisierung und Planung",
+        "sophie": "Frontend",
+        "johannes": "SfM und MVS",
+        "maximilian": "Backend",
+        "florian": "Rekonstruction"
+    },
+    "footer": {
+        "impressum": "Impressum",
+        "privacy": "Datenschutz",
+        "support": "Hilfe"
+    },
+    "privacy": "<h1>Datenschutzerklärung</h1>Sie besuchen eine Sub-Domain des Forschungsbereichs Computer Graphics der TU-Wien. Die Top-Domain (<a href='https://www.cg.tuwien.ac.at/'>https://www.cg.tuwien.ac.at/</a>) hat eine andere Datenschutzerklärung. Datenschutz und Datensicherheit bei der Nutzung unserer Websites sind für uns sehr wichtig. Wir möchten Sie daher an dieser Stelle darüber informieren, welche personenbezogenen Daten wir bei Ihrem Besuch auf unserer Websites erfassen und für welche Zwecke diese genutzt werden.\nDer Verantwortliche im Sinne der Datenschutz-Grundverordnung (DSGVO) und anderer nationaler Datenschutzgesetze der Mitgliedsstaaten sowie sonstiger datenschutzrechtlicher Rechtsvorschriften ist das Rektorat der Technischen Universität Wien, Karlsplatz 13, 1040 Wien.\nBeachten Sie bitte auch die <a href='https://www.tuwien.at/tu-wien/organisation/zentrale-bereiche/datenschutz-und-dokumentenmanagement/datenschutz/'>Datenschutzerklärung der zentralen TU-Wien Webseite</a>.\n\n<bold>Cookies</bold>\nUnsere Website verwendet keine Cookies.\n\n<bold>Hochgeladene Daten und deren Verarbeitungsergebnisse</bold>\nDie Daten, die Sie hochladen bleiben auf unserem Server gespeichert, bis sie manuell gelöscht werden oder 7 Tagen seit dem Upload vergangen sind. Es werden keine Daten an Dritte weitergegeben. Wir behalten uns vor, diese Daten nachträglich zu prüfen, wenn uns konkrete Anhaltspunkte für eine rechtswidrige Nutzung bekannt werden.\n\n<bold>SSL-Verschlüsselung</bold>\nDiese Seite nutzt aus Gründen der Sicherheit und zum Schutz der Übertragung vertraulicher Inhalte, wie zum Beispiel der Anfragen, die Sie an uns als Seitenbetreiber senden, eine SSL-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von <italic>http://</italic> auf <italic>https://</italic> wechselt und an dem Schloss-Symbol in Ihrer Browserzeile.\nWenn die SSL Verschlüsselung aktiviert ist, können die Daten, die Sie an uns übermitteln, nicht von Dritten mitgelesen werden.\n\n<bold>Ihre Rechte</bold>\nIhnen stehen grundsätzlich die Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerruf und Widerspruch zu. Wenn Sie glauben, dass die Verarbeitung Ihrer Daten gegen das Datenschutzrecht verstößt oder Ihre datenschutzrechtlichen Ansprüche sonst in einer Weise verletzt worden sind, können Sie sich bei der Aufsichtsbehörde beschweren. In Österreich ist dies die Datenschutzbehörde.\n\n<bold>Kontakt</bold>\nWenn Sie Fragen bezüglich des Datenschutzes an der TU-Wien haben, richten Sie ihre Anfrage bitte an die Datenschutzbeauftragte der TU-Wien:\n\nMag. Christina Thirsfeld\nTechnische Universität Wien\nKarlsplatz 13/018\ndatenschutz@tuwien.ac.at\n\nSofern Betroffenenrechte im Sinn dieser Datenschutzerklärung (z.B. Recht auf Auskunft, Recht auf Löschung etc.) geltend gemacht werden, sind diese Ansuchen bzw. Anträge ausnahmslos an datenschutz@tuwien.ac.at zu richten.",
+    "impressum": "<h1>Impressum</h1>TU Wien, Forschungsbereich Computer Graphics\nFavoritenstr. 9-11 / E193-02, 1040 Wien, Österreich\n\nTelefon: +43 1 58801 193201\nE-Mail: sekr@cg.tuwien.ac.at",
+    "support": "<h1>Probleme melden</h1>Legen Sie bitte ein neues Issue an und wir versuchen das Problem so schnell wie möglich zu beheben: <a href='https://github.com/ErlerPhilipp/Pix2Model/issues'>https://github.com/ErlerPhilipp/Pix2Model/issues</a>",
+    "menu": {
+        "download": "Herunterladen",
+        "edit": "Bearbeiten",
+        "about": "Info"
+    },
+    "edit": {
+        "interaction": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\n<button_translation>t</button_translation>   Translation\n<button_rotation>r</button_rotation>   Rotation\n<button_scale>s</button_scale>   Skalierung\n<button_frame>f</button_frame>   Objekt zentrieren\n<button_increase_light>+</button_increase_light>   Lichtintensität erhöhen\n<button_decrease_light>-</button_decrease_light>   Lichtintensität reduzieren",
+        "interaction_no_lights": "Lade entweder ein Modell vom Server durch das Eingeben der entsprechenden ID oder lade .ply oder .obj Dateien via drag&drop oder über die Schaltfläche rechts unten. \n \nShortcuts:\n<button_translation>t</button_translation>   Translation\n<button_rotation>r</button_rotation>   Rotation\n<button_scale>s</button_scale>   Skalierung\n<button_frame>f</button_frame>   Objekt zentrieren",
+        "conversion": "KONVERTIERUNG",
+        "reconstruct": "Mesh Rekonstruktion",
+        "transformation": "TRANSFORMATIONEN",
+        "activate": "Aktivieren",
+        "scale": "Skalierung",
+        "crop": {
+            "crop": "SCHNEIDEN",
+            "keep": "Behalte Überschn.",
+            "remove": "Entferne Überschn."
+        },
+        "measure": "MAßE",
+        "warning": {
+            "progress": {
+                "file": "Die Datei {id} wird momentan erstellt.\nBitte versuchen Sie es später noch einmal",
+                "reconstruction": "Die Rekonstruktion für die Datei {id} wurde erfolgreich gestartet.\nLaden Sie in ein paar Minuten das Modell neu, um die neusten Versionen zu sehen"
+            }
+        },
+        "error": {
+            "filenotfound": "Keine Datei mit der ID {id} wurde gefunden",
+            "server": {
+                "file": "Ein Fehler trat auf beim Laden der Datei {id}",
+                "versions": "Ein Fehler ist aufgetreten beim Laden der Versionen der Datei {id}",
+                "reconstruction": "Ein Fehler ist bei der Rekonstruktion der Datei {id} aufgetreten"
+            }
+        }
+    },
+    "upload": {
+        "email": "\n[Optional] Benachrichtigungs-Email, sobald die Konvertierung zum Herunterladen bereit steht",
+        "pc": {
+            "hint": "Aktivieren Sie das obige Kästchen, um die Verarbeitungszeit und die Qualität zu erhöhen. Die Bilder werden in eine Punktwolke umgewandelt, anstatt direkt das rekonstruierte Modell zu erzeugen. Die Punktwolke kann im Bearbeitungsbereich bearbeitet und bereinigt werden und kann dann erneut unter Ply-2-Mesh hochgeladen werden, um das endgültige rekonstruierte Modell zu erzeugen.",
+            "label": "Zu Punktwolke konvertieren"
+        },
+        "files": {
+            "drop": "Dateien zum Hochladen hier ablegen",
+            "support": "Unterstützt "
+        },
+        "submit": "Dateien übertragen",
+        "new": "Neue Rekonstruktion",
+        "abort": {
+            "button": "Rekonstruktion abbrechen",
+            "success": "Die Rekonstruktion mit der Job-ID {id} wurde erfolgreich abgebrochen",
+            "error": "Etwas ist fehlgeschlagen bei Abbrechen der Rekonstruktion mit der Job-ID {id}"
+        },
+        "reset": "Zurücksetzen",
+        "info": "Legen Sie Dateien zum Hochladen hier ab<br/><small>Max 100 Dateien, 10MB pro Datei</small>",
+        "success": "Hochladen war erfolgreich!\nDas Mesh wird über folgenden Link unter BEARBEITEN bereitgestellt, sobald es fertiggestellt ist:\n"
+    }
+}

@@ -1,0 +1,272 @@
+canvas {
+    width: calc(100vw - 300px);
+    margin-left: 10px;
+}
+
+@media screen and (max-width: 540px) {
+    canvas {
+        width: calc(100vw - 20px) !important;
+        height: calc(100vh - 20px) !important;
+        margin: 10px;
+    }
+}
+
+.edit_toolbar {
+    background-color: #263238;
+    height: calc(100vh - 105px);
+    width: 270px;
+    position: absolute;
+    right: 10px;
+    align-content: center;
+    display: inline-block;
+    justify-content: center;
+    align-items: baseline;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+button {
+    background-color: azure;
+    width: 230px;
+    height: 50px;
+    font-size: 1.5em;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: rgb(225, 255, 255);
+}
+
+.transformation_button {
+    background-color: lightblue;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    font-size: 1em;
+}
+
+.edit_options_refresh  {
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+}
+
+.edit_remove {
+    display: block;
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    border: 1px solid black;
+    color: red;
+    cursor: pointer;
+    top: 40px;
+    right: 20px;
+    position: absolute;
+}
+
+.edit_refresh {
+    height: 40px;
+    width: 40px;
+    margin-left: 20px;
+    border-radius: 50%;
+    border: 1px solid black;
+    color: green;
+    cursor: pointer;
+}
+
+.edit_refresh.loading {
+  animation: spin 3s linear infinite;
+}  
+ 
+@keyframes spin {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+.edit_download {
+    display: block;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    margin-left: calc(50% - 30px);
+    margin-top: 20px;
+}
+
+.edit_upload {
+    display: block;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    left: calc(50% - 30px);
+    bottom: 40px;
+    position: absolute;  
+}
+
+.edit_download_mobile {
+    margin-top: 10px;
+    margin-left: calc(100vw - 80px);
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.edit_upload_mobile {
+    margin-top: 10px;
+    margin-left: calc(100vw - 150px);
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    position: absolute;  
+}
+
+.edit_upload:disabled,
+.edit_upload[disabled]{
+    color: rgba(16, 16, 16, 0.3);
+    border: 1px solid rgba(16, 16, 16, 0.3);
+}
+
+.edit_box {
+    box-shadow: 0px 2px 3px rgb(0 0 0 / 13%), 1px 2px 2px rgb(0 0 0 / 10%), -1px -2px 2px rgb(0 0 0 / 5%);
+    padding: 10px;
+    margin: 25px 10px;
+    background-color: #37474F;
+    color: white;
+    max-height: calc(100vh - 255px);
+    overflow: auto;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+.edit_box::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+}
+
+.infobox {
+    white-space: pre-line;
+    position: absolute;
+    left: 30px;
+    background-color: rgba(38, 50, 56,0.8);
+    color: white;
+    padding: 8px;
+    display: block;
+    font-family: monospace;
+    width: 350px;
+    margin: 1em 0px;
+    z-index: 1000;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.heading_interaction_wrapper {
+    background: black;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    height: 20px;
+    margin-bottom: 20px;
+    padding: 3px 10px;
+}
+
+.heading_interaction {
+    margin: 0px;
+}
+
+.crop_button {
+    height: auto;
+    margin-top: 10px;
+    width: 110px;
+    font-size: 1em;
+}
+
+.spacing {
+    margin-right: 10px;
+}
+
+.recon_button {
+    height: auto;
+    font-size: 1em;
+    height: 40px;
+}
+
+.label {
+    color: #FFF;
+    font-family: sans-serif;
+    padding: 2px;
+}
+
+.edit_warning {
+    color: red;
+    border: none;
+    background: none;
+    font-size: 11px;
+}
+
+.customHoverButton:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.customHoverDiv:hover {
+    background: none;
+}
+
+.x {
+    background: red;
+}
+
+.y {
+    background: green;
+}
+
+.z {
+    background: blue;
+}
+
+.edit_unavailable {
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+}
+
+.edit_undo_redo_box {
+    position: absolute;
+    right: 300px;
+    top: 10px;
+    z-index: 2000;
+}
+
+.edit_undo_redo_button {
+    width:30px;
+    background: transparent;
+    border: None
+}
+
+.edit_undo_redo_button:hover:enabled {
+    color: blue;
+    background: transparent;
+    cursor: pointer;
+}

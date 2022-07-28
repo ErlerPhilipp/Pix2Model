@@ -1,0 +1,82 @@
+version: "3.9"
+services:
+  client:
+    stdin_open: true
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile.fe
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    volumes:
+      - "./web:/app"
+      - exclude:/app/node_modules/
+      - type: bind
+        target: /usr/src/app/data
+        source: ${UPLOAD_FOLDER}    
+    profiles:
+      - develop
+  client_deployed:
+    stdin_open: true
+    build:
+      context: ./web
+      dockerfile: ./Dockerfile.nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - backend
+    volumes:
+      - type: bind
+        target: /usr/src/app/data
+        source: ${UPLOAD_FOLDER}    
+      - type: bind
+        target: /etc/ssl
+        source: ${SSL_CERT_FOLDER}
+    profiles:
+      - deploy
+  backend:
+    build: .
+    depends_on:
+      - redis
+    expose:
+      - "5000"
+    volumes:
+    - type: bind
+      target: /usr/src/app/data
+      source: ${UPLOAD_FOLDER}
+  redis:
+    image: "redis:alpine"
+  dashboard:
+    build: ./dashboard
+    depends_on:
+      - redis
+    environment:
+      - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
+      - RQ_DASHBOARD_USERNAME=${RQ_DASHBOARD_USERNAME}
+      - RQ_DASHBOARD_PASSWORD=${RQ_DASHBOARD_PASSWORD}
+      - RQ_DASHBOARD_URL_PREFIX=/dashboard
+    expose:
+      - "9181"
+  worker:
+    build: .
+    depends_on:
+      - redis
+    volumes:
+    - type: bind
+      target: /usr/src/app/data
+      source: ${UPLOAD_FOLDER}
+    - type: bind
+      target: /usr/src/app
+      source: .
+    command: sh -c "pipenv run rqworker --exception-handler 'images_to_mesh.app.exception_handlers.exeption_handlers.queue_handler' --with-scheduler -u redis://redis:6379"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]
+volumes:
+  exclude:

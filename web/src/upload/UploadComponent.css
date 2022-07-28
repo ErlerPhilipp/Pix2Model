@@ -1,0 +1,71 @@
+.file_upload {
+    width: 500px;
+    border-radius: 5px;
+}
+
+.images {
+    position: absolute;
+    top: 80px;
+    width: 550px;
+    left: calc((100vw / 2) - 880px);
+}
+
+.mesh {
+    position: absolute;
+    top: 80px;
+    height: 300px;
+    right: calc((100vw / 2) - 700px);
+}
+
+.ply {
+    position: absolute;
+    left: calc(50vw - 520px);
+    height: 300px;
+    top: 80px;
+}
+
+.first {
+    position: absolute;
+    right: calc((100vw / 2) + 250px);
+}
+
+.second {
+    position: absolute;
+    right: calc((100vw / 2) + 280px);
+}
+
+.third {
+    position: absolute;
+    right: calc((100vw / 2) - 270px);
+}
+
+.fourth {
+    position: absolute;
+    right: calc((100vw / 2) - 300px);
+}
+
+#response_field {
+    margin-top: 1rem;
+    display: block;
+}
+
+.hint {
+    color: 	#808080;
+}
+
+.edit_buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.mobile_wrapper_upload {
+    padding: 80px 20px 0px 20px;
+    background-color: white;
+    width: calc(100vw - 40px);
+    box-shadow: 1px 1px 4px rgb(0 0 0 / 50%);
+    margin-bottom: 80px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 40px);
+  }

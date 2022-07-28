@@ -1,0 +1,54 @@
+{
+  "name": "testapp",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.12.3",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.24.0",
+    "dropzone": "^5.9.2",
+    "i18next": "^20.4.0",
+    "i18next-browser-languagedetector": "^6.1.2",
+    "i18next-xhr-backend": "^3.2.2",
+    "js": "^0.1.0",
+    "react": "^17.0.2",
+    "react-burger-menu": "^3.0.6",
+    "react-device-detect": "^2.1.2",
+    "react-dom": "^17.0.2",
+    "react-dropdown": "^1.9.2",
+    "react-i18next": "^11.11.4",
+    "react-icons": "^4.3.1",
+    "react-scripts": "4.0.3",
+    "react-swipeable-views": "^0.14.0",
+    "react-tooltip": "^4.2.21",
+    "three": "^0.130.0",
+    "three-csg-ts": "^3.1.9",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/react-scripts start",
+    "build": "./node_modules/.bin/react-scripts build",
+    "test": "./node_modules/.bin/react-scripts test",
+    "eject": "./node_modules/.bin/react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

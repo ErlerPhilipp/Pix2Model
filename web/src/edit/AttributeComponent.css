@@ -1,0 +1,11 @@
+.attribute_wrapper {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.numberfields {
+    display: flex;
+    width: 150px;
+    margin-left: auto;
+}

@@ -1,0 +1,25 @@
+.MuiTabs-root {
+  border-bottom: 1px solid #aaa;
+  margin: 0 0 10px;
+  padding: 0;
+  background-color: #263238;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  color: white;
+  position: sticky;
+  z-index: 200;
+}
+
+.MuiTab-root {
+  font-weight: bold;
+}
+
+.MuiTab-root:hover {
+  background-color: #37474F;
+  cursor: pointer;
+}
+
+.MuiTab-textColorInherit.Mui-selected {
+  background-color: rgb(34,102,153);
+  cursor: pointer;
+}
+

@@ -1,0 +1,79 @@
+{
+    "about": {
+        "team": "Project team",
+        "netidee": {
+            "top": "Pics2Model Web (Beta Version)",
+            "sub": "funded by Netidee"
+        },
+        "content": "<bold>What is Pics2Model?</bold>\nPics2Model is a free web service with which you can turn a stack of images into a 3D model. You don’t need to install anything, just upload the images and our high-performance server takes care of everything else. You can rotate, move, scale and crop the model in our online-editor, and you can download it to use your favorite modeling tool.\n\n<bold>Who needs Pics2Model?</bold>\nPics2Model is meant for everyone who wants to easily and quickly generate a 3D model based on images. If you are an artist creating e.g. sculptures, you can present them on your website. You can create an entire online catalog for a museum or store. Landlords can prepare virtual viewings for prospective tenants. You can use the outputs for 3D-printing (some additional refinement might be required). City planners can use the output as a basis to communicate possible changes. 3D artists can take our outputs as a basis for creating meshes for games. And there are many other applications.\n\n<bold>How to get good Results?</bold>\nYou will need to upload a surprisingly large number of photos, depending on the size and complexity of the target object. As a rule of thumb, you will need 50+ images for single objects and 100+ for a room. The photos should overlap to at least 50% and show the object from all directions. If possible, use the same camera and lighting for all photos. Avoid objects without texture, as well as highly glossy and transparent materials.\n\n<bold>How does Pics2Model work?</bold>\nThe processing pipeline is: Images >> SfM >> MVS >> Reconstruction >> 3D Model. Our web service uses Structure-from-Motion (SfM), Multi-View Stereo (MVS) from <a href='https://colmap.github.io/'>COLMAP</a> and Screened Poisson Surface Reconstruction from <a href='https://www.meshlab.net/'>Meshlab</a> to produce a high-quality output with minimal restrictions for the inputs. You even have access to the point cloud, which is an intermediate result between MVS and the reconstruction.\n\n<bold>What are the limitations?</bold>\nThe server’s resources are limited. For fair usage, we need to limit the computation time for each object, which we do by restricting the number of images and the total upload size. If you need to go beyond these restrictions for e.g. very complex objects and very high accuracy, please contact us. We can probably arrange a solution.\n\n<bold>Why is Pics2Model free?</bold>\nMany thanks to <a href='https://www.netidee.at/images2mesh-web'>Netidee</a>, a funding program of the <a href='https://www.internetstiftung.at/'>Internet Foundation Austria</a>, which funded our project to support the free internet. The implementation was done by employees and students of the TU Wien, mostly at the <a href='https://www.cg.tuwien.ac.at/'>research unit of computer graphics</a>.",
+        "stefan": "Planning",
+        "philipp": "Project organization and planning",
+        "sophie": "Frontend",
+        "johannes": "SfM and MVS",
+        "maximilian": "Backend",
+        "florian": "Reconstruction"
+    },
+    "footer": {
+        "impressum": "Impressum",
+        "privacy": "Privacy",
+        "support": "Support"
+    },
+    "privacy": "<h1>Data Protection Declaration</h1>This is a translation of the legally binding German version. You are visiting a subdomain of the Research Unit of Computer Graphics of the TU-Wien. The topdomain (<a href='https://www.cg.tuwien.ac.at/'>https://www.cg.tuwien.ac.at/</a>) has a different data protection declaration. Data protection and security when using our website is very important for us. Therefore, we want to inform you about which person-related data we collect and for what they are used.\nThe responsible person in the sense of the General Data Protection Regulation (GDPR) and other data protection laws is the rectorate of the Technischen Universität Wien, Karlsplatz 13, 1040 Wien.\nAlso, please see the <a href='https://www.tuwien.at/tu-wien/organisation/zentrale-bereiche/datenschutz-und-dokumentenmanagement/datenschutz/'>Data Protection Declaration of the central TU-Wien Website</a>.\n\n<bold>Cookies</bold>\nOur website does not use Cookies.\n\n<bold>Uploaded Data and Their Processing Results</bold>\nThe data which you upload stay on our server until they are manually deleted or 7 days have passed since the upload. We do not transfer any data to third parties. We may check your data if there are hints of unlawful usage.\n\n<bold>SSL-Encryption</bold>\nThis site uses SSL-Encryption for a secure transmission of data.\n\n<bold>Your Rights</bold>\nYou have the basic rights of information, correction, deletion, limitation, transfer, recall and objection. If you think that your rights are violated you may raise a complaint at the <a href='https://www.dsb.gv.at/'>data protection authority</a>.\n\n<bold>Contakt</bold>\nDirect your questions regarding data protection to the privacy officer of the TU-Wien:\n\nMag. Christina Thirsfeld\nTechnische Universität Wien\nKarlsplatz 13/018\ndatenschutz@tuwien.ac.at",
+    "impressum": "<h1>Impressum</h1>TU Wien, Research Unit of Computer Graphics\nFavoritenstr. 9-11 / E193-02, 1040 Wien, Austria\n\nTelefon: +43 1 58801 193201\nE-Mail: sekr@cg.tuwien.ac.at",
+    "support": "<h1>Report a Problem</h1>Please create a new Issue and we try to fix the problem as soon as possible:\n<a href='https://github.com/ErlerPhilipp/Pix2Model/issues'>https://github.com/ErlerPhilipp/Pix2Model/issues</a>",
+    "menu": {
+        "download": "Download",
+        "edit": "Edit",
+        "about": "Info"
+    },
+    "edit": {
+        "interaction": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale\n<button_frame>f</button_frame>   Center object\n<button_increase_light>+</button_increase_light>   Increase light intesity\n<button_decrease_light>-</button_decrease_light>   Decrease light intesity",
+        "interaction_no_lights": "Upload a file from the server by entering the matching ID or load a .ply or .obj file to view and edit via drag&drop or the upload-button. \n \nShortcuts:\n<button_translation>t</button_translation>   Translate\n<button_rotation>r</button_rotation>   Rotate\n<button_scale>s</button_scale>   Scale\n<button_frame>f</button_frame>   Frame object",
+        "conversion": "CONVERSION",
+        "reconstruct": "Reconstruct Mesh",
+        "transformation": "TRANSFORMATIONS",
+        "scale": "Scale",
+        "activate": "Activate",
+        "crop": {
+            "crop": "CROP",
+            "keep": "Keep intersections",
+            "remove": "Remove intersections"
+        },
+        "measure": "MEASUREMENT",
+        "warning": {
+            "progress": {
+                "file": "The file with ID {id} is getting generated.\nPlease try again later by pressing the refresh button",
+                "reconstruction": "The reconstruction is in progress for the file with ID {id}.\nReload the mesh in a couple of minutes to load the newest versions"
+            }
+        },
+        "error": {
+            "filenotfound": "No file found with the ID {id}",
+            "server": {
+                "file": "An error occured while loading the file with ID {id}",
+                "versions": "An error occured while loading the current versions of the file with ID {id}",
+                "reconstruction": "An error occured while reconstructing the file with ID {id}"
+            }
+        }
+    },
+    "upload": {
+        "email": "\n[Optional] Notification email when convertion is done",
+        "pc": {
+            "hint": "Check the above box to increase processing time and quality. The images are converted to a point cloud instead of directly generating the reconstructed model. The point cloud can be edited and cleaned up in the Edit area and can then be uploaded again under Ply-2-Mesh to generate the final reconstructed model.",
+            "label": "Convert to PointCloud"
+        },
+        "files": {
+            "drop": "Drop files here to upload",
+            "support": "Supports "
+        },
+        "submit": "Submit files",
+        "new": "New Reconstruction",
+        "abort": {
+            "button": "Abort Reconstruction",
+            "success": "The reconstruction with ID {id} was successfully canceled",
+            "error": "Something went wrong while aborting the reconstruction with ID {id}"
+        },
+        "reset": "Reset",
+        "info": "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>",
+        "success": "Upload successful!\nJob will be available with this link under EDIT when ready:\n"
+    }
+}

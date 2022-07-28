@@ -1,0 +1,304 @@
+body {
+  overflow: hidden;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  background-image: linear-gradient(315deg, #ffffff 0%, #d7e1ec 74%);
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.content {
+  position: relative;
+}
+
+.background-image {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: -1;
+  display: block;
+  width: 3905px;
+  height: 2929px;
+  -moz-filter: blur(5px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: brightness(1.05) blur(7px) grayscale(100%);
+}
+
+.footer {
+  background-color: #263238;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  color: white;
+  font-size: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.footer button {
+  background: transparent;
+  color: white;
+  border: none;
+  height: 35px;
+  font-size: 14px;
+  width: 100px;
+  cursor: pointer;
+}
+
+.footer button:hover {
+  background: transparent;
+}
+
+.button_small {
+  width: 190px;
+  height: 40px;
+  font-size: 1em;
+  border-radius: 5px;
+  background: #263238;
+  border: 0px;
+  box-shadow: 1px 1px 5px grey;
+  color: white;
+}
+
+.button_small:hover {
+  background: rgb(34,102,153);
+  transition: background-color 0.5s ease;
+}
+
+.button_small:disabled,
+.button_small[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+}
+
+.wrapper_centered_box {
+  justify-content: center;
+  border-radius: 5px;
+  margin: auto;
+  margin-top: 45px;
+  padding: 20px;
+  background-color: white;
+  width: 400px;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 80px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - 200px);
+}
+
+.swipable_content {
+  overflow: hidden;
+}
+
+.icon {
+  width: 30px;
+  position: absolute;
+  margin: -15px 30px;
+  background: #263238;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.arrow {
+  border: solid rgb(34,102,153);
+  border-width: 0 5px 5px 0;
+  top: 160px;
+  display: inline-block;
+  padding: 20px;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.embedded-right {
+  border: solid rgba(256, 256, 256, 0.2);
+  border-right-color: rgb(34,102,153);
+  border-bottom-color: rgb(34,102,153);
+  border-width: 10px;
+}
+
+.embedded-left {
+  border: solid rgba(256, 256, 256, 0.2);
+  border-left-color: rgb(34,102,153);
+  border-top-color: rgb(34,102,153);
+  border-width: 10px;
+}
+
+.icon:hover {
+  background: rgb(34,102,153);
+}
+
+.formfield {
+  margin-bottom: 20px;
+}
+
+.formfield_input {
+  width: 200px;
+}
+
+.next {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  display: block;
+  height: 100vh;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  border-radius: 0px;
+  border: none;
+}
+
+.previous {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  display: block;
+  height: 100vh;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  border-radius: 0px;
+  border: none;
+}
+
+.next:hover {
+  transition: background-color 0.5s;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.previous:hover {
+  transition: background-color 0.5s;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.lang {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 5px;
+  font-size: 1.1em;
+  background-color: #37474F;
+  color:white;
+  z-index: 400;
+}
+
+.de {
+  right: 10px;
+}
+
+.en {
+  right: 60px;
+}
+
+.de:hover {
+  background-color: rgb(34,102,153);
+}
+
+.en:hover {
+  background-color: rgb(245,206,106);
+}
+
+label + input {
+  margin-left: 10px;
+}
+
+h2 {
+  font-size: 1.6em;
+}
+
+.mobile_wrapper {
+  position: fixed;
+}
+
+/* BURGERMENU */
+
+.bm-burger-button {
+  position: fixed;
+  width: 36px;
+  height: 30px;
+  left: 36px;
+  top: 36px;
+}
+
+/* Color/shape of burger icon bars */
+.bm-burger-bars {
+  background: #373a47;
+}
+
+/* Color/shape of burger icon bars on hover*/
+.bm-burger-bars-hover {
+  background: #a90000;
+}
+
+/* Position and sizing of clickable cross button */
+.bm-cross-button {
+  height: 24px;
+  width: 24px;
+}
+
+/* Color/shape of close button cross */
+.bm-cross {
+  background: #bdc3c7;
+}
+
+/*
+Sidebar wrapper styles
+Note: Beware of modifying this element as it can break the animations - you should not need to touch it in most cases
+*/
+.bm-menu-wrap {
+  position: fixed;
+  height: 100%;
+}
+
+/* General sidebar styles */
+.bm-menu {
+  background: #373a47;
+  padding: 2.5em 1.5em 0;
+  font-size: 1.15em;
+}
+
+/* Morph shape necessary with bubble or elastic */
+.bm-morph-shape {
+  fill: #373a47;
+}
+
+/* Wrapper for item list */
+.bm-item-list {
+  color: #b8b7ad;
+  padding: 0.8em;
+}
+
+/* Individual item */
+.bm-item {
+  display: inline-block;
+  color: white;
+}
+
+/* Styling of overlay */
+.bm-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
