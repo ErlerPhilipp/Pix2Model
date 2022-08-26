@@ -53,6 +53,7 @@ class Upload extends Component {
       const submitButton = document.querySelector("#submit_upload");
       submitButton.addEventListener("click", eventArgs => {
           document.querySelector("#upload").dropzone.processQueue();
+          document.querySelector("#upload").dropzone.removeEventListeners();
       });
       document.querySelector("#upload").dropzone.on("sending", function(file, xhr, data) {
           if (data) {
@@ -61,6 +62,7 @@ class Upload extends Component {
           }
       });
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
+          document.querySelector("#upload").dropzone.setupEventListeners();
           that.setState({success: true, id: response.replace('data/','')})
           submitButton.disablwrapper_uploaded = true;
           var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${response.replace('data/','')}`;    

@@ -1,0 +1,46 @@
+FROM image2mesh/image2mesh:base
+
+###########################################################################
+# Install OpenMVS
+###########################################################################
+
+WORKDIR /root
+
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+RUN apt-get update -qq && apt-get install -qq
+RUN apt-get -y install git cmake libpng-dev libjpeg-dev libtiff-dev libglu1-mesa-dev
+RUN main_path=`pwd`
+
+#Eigen (Required)
+RUN git clone https://gitlab.com/libeigen/eigen.git --branch 3.4
+RUN mkdir eigen_build
+RUN cd eigen_build && cmake . ../eigen && make && make install
+
+#Boost (Required)
+RUN apt-get -y install libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-serialization-dev
+
+#OpenCV (Required)
+RUN apt-get -y install libopencv-dev
+
+#CGAL (Required)
+RUN apt-get -y install libcgal-dev libcgal-qt5-dev
+
+#VCGLib (Required)
+RUN git clone https://github.com/cdcseacave/VCG.git vcglib
+
+#Ceres (Optional)
+RUN apt-get -y install libatlas-base-dev libsuitesparse-dev
+RUN git clone https://ceres-solver.googlesource.com/ceres-solver ceres-solver
+RUN mkdir ceres_build
+RUN cd ceres_build && cmake . ../ceres-solver/ -DMINIGLOG=ON -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF && make -j2 && make install
+
+#GLFW3 (Optional)
+RUN apt-get -y install freeglut3-dev libglew-dev libglfw3-dev
+
+#OpenMVS
+RUN git clone https://github.com/cdcseacave/openMVS.git openMVS
+RUN mkdir openMVS_build
+RUN cd openMVS_build && cmake . ../openMVS -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT="../vcglib" -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs && make -j2 && make install
+RUN mkdir -p /usr/local/nvidia/lib
+RUN cp /usr/local/cuda-11.4/compat/libcuda.so.1 /usr/local/nvidia/lib
