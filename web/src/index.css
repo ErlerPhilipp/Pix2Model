@@ -1,7 +1,7 @@
 body {
   overflow: hidden;
   margin: 0;
-  font-family: RobotoRegular;
+  font-family: Roboto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #ffffff;
@@ -21,13 +21,31 @@ body {
 }
 
 @font-face {
-  font-family: "RobotoRegular";
-  src: local("RobotoRegular"),
+  font-family: "Roboto";
+  src: local("Roboto"),
    url("./fonts/Roboto-Regular.ttf") format("truetype");
+   font-weight: 400;
+   font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: local("Roboto"),
+   url("./fonts/Roboto-Bold.ttf") format("truetype");
+   font-weight: 700;
+   font-style: bold;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: local("Roboto"),
+   url("./fonts/Roboto-Italic.ttf") format("truetype");
+   font-weight: 400;
+   font-style: italic;
 }
 
 code {
-  font-family: RobotoRegular;
+  font-family: Roboto;
 }
 
 .content {
