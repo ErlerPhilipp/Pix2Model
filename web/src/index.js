@@ -1,6 +1,7 @@
 import React, {Suspense} from 'react'
 import ReactDOM from 'react-dom';
 
+import './fonts/Roboto-Regular.ttf';
 import './index.css';
 import './react-tabs-custom.css';
 import './i18n';
