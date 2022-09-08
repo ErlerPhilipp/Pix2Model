@@ -36,8 +36,20 @@ services:
       - type: bind
         target: /etc/ssl
         source: ${SSL_CERT_FOLDER}
+      - type: bind
+        target: /var/www/certbot/
+        source: ./certbot/www
     profiles:
       - deploy
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - type: bind
+        target: /etc/letsencrypt/
+        source: ${SSL_CERT_FOLDER}
+    profiles:
+      - cert
   backend:
     build: .
     depends_on:
