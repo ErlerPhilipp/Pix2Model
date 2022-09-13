@@ -22,6 +22,7 @@ body {
 
 @font-face {
   font-family: "Roboto";
+  src: url("./fonts/Roboto-Regular.eot");
   src: local("Roboto"),
    url("./fonts/Roboto-Regular.ttf") format("truetype");
    font-weight: 400;
@@ -30,6 +31,7 @@ body {
 
 @font-face {
   font-family: "Roboto";
+  src: url("./fonts/Roboto-Bold.eot");
   src: local("Roboto"),
    url("./fonts/Roboto-Bold.ttf") format("truetype");
    font-weight: 700;
@@ -38,6 +40,7 @@ body {
 
 @font-face {
   font-family: "Roboto";
+  src: url("./fonts/Roboto-Italic.eot");
   src: local("Roboto"),
    url("./fonts/Roboto-Italic.ttf") format("truetype");
    font-weight: 400;
