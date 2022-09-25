@@ -52,8 +52,10 @@ class Upload extends Component {
       that.dropzone = new Dropzone(uploader, dropzoneOptions);
       const submitButton = document.querySelector("#submit_upload");
       submitButton.addEventListener("click", eventArgs => {
-          document.querySelector("#upload").dropzone.processQueue();
-          document.querySelector("#upload").dropzone.removeEventListeners();
+          if (document.querySelector("#upload").dropzone.files) {
+            document.querySelector("#upload").dropzone.processQueue();
+            document.querySelector("#upload").dropzone.removeEventListeners();
+          }
       });
       document.querySelector("#upload").dropzone.on("sending", function(file, xhr, data) {
           if (data) {
