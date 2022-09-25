@@ -24,7 +24,8 @@ body {
   font-family: "Roboto";
   src: url("./fonts/Roboto-Regular.eot");
   src: local("Roboto"),
-   url("./fonts/Roboto-Regular.ttf") format("truetype");
+   url("./fonts/Roboto-Regular.ttf") format("truetype"),
+   url("./fonts/Roboto-Regular.woff2") format("woff2");
    font-weight: 400;
    font-style: normal;
 }
@@ -33,7 +34,8 @@ body {
   font-family: "Roboto";
   src: url("./fonts/Roboto-Bold.eot");
   src: local("Roboto"),
-   url("./fonts/Roboto-Bold.ttf") format("truetype");
+   url("./fonts/Roboto-Bold.ttf") format("truetype"),
+   url("./fonts/Roboto-Bold.woff2") format("woff2");
    font-weight: 700;
    font-style: bold;
 }
@@ -42,7 +44,8 @@ body {
   font-family: "Roboto";
   src: url("./fonts/Roboto-Italic.eot");
   src: local("Roboto"),
-   url("./fonts/Roboto-Italic.ttf") format("truetype");
+   url("./fonts/Roboto-Italic.ttf") format("truetype"),
+   url("./fonts/Roboto-Italic.woff2") format("woff2");
    font-weight: 400;
    font-style: italic;
 }
