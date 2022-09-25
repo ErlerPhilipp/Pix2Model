@@ -13,6 +13,10 @@ import './fonts/Roboto-Regular.woff2';
 import './fonts/Roboto-Bold.woff2';
 import './fonts/Roboto-Italic.woff2';
 
+import './fonts/Roboto-Regular.woff';
+import './fonts/Roboto-Bold.woff';
+import './fonts/Roboto-Italic.woff';
+
 import './index.css';
 import './react-tabs-custom.css';
 import './i18n';
