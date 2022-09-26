@@ -1,5 +1,5 @@
 @font-face {
-  font-family: "Roboto";
+  font-family: Roboto;
   src:
    local(Roboto),
    url("./fonts/Roboto-Regular.woff") format("woff"),
@@ -10,7 +10,7 @@
 }
 
 @font-face {
-  font-family: "Roboto";
+  font-family: Roboto;
   src:
    local(Roboto-Bold),
    url("./fonts/Roboto-Bold.woff") format("woff"),
@@ -21,7 +21,7 @@
 }
 
 @font-face {
-  font-family: "Roboto";
+  font-family: Roboto;
   src:
    local(Roboto-Italic),
    url("./fonts/Roboto-Italic.woff") format("woff"),
@@ -34,7 +34,7 @@
 body {
   overflow: hidden;
   margin: 0;
-  font-family: "Roboto";
+  font-family: Roboto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #ffffff;
@@ -54,7 +54,7 @@ body {
 }
 
 code {
-  font-family: "Roboto";
+  font-family: Roboto;
 }
 
 .content {
