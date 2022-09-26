@@ -947,6 +947,7 @@ class Edit extends Component {
 
     return (
       <div class='content' ref={ref => (this.mount = ref)}>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
         <MobileView>
           {this.state.loaded &&
             <div>
@@ -975,6 +976,7 @@ class Edit extends Component {
         </MobileView>
         <BrowserView>
           <div class='edit_toolbar'>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
             {this.state.loaded &&
               <div class='edit_box'>
                 <p>{ this.state.name }</p>
