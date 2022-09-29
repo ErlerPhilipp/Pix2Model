@@ -944,10 +944,10 @@ class Edit extends Component {
   render() {
 
     const { t } = this.props;
-
+    const fontawesomedirectory = `${window.location.protocol + "//" + window.location.host + window.location.pathname + "fontawesome-free-6.2.0-web/css/font-awesome.min.css"}`
     return (
       <div class='content' ref={ref => (this.mount = ref)}>
-        <link rel="stylesheet" href="../fonts/fontawesome-free-6.2.0-web/css/font-awesome.min.css"></link>
+        <link rel="stylesheet" href={fontawesomedirectory}></link>
         <MobileView>
           {this.state.loaded &&
             <div>
