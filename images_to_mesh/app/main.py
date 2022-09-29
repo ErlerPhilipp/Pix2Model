@@ -116,7 +116,7 @@ def get_file():
         with open(file_path, 'rb') as fh:
             buf = BytesIO(fh.read())
             buf.seek(0)
-        result = send_file(buf, as_attachment=True, attachment_filename=filename, mimetype='application/octet-stream')
+        result = send_file(buf, as_attachment=True, download_name=filename, mimetype='application/octet-stream')
         result.headers['filename'] = filename
         return result
     abort(404)
