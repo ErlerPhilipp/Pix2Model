@@ -947,7 +947,7 @@ class Edit extends Component {
     const fontawesomedirectory = `${window.location.protocol + "//" + window.location.host + window.location.pathname + "fontawesome-free-6.2.0-web/css/fontawesome.min.css"}`
     return (
       <div class='content' ref={ref => (this.mount = ref)}>
-        <link rel="stylesheet" href={fontawesomedirectory}></link>
+        <link rel="stylesheet" href={fontawesomedirectory} type='text/css'></link>
         <MobileView>
           {this.state.loaded &&
             <div>
@@ -976,7 +976,7 @@ class Edit extends Component {
         </MobileView>
         <BrowserView>
           <div class='edit_toolbar'>
-            <link rel="stylesheet" href={fontawesomedirectory}></link>
+            <link rel="stylesheet" href={fontawesomedirectory} type='text/css'></link>
             {this.state.loaded &&
               <div class='edit_box'>
                 <p>{ this.state.name }</p>
