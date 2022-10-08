@@ -5,9 +5,9 @@ import './AttributeComponent.css';
 
 function Attribute(props) {
     return (
-        <div class='attribute_wrapper'>
+        <div className='attribute_wrapper'>
             {props.name}
-            <div class='numberfields'>
+            <div className='numberfields'>
             <NumberField value={props.x} attribute={props.name+'X'} editor={props.editor}></NumberField>
             <NumberField value={props.y} attribute={props.name+'Y'} editor={props.editor}></NumberField>
             <NumberField value={props.z} attribute={props.name+'Z'} editor={props.editor}></NumberField>

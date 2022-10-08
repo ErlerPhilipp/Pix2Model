@@ -117,35 +117,35 @@ class Upload extends Component {
     return (
       <div>
         <BrowserView>
-          <div class='content'>
-            <div class='wrapper_centered_box'>
+          <div className='content'>
+            <div className='wrapper_centered_box'>
             {!this.state.success &&
               <div>
-                <img src='images.png' class='images'/>
-                <img src='mesh.png' class='mesh'/>
-                <i class="arrow first"></i>
-                <i class="arrow second"></i>
-                <i class="arrow third"></i>
-                <i class="arrow fourth"></i>
-                <form class="dropzone" method="POST" action="/backend/" id="upload">
+                <img src='images.png' className='images'/>
+                <img src='mesh.png' className='mesh'/>
+                <i className="arrow first"></i>
+                <i className="arrow second"></i>
+                <i className="arrow third"></i>
+                <i className="arrow fourth"></i>
+                <form className="dropzone" method="POST" action="/backend/" id="upload">
                 </form>
-                <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
-                <div class="edit_buttons">
-                  <button id="submit_upload" class="button_small">{t('upload.submit')}</button>
-                  <button onClick={() => {this.resetDropbox()}} class="button_small">{t('upload.reset')}</button>
+                <small className="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
+                <div className="edit_buttons">
+                  <button id="submit_upload" className="button_small">{t('upload.submit')}</button>
+                  <button onClick={() => {this.resetDropbox()}} className="button_small">{t('upload.reset')}</button>
                 </div>
                 <br />
                 <hr></hr>
-                <div class="formfield">
+                <div className="formfield">
                 <input type="checkbox" id="ply" name="ply"></input>
-                <label for="ply" class="formfield">{t('upload.pc.label')}</label>
-                <small class="hint"><br></br>{t('upload.pc.hint')}</small>
+                <label for="ply" className="formfield">{t('upload.pc.label')}</label>
+                <small className="hint"><br></br>{t('upload.pc.hint')}</small>
                 </div>
                 {/*<hr></hr>
-                <div class="formfield">
-                <label for="email" class="formfield">Email </label>
-                <input type="email" id="email" name="email" class="formfield_input"></input>
-                <small class="hint"><br></br>{t('upload.email')}<br></br></small>
+                <div className="formfield">
+                <label for="email" className="formfield">Email </label>
+                <input type="email" id="email" name="email" className="formfield_input"></input>
+                <small className="hint"><br></br>{t('upload.email')}<br></br></small>
                 </div>*/}
               </div>
             }
@@ -157,9 +157,9 @@ class Upload extends Component {
                 <p id="response_field">
                 </p>
                 <hr></hr>
-                <div class="edit_buttons">
-                  <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
-                  <button id="abort_button" onClick={() => {this.abort()}} class="button_small">{t('upload.abort.button')}</button><br />
+                <div className="edit_buttons">
+                  <button onClick={() => {this.reset()}} className="button_small">{t('upload.new')}</button><br />
+                  <button id="abort_button" onClick={() => {this.abort()}} className="button_small">{t('upload.abort.button')}</button><br />
                 </div>
               </div>
             }
@@ -168,34 +168,34 @@ class Upload extends Component {
         </BrowserView>
         <MobileView>
         <div>
-            <div class='mobile_wrapper_upload'>
+            <div className='mobile_wrapper_upload'>
             {!this.state.success &&
               <div>
-                <img src='images.png' class='images'/>
-                <img src='mesh.png' class='mesh'/>
-                <i class="arrow first"></i>
-                <i class="arrow second"></i>
-                <i class="arrow third"></i>
-                <i class="arrow fourth"></i>
-                <form class="dropzone" method="POST" action="/backend/" id="upload">
+                <img src='images.png' className='images'/>
+                <img src='mesh.png' className='mesh'/>
+                <i className="arrow first"></i>
+                <i className="arrow second"></i>
+                <i className="arrow third"></i>
+                <i className="arrow fourth"></i>
+                <form className="dropzone" method="POST" action="/backend/" id="upload">
                 </form>
-                <small class="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
-                <div class="edit_buttons">
-                  <button id="submit_upload" class="button_small">{t('upload.submit')}</button>
-                  <button onClick={() => {this.resetDropbox()}} class="button_small">{t('upload.reset')}</button>
+                <small className="hint">{t('upload.files.support')} JPG, JPEG, PNG</small><br />
+                <div className="edit_buttons">
+                  <button id="submit_upload" className="button_small">{t('upload.submit')}</button>
+                  <button onClick={() => {this.resetDropbox()}} className="button_small">{t('upload.reset')}</button>
                 </div>
                 <br />
                 <hr></hr>
-                <div class="formfield">
+                <div className="formfield">
                 <input type="checkbox" id="ply" name="ply"></input>
-                <label for="ply" class="formfield">{t('upload.pc.label')}</label>
-                <small class="hint"><br></br>{t('upload.pc.hint')}</small>
+                <label for="ply" className="formfield">{t('upload.pc.label')}</label>
+                <small className="hint"><br></br>{t('upload.pc.hint')}</small>
                 </div>
                 <hr></hr>
-                <div class="formfield">
-                <label for="email" class="formfield">Email </label>
-                <input type="email" id="email" name="email" class="formfield_input"></input>
-                <small class="hint"><br></br>{t('upload.email')}<br></br></small>
+                <div className="formfield">
+                <label for="email" className="formfield">Email </label>
+                <input type="email" id="email" name="email" className="formfield_input"></input>
+                <small className="hint"><br></br>{t('upload.email')}<br></br></small>
                 </div>
               </div>
             }
@@ -207,9 +207,9 @@ class Upload extends Component {
                 <p id="response_field">
                 </p>
                 <hr></hr>
-                <div class="edit_buttons">
-                  <button onClick={() => {this.reset()}} class="button_small">{t('upload.new')}</button><br />
-                  <button id="abort_button" onClick={() => {this.abort()}} class="button_small">{t('upload.abort')}</button><br />
+                <div className="edit_buttons">
+                  <button onClick={() => {this.reset()}} className="button_small">{t('upload.new')}</button><br />
+                  <button id="abort_button" onClick={() => {this.abort()}} className="button_small">{t('upload.abort')}</button><br />
                 </div>
               </div>
             }
