@@ -35,7 +35,7 @@ class NumberField extends React.Component {
    }
 
    render() {
-      return <input class='attribute' value={this.state.value} onChange={this.onChange} onBlur={this.onBlur}/>
+      return <input className='attribute' value={this.state.value} onChange={this.onChange} onBlur={this.onBlur}/>
    }
 }
 
