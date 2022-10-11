@@ -41,32 +41,32 @@ function CustomTabs() {
           <div className="Root">
           <Tabs
               value={index}
-              fullWidth
+              fullwidth="true"
               onChange={handleChange}
               TabIndicatorProps={{style: {backgroundColor: "white"}}}>
               <Tab label="Pics-2-Model (Beta)"/>
               <Tab label={t('menu.edit')}/>
               <Tab icon={t('menu.about')}/>
           </Tabs>
-          <button class='lang en' onClick={() => handleChangeLang('en')}>EN</button>
-          <button class='lang de' onClick={() => handleChangeLang('de')}>DE</button>
+          <button className='lang en' onClick={() => handleChangeLang('en')}>EN</button>
+          <button className='lang de' onClick={() => handleChangeLang('de')}>DE</button>
           <SwipeableViews index={index} disabled={true} onChangeIndex={handleChangeIndex} enableMouseEvents={true}>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <Upload></Upload>
               </div>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <Edit></Edit>
               </div>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <About></About>
               </div>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <Support></Support>
               </div>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <Privacy></Privacy>
               </div>
-              <div class='swipable_content'>
+              <div className='swipable_content'>
                   <Impressum></Impressum>
               </div>
           </SwipeableViews>
@@ -78,7 +78,7 @@ function CustomTabs() {
           </div>
         </BrowserView>
         <MobileView>
-          <div class='mobile_wrapper'>
+          <div className='mobile_wrapper'>
             <Menu>
               <a id="home" className="menu-item" onClick={() => { setState('upload')}}>Image-2-Mesh</a>
               <a id="about" className="menu-item" onClick={() => { setState('edit')}}>{t('menu.edit')}</a>

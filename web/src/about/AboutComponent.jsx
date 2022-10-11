@@ -7,36 +7,36 @@ function About(props) {
     return (
         <div>
         <BrowserView>
-            <div class='content about'>
+            <div className='content about'>
                 <div className='wrapper_centered_box text'>
                     <h2>{t('about.netidee.top')}</h2>
-                    <p class='subheading'>{t('about.netidee.sub')}</p>
+                    <p className='subheading'>{t('about.netidee.sub')}</p>
                     <Trans i18nKey='about.content' components={{ italic: <i />, bold: <strong />, a: <a /> }}/>
                     <h2>Team</h2>
-                    <div class='team'>
-                        <div class='team_member'>
-                            <img src='teammembers/ohrhallinger_stefan.png' class='team_images'></img>
-                            <p class='team_member_description'>Stefan Ohrhallinger<br></br><small class="title">{t('about.stefan')}</small></p>
+                    <div className='team'>
+                        <div className='team_member'>
+                            <img src='teammembers/ohrhallinger_stefan.png' className='team_images'></img>
+                            <p className='team_member_description'>Stefan Ohrhallinger<br></br><small className="title">{t('about.stefan')}</small></p>
                         </div>
-                        <div class='team_member'>
-                            <img src='teammembers/erler_philipp.png' class='team_images'></img>
-                            <p class='team_member_description'>Philipp Erler<br></br><small class="title">{t('about.philipp')}</small></p>
+                        <div className='team_member'>
+                            <img src='teammembers/erler_philipp.png' className='team_images'></img>
+                            <p className='team_member_description'>Philipp Erler<br></br><small className="title">{t('about.philipp')}</small></p>
                         </div>
-                        <div class='team_member'>
-                            <img src='teammembers/riegler_maximilian.png' class='team_images'></img>
-                            <p class='team_member_description'>Maximilian Riegler<br></br><small class="title">{t('about.maximilian')}</small></p>
+                        <div className='team_member'>
+                            <img src='teammembers/riegler_maximilian.png' className='team_images'></img>
+                            <p className='team_member_description'>Maximilian Riegler<br></br><small className="title">{t('about.maximilian')}</small></p>
                         </div>
-                        <div class='team_member'>
-                            <img src='teammembers/eschner_johannes.png' class='team_images'></img>
-                            <p class='team_member_description'>Johannes Eschner<br></br><small class="title">{t('about.johannes')}</small></p>
+                        <div className='team_member'>
+                            <img src='teammembers/eschner_johannes.png' className='team_images'></img>
+                            <p className='team_member_description'>Johannes Eschner<br></br><small className="title">{t('about.johannes')}</small></p>
                         </div>
-                        <div class='team_member'>
-                            <img src='teammembers/steinschorn_florian.png' class='team_images'></img>
-                            <p class='team_member_description'>Florian Steinschorn<br></br><small class="title">{t('about.florian')}</small></p>
+                        <div className='team_member'>
+                            <img src='teammembers/steinschorn_florian.png' className='team_images'></img>
+                            <p className='team_member_description'>Florian Steinschorn<br></br><small className="title">{t('about.florian')}</small></p>
                         </div>
-                        <div class='team_member'>
-                            <img src='teammembers/pichler_sophie.png' class='team_images'></img>
-                            <p class='team_member_description'>Sophie Pichler<br></br><small class="title">{t('about.sophie')}</small></p>
+                        <div className='team_member'>
+                            <img src='teammembers/pichler_sophie.png' className='team_images'></img>
+                            <p className='team_member_description'>Sophie Pichler<br></br><small className="title">{t('about.sophie')}</small></p>
                         </div>
                     </div>
                 </div>
@@ -44,9 +44,9 @@ function About(props) {
         </BrowserView>
         <MobileView>
             <div>
-                <div class='mobile_text'>
+                <div className='mobile_text'>
                     <h2>{t('about.netidee.top')}</h2>
-                    <p class='subheading'>{t('about.netidee.sub')}</p>
+                    <p className='subheading'>{t('about.netidee.sub')}</p>
                     <Trans i18nKey='about.content' components={{ italic: <i />, bold: <strong />, a: <a /> }}/>
                 </div>
             </div>

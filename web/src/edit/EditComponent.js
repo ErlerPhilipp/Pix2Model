@@ -14,8 +14,13 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
+
 import { FaInfoCircle, FaTheRedYeti } from 'react-icons/fa'; 
 import { isMobile } from 'react-device-detect';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { solid, regular, brands, icon } from '@fortawesome/fontawesome-svg-core/import.macro' // <-- import styles to be used
+
 
 import { BrowserView, MobileView } from 'react-device-detect';
 
@@ -946,16 +951,15 @@ class Edit extends Component {
     const { t } = this.props;
     const fontawesomedirectory = `${window.location.protocol + "//" + window.location.host + window.location.pathname + "fontawesome-free-6.2.0-web/css/fontawesome.min.css"}`
     return (
-      <div class='content' ref={ref => (this.mount = ref)}>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
+      <div className='content' ref={ref => (this.mount = ref)}>
         <MobileView>
           {this.state.loaded &&
             <div>
-              <button data-tip data-for='tooltip_upload_disabled' class='edit_upload_mobile' disabled><i class="fa fa-upload"></i></button>
+              <button data-tip data-for='tooltip_upload_disabled' className='edit_upload_mobile' disabled><FontAwesomeIcon icon={solid('upload')}/></button>
               <ReactTooltip id='tooltip_upload_disabled' backgroundColor='rgb(34,102,153)'>
                 <span>Remove current file to upload a new one</span>
               </ReactTooltip>
-              <button data-tip data-for='tooltip_download' onClick={() => {this.downloadObject()}} class='edit_download_mobile'><i class="fa fa-download"></i></button>
+              <button data-tip data-for='tooltip_download' onClick={() => {this.downloadObject()}} className='edit_download_mobile'><FontAwesomeIcon icon={solid('download')}/></button>
               <ReactTooltip id='tooltip_download' backgroundColor='rgb(34,102,153)'>
                 <span>Download this file with the applied modifications</span>
               </ReactTooltip>
@@ -963,11 +967,11 @@ class Edit extends Component {
           }
           {!this.state.loaded &&
             <div>
-            <button data-tip data-for='tooltip_upload' onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload_mobile'><i class="fa fa-upload"></i></button>
+            <button data-tip data-for='tooltip_upload' onClick={(event) => {this.handleFileSelect(event)}} className='edit_upload_mobile'><FontAwesomeIcon icon={solid('upload')}/></button>
             <ReactTooltip id='tooltip_upload' backgroundColor='rgb(34,102,153)'>
               <span>Uploaded files won't be stored on the server</span>
             </ReactTooltip>
-            <button data-tip data-for='tooltip_download' class='edit_download_mobile' disabled><i class="fa fa-download"></i></button>
+            <button data-tip data-for='tooltip_download' className='edit_download_mobile' disabled><FontAwesomeIcon icon={solid('download')}/></button>
             <ReactTooltip id='tooltip_download' backgroundColor='rgb(34,102,153)'>
               <span>Download this file with the applied modifications</span>
             </ReactTooltip>
@@ -975,27 +979,26 @@ class Edit extends Component {
           }
         </MobileView>
         <BrowserView>
-          <div class='edit_toolbar'>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></link>
+          <div className='edit_toolbar'>
             {this.state.loaded &&
-              <div class='edit_box'>
+              <div className='edit_box'>
                 <p>{ this.state.name }</p>
                 {this.state.pointcloud &&
                   <div>
                     <hr></hr>
-                    <div class="heading_interaction_wrapper">
-                      <p class="heading_interaction">{t('edit.conversion')}</p>
-                      <FaInfoCircle data-tip data-for='tooltip_conversion'/>
+                    <div className="heading_interaction_wrapper">
+                      <p className="heading_interaction">{t('edit.conversion')}</p>
+                      <FontAwesomeIcon icon={solid('circle-info')} data-tip data-for='tooltip_conversion'/>
                       <ReactTooltip id='tooltip_conversion' backgroundColor='rgb(34,102,153)'>
                         <span>Create reconstructed mesh based on the edited mesh. The edited mesh will be saved with a new version number</span>
                       </ReactTooltip>
                     </div>
-                    <button onClick={() => {this.reconstructMesh()}} class="recon_button">{t('edit.reconstruct')}</button>
+                    <button onClick={() => {this.reconstructMesh()}} className="recon_button">{t('edit.reconstruct')}</button>
                   </div>
                 }
                 <hr></hr>
-                <div class="heading_interaction_wrapper">
-                  <p class="heading_interaction">{t('edit.transformation')}</p>
+                <div className="heading_interaction_wrapper">
+                  <p className="heading_interaction">{t('edit.transformation')}</p>
                 </div>
                 <Attribute name={t('edit.scale')} editor={this} x={ this.state.scale.x } y={this.state.scale.y} z={this.state.scale.z}></Attribute>
                 <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
@@ -1003,60 +1006,60 @@ class Edit extends Component {
                 <hr></hr>
                 {this.state.pointcloud &&
                 <div>
-                  <div class="heading_interaction_wrapper">
-                    <p class="heading_interaction">{t('edit.crop.crop')}</p>
-                    <FaInfoCircle data-tip data-for='tooltip_crop'/>
+                  <div className="heading_interaction_wrapper">
+                    <p className="heading_interaction">{t('edit.crop.crop')}</p>
+                    <FontAwesomeIcon icon={solid('circle-info')} data-tip data-for='tooltip_crop'/>
                     <ReactTooltip id='tooltip_crop' backgroundColor='rgb(34,102,153)'>
                       <span>When activated, a box appears on the canvas, which can be transformed using the gizmo. Use the intersecting area between the box and the mesh to crop the mesh.
                       </span>
                     </ReactTooltip>
                   </div>
-                  <label class="container">{t('edit.activate')}
+                  <label className="container">{t('edit.activate')}
                     <input id="crop" type="checkbox" onClick={(event) => {
                       this.activateCrop(event.target.checked);
                     }}/>
-                    <span class="checkmark"></span>
+                    <span className="checkmark"></span>
                   </label>
                   <br></br>
                   {this.state.crop &&
-                    <button onClick={() => {this.cropObjectInverse()}} class="crop_button spacing">{t('edit.crop.keep')}</button>
+                    <button onClick={() => {this.cropObjectInverse()}} className="crop_button spacing">{t('edit.crop.keep')}</button>
                   }
                   {this.state.crop &&
-                    <button onClick={() => {this.cropObject()}} class="crop_button">{t('edit.crop.remove')}</button>
+                    <button onClick={() => {this.cropObject()}} className="crop_button">{t('edit.crop.remove')}</button>
                   }
                   {!this.state.crop &&
-                    <button class="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
+                    <button className="crop_button spacing" disabled>{t('edit.crop.keep')}</button>
                   }
                   {!this.state.crop &&
-                    <button class="crop_button" disabled>{t('edit.crop.remove')}</button>
+                    <button className="crop_button" disabled>{t('edit.crop.remove')}</button>
                   }
                   <hr></hr>
                 </div>
                 }
-                <div class="heading_interaction_wrapper">
-                  <p class="heading_interaction">{t('edit.measure')}</p>
-                  <FaInfoCircle data-tip data-for='tooltip_measure'/>
+                <div className="heading_interaction_wrapper">
+                  <p className="heading_interaction">{t('edit.measure')}</p>
+                  <FontAwesomeIcon icon={solid('circle-info')} data-tip data-for='tooltip_measure'/>
                   <ReactTooltip id='tooltip_measure' backgroundColor='rgb(34,102,153)'>
                     <span>The measurements display the size of the bouding box in x, y and z direction.
                     </span>
                   </ReactTooltip>
                 </div>
-                <label class="container">{t('edit.activate')}
+                <label className="container">{t('edit.activate')}
                   <input id="measure" type="checkbox" onClick={(event) => {
                     this.activateMeasurement(event.target.checked);
                   }}/>
-                  <span class="checkmark"></span>
+                  <span className="checkmark"></span>
                 </label>
-                <button data-tip data-for='tooltip_download' onClick={() => {this.downloadObject()}} class='edit_download'><i class="fa fa-download"></i></button>
+                <button data-tip data-for='tooltip_download' onClick={() => {this.downloadObject()}} className='edit_download'><FontAwesomeIcon icon={solid('download')}/></button>
                 <ReactTooltip id='tooltip_download' backgroundColor='rgb(34,102,153)'>
                   <span>Download this file with the applied modifications</span>
                 </ReactTooltip>
-                <button onClick={() => {this.removeObject()}} class='edit_remove'><i class="fa fa-remove"></i></button>
+                <button onClick={() => {this.removeObject()}} className='edit_remove'><FontAwesomeIcon icon={solid('remove')}/></button>
               </div>
             }
             {this.state.loaded &&
               <div>
-                <button data-tip data-for='tooltip_upload_disabled' class='edit_upload' disabled><i class="fa fa-upload"></i></button>
+                <button data-tip data-for='tooltip_upload_disabled' className='edit_upload' disabled><FontAwesomeIcon icon={solid('upload')}/></button>
                 <ReactTooltip id='tooltip_upload_disabled' backgroundColor='rgb(34,102,153)'>
                   <span>Remove current file to upload a new one</span>
                 </ReactTooltip>
@@ -1064,26 +1067,26 @@ class Edit extends Component {
             }
             {!this.state.loaded &&
               <div>
-              <button data-tip data-for='tooltip_upload' onClick={(event) => {this.handleFileSelect(event)}} class='edit_upload'><i class="fa fa-upload"></i></button>
+              <button data-tip data-for='tooltip_upload' onClick={(event) => {this.handleFileSelect(event)}} className='edit_upload'><FontAwesomeIcon icon={solid('upload')}/></button>
               <ReactTooltip id='tooltip_upload' backgroundColor='rgb(34,102,153)'>
                 <span>Uploaded files won't be stored on the server</span>
               </ReactTooltip>
             </div>
             }
           </div>
-          <div class='infobox'>
-            <label for="uuid" class="formfield">ID</label>
-            <input id="uuid" name="uuid" class="formfield_input"></input>
+          <div className='infobox'>
+            <label for="uuid" className="formfield">ID</label>
+            <input id="uuid" name="uuid" className="formfield_input"></input>
             {!this.state.loading &&
-              <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh'><i class="fa fa-refresh"></i></button>
+              <button onClick={() => {this.uploadFileFromServer()}} className='edit_refresh'><FontAwesomeIcon icon={solid('refresh')}/></button>
             }
             {this.state.loading &&
-              <button onClick={() => {this.uploadFileFromServer()}} class='edit_refresh loading'><i class="fa fa-refresh"></i></button>
+              <button onClick={() => {this.uploadFileFromServer()}} className='edit_refresh loading'><FontAwesomeIcon icon={solid('refresh')}/></button>
             }
             <br></br>
-            <button id="uuid_error" onClick={() => {this.downloadLogfile()}} class="edit_warning"></button>
+            <button id="uuid_error" onClick={() => {this.downloadLogfile()}} className="edit_warning"></button>
             {Object.keys(this.state.options).length !== 0 &&
-              <div class="edit_options_refresh" id="options">
+              <div className="edit_options_refresh" id="options">
                 <Dropdown options={Object.keys(Object.fromEntries(Object.entries(this.state.options).filter(([_, v]) => v != [])))} onChange={(value) => this.handleSlectedStepChange(value.value)} value={this.state.selected_step} />
                 <Dropdown options={this.state.option_versions} value={this.state.selected_version} />
               </div>
@@ -1093,29 +1096,29 @@ class Edit extends Component {
             {!this.state.pointcloud &&
               <div>
                 <Trans i18nKey='edit.interaction' components={
-                  { button_translation: <button class="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
-                    button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
-                    button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
-                    button_increase_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
-                    button_decrease_light: <button class="transformation_button" onClick={() => this.setTransformation(this, "-")} />,
-                    button_frame: <button class="transformation_button" onClick={() => this.frameObject(this)} />
+                  { button_translation: <button className="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
+                    button_rotation: <button className="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
+                    button_scale: <button className="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
+                    button_increase_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
+                    button_decrease_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "-")} />,
+                    button_frame: <button className="transformation_button" onClick={() => this.frameObject(this)} />
                   }}/>
               </div>
             }
             {this.state.pointcloud &&
               <div>
                 <Trans i18nKey='edit.interaction_no_lights' components={
-                  { button_translation: <button class="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
-                    button_rotation: <button class="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
-                    button_scale: <button class="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
-                    button_frame: <button class="transformation_button" onClick={() => this.frameObject(this)} />
+                  { button_translation: <button className="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
+                    button_rotation: <button className="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
+                    button_scale: <button className="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
+                    button_frame: <button className="transformation_button" onClick={() => this.frameObject(this)} />
                 }}/>
               </div>  
             }
           </div>
-          <div class='edit_undo_redo_box'>
-            <button disabled={!this.state.model.canUndo} key="undo" onClick={() => this.undo()} class='edit_undo_redo_button'><i class="fa fa-undo"></i></button>
-            <button disabled={!this.state.model.canRedo} key="redo" onClick={() => this.redo()} class='edit_undo_redo_button'><i class="fa fa-undo" style={{transform: 'scaleX(-1)'}}></i></button>
+          <div className='edit_undo_redo_box'>
+            <button disabled={!this.state.model.canUndo} key="undo" onClick={() => this.undo()} className='edit_undo_redo_button'><FontAwesomeIcon icon={solid('undo')}/></button>
+            <button disabled={!this.state.model.canRedo} key="redo" onClick={() => this.redo()} className='edit_undo_redo_button'><FontAwesomeIcon icon={solid('undo')} style={{transform: 'scaleX(-1)'}}/></button>
           </div>
         </BrowserView>
       </div>
