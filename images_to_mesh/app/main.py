@@ -1,4 +1,6 @@
 from pathlib import Path, PosixPath
+from sys import stdout
+from time import gmtime
 from typing import List
 
 from io import BytesIO
@@ -18,6 +20,8 @@ from images_to_mesh.app.config import set_flask_configs
 
 from flask_cors import CORS
 
+import logging
+
 
 connection = Redis(host="redis")
 task_queue = Queue(connection=connection)
@@ -25,6 +29,22 @@ task_queue = Queue(connection=connection)
 app = Flask(__name__)
 set_flask_configs(app)
 CORS(app)
+
+def setup_logging():
+    logging_folder = Path("./backend_log/")
+    if not logging_folder.exists():
+        os.mkdir(logging_folder)
+
+    logging.basicConfig(encoding="utf-8",
+                        level=logging.INFO,
+                        format="[%(asctime)s][%(levelname)s] %(message)s",
+                        datefmt="%Y-%m-%dT%H:%M:%SZ",
+                        handlers=[
+                            logging.StreamHandler(stdout),
+                            logging.FileHandler(logging_folder / "backend.log")])
+    logging.Formatter.converter = gmtime
+
+setup_logging()
 
 
 def allowed_extension(filename):
@@ -43,6 +63,7 @@ def file_upload():
             return "Invalid file extension", 400
 
     job_id: str = str(uuid4())
+    app.logger.info(f"File upload started with job id: {job_id}")
     folder: Path = app.config["UPLOAD_FOLDER"] / job_id / "input"
     if not folder.exists():
         folder.mkdir(parents=True)
@@ -51,22 +72,26 @@ def file_upload():
     for file in uploaded_files:
         processed_filename: str = str(folder / secure_filename(file.filename))
         processed_filenames.append(processed_filename)
+        app.logger.info(f"Adding file ({processed_filename}) to job {job_id}")
         file.save(processed_filename)
 
     user_email = ""
     if "user_email" in request.form:
-        print("user email: ", request.form.get("user_email"), flush=True)
+        app.logger.info("user email: " + request.form.get("user_email"))
         user_email = request.form.get("user_email")
 
     if "step2" in request.form and not int(request.form.get("step2")):
+        app.logger.info(f"Queuing job {job_id} for only step 1")
         return process_order.queue_step_1(processed_filenames, user_email, job_id)
     else:
+        app.logger.info(f"Queuing job {job_id} for step 1 and 2")
         return process_order.queue_step_1_2(processed_filenames, user_email, job_id)
 
 
 @app.route("/savefile", methods=["POST"])
 def save_file():
     i = request.args.get("id")
+    app.logger.info(f"Saving file with id {i}")
     step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
     version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0])
     new_pointcloud_file_path = str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output/points.ply")
@@ -79,6 +104,7 @@ def save_file():
 @app.route("/reconstructmesh", methods=["POST"])
 def reconstruct_mesh():
     i = request.args.get("id")
+    app.logger.info(f"Starting step 2 for job with id {i}")
     return process_order.queue_step_2(i)
 
 
@@ -94,6 +120,8 @@ def get_versions():
             versions.get('pointcloud').append(version.rsplit('/', 1)[1])
         elif 'step2' in version:
             versions.get('mesh').append(version.rsplit('/', 1)[1])
+    
+    app.logger.info(f"Retrieving versions for id {i} with the following result: {versions}")
     return versions
 
 
@@ -102,6 +130,7 @@ def get_file():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
+    app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
     if step == None or version == None:
         [filename, file_path, step, version] = get_latest_file(i)
     elif step == 'mesh':
@@ -127,6 +156,7 @@ def get_status():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
+    app.logger.info(f"Retrieving status of job with id {i} from step {step}, version {version}")
     # Check if file exists
     if step == None or version == None:
         [filename, file_path, step, version] = get_latest_file(i)
@@ -162,6 +192,7 @@ def get_status():
 @app.route("/abort", methods=["POST"])
 def abort_job():
     job_id = request.args.get("id")
+    app.logger.info(f"Aborting job {job_id}")
     result = process_order.abort_job(job_id)
     return "", 200 if result else 500
 
@@ -170,6 +201,7 @@ def get_log_file():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
+    app.logger.info(f"Retrieving log file of job with id {i} from step {step}, version {version}")
     file_path = None
     if step == None or version == None:
         log_files_step_1 = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/**/log.txt"))

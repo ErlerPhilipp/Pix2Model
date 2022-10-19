@@ -33,7 +33,7 @@ services:
     volumes:
       - type: bind
         target: /usr/src/app/data
-        source: ${UPLOAD_FOLDER}    
+        source: ${UPLOAD_FOLDER}
       - type: bind
         target: /etc/ssl
         source: ${SSL_CERT_FOLDER}
@@ -61,6 +61,9 @@ services:
     - type: bind
       target: /usr/src/app/data
       source: ${UPLOAD_FOLDER}
+    - type: bind
+      target: /usr/src/app/backend_log/
+      source: ${BACKEND_LOG} 
   redis:
     image: "redis:alpine"
   dashboard:

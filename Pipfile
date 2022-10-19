@@ -14,6 +14,8 @@ pymeshlab = "*"
 
 [dev-packages]
 rq-dashboard = "*"
+pylint = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.9"
