@@ -9,6 +9,7 @@ from redis import Redis
 from rq import Queue, get_current_job
 from rq.command import send_stop_job_command
 from pathlib import Path
+import logging
 
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
@@ -42,11 +43,14 @@ def task(number: int):
 
 def abort_job(job_id) -> bool:
     connection = Redis(host="redis")
+    logging.info(f"Aborting job with id {job_id}")
     try:
         send_stop_job_command(connection, job_id)
     except Exception:
+        logging.info(f"Aborting job with id {job_id} failed!")
         return False
 
+    logging.info(f"Aborting job with id {job_id} successful!")
     return True
 
 
@@ -56,7 +60,8 @@ def queue_step_1(input_files: Any, user_email, job_id: str = None) -> int:
     j1 = task_queue.enqueue(_structure_from_motion, input_files, job_id=job_id)
     j1.meta['mail'] = user_email
     j1.save_meta()
-    print(str(Path(input_files[0]).parent.parent), flush=True)
+    logging.info(f"Queuing step 1 with id {j1.id}")
+    logging.debug(str(Path(input_files[0]).parent.parent), flush=True)
     return str(Path(input_files[0]).parent.parent)
 
 
@@ -69,6 +74,7 @@ def queue_step_1_2(input_files: Any, user_email, job_id: str = None) -> int:
     j1.save_meta()
     j2.meta['mail'] = user_email
     j2.save_meta()
+    logging.info(f"Queuing step 1 with id {j1.id} and step 2 with id {j2.id}")
     return str(Path(input_files[0]).parent.parent)
 
 
@@ -78,6 +84,7 @@ def queue_step_2(iid, job_id: str = None):
     step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / iid / "step1/*"))
     pointcloud_file = str(PosixPath("/usr/src/app/data") / iid / "step1" / sorted(step1_versions, reverse=True)[0] / "output/points.ply")
     j2 = task_queue.enqueue(_mesh_reconstruction_without_dependency, path=pointcloud_file, job_id=job_id)
+    logging.info(f"Queuing step 2 with id {j2.id}")
     return pointcloud_file
 
 
