@@ -30,10 +30,10 @@ RUN apt-get -y install libcgal-dev libcgal-qt5-dev
 RUN git clone https://github.com/cdcseacave/VCG.git vcglib
 
 #Ceres (Optional)
-RUN apt-get -y install libatlas-base-dev libsuitesparse-dev
-RUN git clone https://ceres-solver.googlesource.com/ceres-solver ceres-solver
-RUN mkdir ceres_build
-RUN cd ceres_build && cmake . ../ceres-solver/ -DMINIGLOG=ON -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF && make -j2 && make install
+# RUN apt-get -y install libatlas-base-dev libsuitesparse-dev
+# RUN git clone https://ceres-solver.googlesource.com/ceres-solver ceres-solver
+# RUN mkdir ceres_build
+# RUN cd ceres_build && cmake . ../ceres-solver/ -DMINIGLOG=ON -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF && make -j2 && make install
 
 #GLFW3 (Optional)
 RUN apt-get -y install freeglut3-dev libglew-dev libglfw3-dev
