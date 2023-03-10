@@ -54,6 +54,10 @@ The project can be deployed using docker and docker-compose. The architecture co
 - worker: Consumer for task queue written in python includes installation of CUDA and [Colmap](https://colmap.github.io/) 
 
 To start the whole setup the "start.sh" script can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
+Currently only Google Chrome is supported.
+
+To start the setup with open-mvs support modify the first line in the *Dockerfile* and change it from `FROM image2mesh/image2mesh:base` to `FROM image2mesh/image2mesh:open-mvs`. Then build the *Dockerfile.mvs* image inside the project root folder with this command `docker build --file Dockerfile.mvs --tag image2mesh/image2mesh:open-mvs .` and then start the setupt with the "start.sh" script.
+The open_mvs binaries should be located in "/root/openMVS_build/bin".
 
 ### Local Data Folder
 
@@ -62,6 +66,8 @@ During the runtime of the project, the data folder containing the uploaded image
 - UPLOAD_FOLDER: Path to the locally mounted data folder
 - RQ_DASHBOARD_USERNAME: Username required for access to the dashboard
 - RQ_DASHBOARD_PASSWORD: Password required for access to the dashboard 
+- SSL_CERT_FOLDER: Path to the SLL certificate needed to run the server, can be copied from the tu wien server.
+- BACKEND_LOG: Path to the backend log
 
 ### Folder structure
 
