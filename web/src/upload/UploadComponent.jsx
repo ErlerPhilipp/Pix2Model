@@ -26,11 +26,11 @@ class Upload extends Component {
         paramName: "file",
         autoProcessQueue: false,
         uploadMultiple: true,
-        parallelUploads: 100,
+        parallelUploads: 130,
         maxFilesize: 50,
-        maxFiles: 100,
+        maxFiles: 130,
         acceptedFiles: ".png, .jpg, .jpeg",
-        dictDefaultMessage: "Drop files here to upload<br/><small>Max 100 files, 10MB per file</small>",
+        dictDefaultMessage: "Drop files here to upload<br/><small>Max 130 files, 10MB per file</small>",
         addRemoveLinks: true
       };
       var uploader = document.querySelector('#upload');
