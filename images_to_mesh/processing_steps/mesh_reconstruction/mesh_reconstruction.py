@@ -3,6 +3,7 @@ from typing import List
 from pathlib import Path
 
 import images_to_mesh.processing_steps.mesh_reconstruction.poisson_reconstruction as spsr
+import images_to_mesh.processing_steps.mesh_reconstruction.textured_reconstruction as openMVS
 from images_to_mesh.processing_steps.mesh_reconstruction.mesh_loader import GeneralMeshLoader
 from images_to_mesh.processing_steps.erros import ReconstructionError
 
@@ -32,8 +33,10 @@ def process_clouds(file: str) -> str:
         filename = os.path.basename(file)
         out = "{0}/{1}_{3}{2}".format(dirname, *os.path.splitext(filename) + ("out",))
         spsr.reconstruct(GeneralMeshLoader(file), out)
+        openMVS.reconstruct_texturing(file, out)
     except Exception as e:
-        error_log.write(e.msg)
+        error_log.write(e.args[0])
+        error_log.flush()
         raise
 
     return out
