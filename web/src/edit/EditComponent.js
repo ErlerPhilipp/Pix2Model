@@ -124,9 +124,16 @@ class Edit extends Component {
       event.preventDefault();
       if (event.dataTransfer.types[0] === 'text/plain') return; // Outliner drop
       if (event.dataTransfer.items) {
-        scope.loader.loadItemList(event.dataTransfer.items);
+        console.log("I am loading items!");
+        console.log(event.dataTransfer.items);  
+        scope.loader.loadItemList(event.dataTransfer.items, function(data){
+          console.log("callback here! ");
+          console.log(data);
+          console.log(scope.object);
+        });
       } else {
-        scope.loader.loadFiles(event.dataTransfer.files);
+        console.log(event.dataTransfer.files);
+        scope.loader.loadFiles(event.dataTransfer.files, function(){});
       }
     }, false);
     this.buildFileSelector();
@@ -404,6 +411,7 @@ class Edit extends Component {
     if (!isMobile) {
       this.transformControls.attach(this.object);
     }
+    this.object.name = filename;
     this.setState({loaded: true, name: filename});
     this.frameObject(this);
     this.centerPivotPointWithinBoundingBox(this)

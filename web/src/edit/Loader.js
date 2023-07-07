@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { TGALoader } from 'three/examples/jsm/loaders/TGALoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 
 import { LoaderUtils } from './LoaderUtils.js';
@@ -13,17 +14,17 @@ function Loader( editor ) {
 
 	this.texturePath = '';
 
-	this.loadItemList = function ( items ) {
+	this.loadItemList = function ( items, callback) {
 
 		LoaderUtils.getFilesFromItemList( items, function ( files, filesMap ) {
 
-			scope.loadFiles( files, filesMap );
+			scope.loadFiles( files, filesMap, callback );
 
 		} );
 
 	};
 
-	this.loadFiles = function ( files, filesMap ) {
+	this.loadFiles = function ( files, filesMap, callback ) {
 
 		if ( files.length > 0 ) {
 
@@ -31,9 +32,11 @@ function Loader( editor ) {
 
 			var manager = new THREE.LoadingManager();
 			manager.setURLModifier( function ( url ) {
+				console.log("original url");	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				console.log(url); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 				url = url.replace( /^(\.?\/)/, '' ); // remove './'
-
+				console.log(url); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				var file = filesMap[ url ];
 
 				if ( file ) {
@@ -51,8 +54,11 @@ function Loader( editor ) {
 			manager.addHandler( /\.tga$/i, new TGALoader() );
 
 			for ( var i = 0; i < files.length; i ++ ) {
+				console.log("file nr.: ", i);
+				console.log(files[i]);
 
-				scope.loadFile( files[ i ], manager );
+
+				scope.loadFile( files[ i ], manager, callback );
 
 			}
 
@@ -60,14 +66,13 @@ function Loader( editor ) {
 
 	};
 
-	this.loadFile = function ( file, manager ) {
+	this.loadFile = function ( file, manager, callback ) {
 
 		var filename = file.name;
 		var extension = filename.split( '.' ).pop().toLowerCase();
 
 		var reader = new FileReader();
-
-		switch ( extension ) {
+		switch ( extension ) { 
 
 			case 'ply':
 				reader.addEventListener( 'load', async function ( event ) {
@@ -95,17 +100,34 @@ function Loader( editor ) {
 				reader.addEventListener( 'load', async function ( event ) {
 
 					var contents = event.target.result;
+					filename = "mesh.obj";
 
 					var object = new OBJLoader().parse( contents );
-					object.name = filename;
-
+					object.name = filename;					
 					editor.addObject( object, filename );
-
+				
 				}, false );
 				reader.readAsText( file );
 				break;
 
+			case 'mtl':
+				reader.addEventListener( 'load', async function ( event) {
+					// load mtl file
+					var contents = event.target.result;
+					var mtl = new MTLLoader().parse( contents );
+					mtl.name = "objectMat.mtl";
+					callback(mtl);
+				}, false);
+				reader.readAsText( file);
+				break;
 
+			case 'jpg':
+				reader.addEventListener( 'load', async function ( event ) {
+					var contents = event.target.result;
+					var obj;
+				}, false);
+				reader.readAsArrayBuffer(file);
+				break;
 
 			default:
 
