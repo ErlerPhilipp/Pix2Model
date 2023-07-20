@@ -12,8 +12,12 @@ import { CSG } from 'three-csg-ts';
 import axios from 'axios';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+
+
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
+import JSZip from 'jszip';
 
 import { FaInfoCircle, FaTheRedYeti } from 'react-icons/fa'; 
 import { isMobile } from 'react-device-detect';
@@ -146,7 +150,7 @@ class Edit extends Component {
     // for testing : this.setState({options: {'mesh': ['v001', 'v000', 'v059'], 'pointcloud': ['v002', 'v003', 'v059']}, option_versions: ['v001', 'v000', 'v059']})
     if (id) {
       document.getElementById('uuid').value = id
-      this.uploadFileFromServer()
+      this.uploadFilesFromServer()
     }
     this.renderScene(this)
   }
@@ -311,6 +315,79 @@ class Edit extends Component {
       })
   }
 
+  /**
+   * SERVER CALL
+   * 
+   * Upload multiple files inside a zip file from the server based on the ID within the ID field
+   */
+    uploadFilesFromServer() {
+      const { t } = this.props;
+      var id = document.getElementById('uuid').value
+      var url_ = `/backend/files?id=${id}`
+ 
+      this.setState({loading: true})
+      axios({
+        method: 'get',
+        url: url_,
+        responseType: 'arraybuffer',
+        responseEncoding: 'binary'
+      })
+      .then(res => {
+        const zip = new JSZip()
+        return zip.loadAsync(res.data);
+      })
+      .then(zip => {
+        const fileContents = [];
+        const textFilePromises = [];
+        let blobFileContent;
+
+        Object.keys(zip.files).forEach(relativePath => {
+          const file = zip.file(relativePath);
+          if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {
+            textFilePromises.push(file.async('text').then(content => {
+              fileContents.push({ fileName: relativePath, content: content });
+            }));
+          }else if (relativePath.split('.').pop() === 'jpg') {
+            blobFileContent = file.async('blob');
+          }
+        });
+
+        return Promise.all(textFilePromises).then(() => {
+          return blobFileContent.then(blob=> {
+            fileContents.push({ fileName: 'texture.jpg', content: blob });
+            return fileContents;
+          });
+        });
+      })
+      .then(fileContents => {
+        console.log(fileContents);
+        const mtlFile = fileContents[0];
+        const objFile = fileContents[1];
+        const jpgFile = fileContents[2];
+
+        
+        const textureLoader = new THREE.TextureLoader();
+        let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
+        texture.name = "MVSTexture"
+        console.log(texture);
+        const material = new THREE.MeshBasicMaterial( {
+          map: texture,
+          name: "material"
+        });
+
+        let object = new OBJLoader().parse(objFile.content);
+        object.traverse( function ( child) {
+          if ( child instanceof THREE.Mesh ) {
+            child.material = material;
+          }
+        })
+        console.log(object);
+        this.addObject(object);
+        this.setState({loading: false});
+
+        
+      });
+   }
 
   /**
    * SERVER CALL
@@ -1086,10 +1163,10 @@ class Edit extends Component {
             <label for="uuid" className="formfield">ID</label>
             <input id="uuid" name="uuid" className="formfield_input"></input>
             {!this.state.loading &&
-              <button onClick={() => {this.uploadFileFromServer()}} className='edit_refresh'><FontAwesomeIcon icon={solid('refresh')}/></button>
+              <button onClick={() => {this.uploadFilesFromServer()}} className='edit_refresh'><FontAwesomeIcon icon={solid('refresh')}/></button>
             }
             {this.state.loading &&
-              <button onClick={() => {this.uploadFileFromServer()}} className='edit_refresh loading'><FontAwesomeIcon icon={solid('refresh')}/></button>
+              <button onClick={() => {this.uploadFilesFromServer()}} className='edit_refresh loading'><FontAwesomeIcon icon={solid('refresh')}/></button>
             }
             <br></br>
             <button id="uuid_error" onClick={() => {this.downloadLogfile()}} className="edit_warning"></button>

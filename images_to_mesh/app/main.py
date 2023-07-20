@@ -4,9 +4,11 @@ from time import gmtime
 from typing import List
 
 from io import BytesIO
+import io
 import glob
 import re
 import os
+import zipfile
 
 from flask import Flask, request, render_template, send_file, abort
 from werkzeug.datastructures import FileStorage
@@ -124,7 +126,7 @@ def get_versions():
     app.logger.info(f"Retrieving versions for id {i} with the following result: {versions}")
     return versions
 
-
+## For single ply files
 @app.route("/file", methods=["GET"])
 def get_file():
     i = request.args.get("id")
@@ -150,6 +152,31 @@ def get_file():
         return result
     abort(404)
 
+## For obj files with texture
+@app.route("/files", methods=["GET"])
+def get_files():
+    i = request.args.get("id")
+    step = request.args.get("step")
+    version = request.args.get("version")
+    app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
+    folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/openMVS/"
+    file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_0_map_Kd.jpg"]
+    
+    if folder_path.is_dir():
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
+            app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
+            app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
+            zip_file.write(Path(folder_path, file_names[0]), file_names[0])
+            zip_file.write(Path(folder_path, file_names[1]), file_names[1])
+            zip_file.write(Path(folder_path, file_names[2]), file_names[2])
+        
+        zip_buffer.seek(0)
+
+        result = send_file(zip_buffer, download_name="object_files.zip", as_attachment=True, mimetype="application/zip")
+        return result
+    abort(404)
 
 @app.route("/filestatus", methods=["GET"])
 def get_status():
