@@ -131,6 +131,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     logfile.write(f"Performing Stereo Fusion...\n")
     stereo_fusion_command = [
         'colmap', 'stereo_fusion',
+        '--output_type', 'PLY',
         '--workspace_path', dense_path,
         '--workspace_format', 'COLMAP',
         '--input_type', 'geometric',

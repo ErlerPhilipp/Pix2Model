@@ -73,10 +73,11 @@ def reconstruct_texturing(file: str, out:str):
     reconstruct_exe = Path("/", "root", "openMVS_build", "bin", "ReconstructMesh")
     refine_exe = Path("/", "root", "openMVS_build", "bin", "RefineMesh")
     texture_exe = Path("/", "root", "openMVS_build", "bin", "TextureMesh")
+    version = Path(file).parent.parent.name # v00X
     datasetPath = Path(file).parent.parent.parent.parent # 4e7c0e6a-c333-4e75-9e67-c7afeed48c53/
     openMVS_path = Path(datasetPath, "step1", "v000", "openMVS")
     input_path = Path(datasetPath, "step1", "v000", "dense")
-    colmap_output_path = Path(datasetPath, "step1", "v000", "output")
+    final_output_path = Path(datasetPath, "step2", version, "output")
 
     # create log and error files
     log_path = str(Path(datasetPath, "log.txt"))
@@ -102,14 +103,14 @@ def reconstruct_texturing(file: str, out:str):
     print("Copy pointcloud to working folder ...\n", flush=True)
     try:
         # source_ply = Path(file) 
-        source_ply = Path(Path(input_path).parent, "output", "points.ply")
+        source_ply = Path(file)
         destination_ply = Path(input_path, "fused.ply")
         logfile.write(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n")
         print(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n", flush=True)
         
         shutil.copy(source_ply, destination_ply)
 
-        source_vis = Path(Path(input_path).parent, "output", "points.ply.vis")
+        source_vis = Path(Path(file).parent, "points.ply.vis")
         destination_vis = Path(input_path, "fused.ply.vis")
         logfile.write(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n")
         print(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n", flush=True)
@@ -197,7 +198,7 @@ def reconstruct_texturing(file: str, out:str):
     ##################################################################
     texture_command = [
         texture_exe, "-w", Path(input_path), "--export-type", "obj", "--output-file", 
-        Path(openMVS_path, "mesh_textured.obj"), "--input-file", Path(openMVS_path, "mesh_refine.mvs")]
+        Path(final_output_path, "mesh_textured.obj"), "--input-file", Path(openMVS_path, "mesh_refine.mvs")]
 
     logfile.write("\n")
     logfile.write("Texture mesh ...\n")
