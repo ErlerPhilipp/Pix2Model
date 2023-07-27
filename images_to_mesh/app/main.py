@@ -158,24 +158,47 @@ def get_files():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
-    app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
-    folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/openMVS/"
-    file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_0_map_Kd.jpg"]
-    
-    if folder_path.is_dir():
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
-            app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
-            app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
-            zip_file.write(Path(folder_path, file_names[0]), file_names[0])
-            zip_file.write(Path(folder_path, file_names[1]), file_names[1])
-            zip_file.write(Path(folder_path, file_names[2]), file_names[2])
+    if step == None or version == None:
+        step = 'mesh'
+        version = 'v000'
+    if step == 'mesh':
+        app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
+        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/openMVS/"
+        file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_0_map_Kd.jpg"]
         
-        zip_buffer.seek(0)
+        if folder_path.is_dir():
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
+                app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
+                app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
+                zip_file.write(Path(folder_path, file_names[0]), file_names[0])
+                zip_file.write(Path(folder_path, file_names[1]), file_names[1])
+                zip_file.write(Path(folder_path, file_names[2]), file_names[2])
+            
+            zip_buffer.seek(0)
 
-        result = send_file(zip_buffer, download_name="object_files.zip", as_attachment=True, mimetype="application/zip")
-        return result
+            result = send_file(zip_buffer, download_name="object_files.zip", as_attachment=True, mimetype="application/zip")
+            return result
+        else:
+            app.logger.info(f"Can't zip folder {folder_path}, is not a folder")
+    else:
+        app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
+        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/output/"
+        file_names = ["points.ply", "points.ply.vis"]
+        if folder_path.is_dir():
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
+                app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
+                zip_file.write(Path(folder_path, file_names[0]), file_names[0])
+                zip_file.write(Path(folder_path, file_names[1]), file_names[1])
+            zip_buffer.seek(0)
+
+            result = send_file(zip_buffer, download_name="pointcloud_files.zip", as_attachment=True, mimetype="application/zip")
+            return result
+        else:
+            app.logger.info(f"Can't zip folder {folder_path}, is not a folder")
     abort(404)
 
 @app.route("/filestatus", methods=["GET"])

@@ -323,70 +323,147 @@ class Edit extends Component {
     uploadFilesFromServer() {
       const { t } = this.props;
       var id = document.getElementById('uuid').value
+      var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
+      var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
       var url_ = `/backend/files?id=${id}`
- 
-      this.setState({loading: true})
-      axios({
-        method: 'get',
-        url: url_,
-        responseType: 'arraybuffer',
-        responseEncoding: 'binary'
-      })
-      .then(res => {
-        const zip = new JSZip()
-        return zip.loadAsync(res.data);
-      })
-      .then(zip => {
-        const fileContents = [];
-        const textFilePromises = [];
-        let blobFileContent;
+      if (step && version) {
+        url_ = `/backend/files?id=${id}&step=${step}&version=${version}`
+      }
+      console.log(url_);
 
-        Object.keys(zip.files).forEach(relativePath => {
-          const file = zip.file(relativePath);
-          if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {
-            textFilePromises.push(file.async('text').then(content => {
-              fileContents.push({ fileName: relativePath, content: content });
-            }));
-          }else if (relativePath.split('.').pop() === 'jpg') {
-            blobFileContent = file.async('blob');
-          }
-        });
-
-        return Promise.all(textFilePromises).then(() => {
-          return blobFileContent.then(blob=> {
-            fileContents.push({ fileName: 'texture.jpg', content: blob });
-            return fileContents;
-          });
-        });
-      })
-      .then(fileContents => {
-        console.log(fileContents);
-        const mtlFile = fileContents[0];
-        const objFile = fileContents[1];
-        const jpgFile = fileContents[2];
-
-        
-        const textureLoader = new THREE.TextureLoader();
-        let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
-        texture.name = "MVSTexture"
-        console.log(texture);
-        const material = new THREE.MeshBasicMaterial( {
-          map: texture,
-          name: "material"
-        });
-
-        let object = new OBJLoader().parse(objFile.content);
-        object.traverse( function ( child) {
-          if ( child instanceof THREE.Mesh ) {
-            child.material = material;
-          }
+      if(step === "mesh" || step===undefined) {
+        this.setState({loading: true})
+        axios({
+          method: 'get',
+          url: url_,
+          responseType: 'arraybuffer',
+          responseEncoding: 'binary'
         })
-        console.log(object);
-        this.addObject(object);
-        this.setState({loading: false});
+        .then(res => {
+          const zip = new JSZip()
+          return zip.loadAsync(res.data);
+        })
+        .then(zip => {
+          const fileContents = [];
+          const textFilePromises = [];
+          let blobFileContent;
+  
+          Object.keys(zip.files).forEach(relativePath => {
+            const file = zip.file(relativePath);
+            if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {
+              textFilePromises.push(file.async('text').then(content => {
+                fileContents.push({ fileName: relativePath, content: content });
+              }));
+            }else if (relativePath.split('.').pop() === 'jpg') {
+              blobFileContent = file.async('blob');
+            }
+          });
+  
+          return Promise.all(textFilePromises).then(() => {
+            return blobFileContent.then(blob=> {
+              fileContents.push({ fileName: 'texture.jpg', content: blob });
+              return fileContents;
+            });
+          });
+        })
+        .then(fileContents => {
+          const mtlFile = fileContents[0];
+          const objFile = fileContents[1];
+          const jpgFile = fileContents[2];
+  
+          const textureLoader = new THREE.TextureLoader();
+          let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
+          texture.name = "MVSTexture"
+          const material = new THREE.MeshBasicMaterial( {
+            map: texture,
+            name: "material"
+          });
+  
+          let object = new OBJLoader().parse(objFile.content);
+          object.traverse( function ( child) {
+            if ( child instanceof THREE.Mesh ) {
+              child.material = material;
+            }
+          })
+          this.addObject(object);
+          this.loadVersions("mesh", "v000")
+          this.setState({loading: false});
+        });
+      }
+      else {
+        this.setState({loading: true})
+        axios({
+          method: 'get',
+          url: url_,
+          responseType: 'arraybuffer',
+          responseEncoding: 'binary'
+        })
+        .then(res => {
+          const zip = new JSZip();;
+          return zip.loadAsync(res.data);
+        })
+        .then(zip => {
+          const promises = Object.keys(zip.files).map(relativePath => {
+            const file = zip.file(relativePath);
+            return file.async('arraybuffer').then(content => ({
+              fileName: relativePath,
+              content: content
+            }));
+          });
+          return Promise.all(promises);
+        })
+        .then(pointCloudFiles => {
+          console.log(pointCloudFiles);
+          console.log(pointCloudFiles[0]);
+          console.log(pointCloudFiles[1]);
+          const pointsPly = pointCloudFiles[0];
+          const pointsVis = pointCloudFiles[1];
 
-        
-      });
+
+          var geometry = new PLYLoader().parse( pointsPly.content );
+          console.log(geometry);
+          if (geometry.index) {
+            geometry.computeVertexNormals()
+            var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+            var mesh = new THREE.Mesh( geometry, material );
+            this.addObject(mesh, pointsPly.filename)
+          } else {
+            var material = new THREE.PointsMaterial( { size: 0.005 } );
+            material.vertexColors = true
+            var mesh = new THREE.Points(geometry, material)
+            this.addObject(mesh, pointsPly.filename)
+          }
+
+          this.loadVersions("pointcloud", "v000")
+          this.setState({loading: false})
+
+        })
+        .catch((error) => {
+          if (error.response && error.response.status == 404) {
+            axios({
+              method: 'get',
+              url: `/backend/filestatus?id=${id}`
+            })
+            .then(res => {
+              if (res.status == 201) {
+                this.setFileStatus(t('edit.warning.progress.file').replace('{id}', id), 'yellow')
+              }
+            })
+            .catch((error)=>{
+              if (error.response.status == 404 || error.response.status == 405) {
+                this.setFileStatus(t('edit.error.filenotfound').replace('{id}', id), 'red')
+              } else if (error.response.status == 400) {
+                this.setFileStatus(error.response.data, 'red', true)
+              } else {
+                this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
+              }
+            })
+          } else {
+            this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
+          }
+          this.setState({loading: false})
+        })
+      }
    }
 
   /**
@@ -702,6 +779,7 @@ class Edit extends Component {
     if (!this.object) {
       return;
     }
+
     this.setState({ loading: true})
     this.cropBox.scale.x = Math.abs(this.cropBox.scale.x)
     this.cropBox.scale.y = Math.abs(this.cropBox.scale.y)
