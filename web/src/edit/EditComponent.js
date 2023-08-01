@@ -329,7 +329,6 @@ class Edit extends Component {
       if (step && version) {
         url_ = `/backend/files?id=${id}&step=${step}&version=${version}`
       }
-      console.log(url_);
 
       if(step === "mesh" || step===undefined) {
         this.setState({loading: true})
@@ -416,32 +415,6 @@ class Edit extends Component {
           const pointsPly = pointCloudFiles[0];
           const pointsVis = pointCloudFiles[1];
           this.pointsVis = pointsVis;
-
-
-          // print header of points.ply
-          const uint8Array = new Uint8Array(pointsPly.content);
-          const textDecoder = new TextDecoder('utf-8');
-          const headerString = textDecoder.decode(uint8Array);
-          const headerLines = headerString.split('\n').slice(0, 5);
-          console.log(headerLines.join('\n'));
-
-          var geometry = new PLYLoader().parse( pointsPly.content );
-
-          // convert to blob and check the header
-          /*
-          var exporter = new PLYExporter();
-
-          var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-          var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), 
-            {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const content = reader.result;
-            const lines = content.split('\n').slice(0, 5);
-            console.log(lines.join('\n'));
-          };
-          reader.readAsText(b);
-          */
  
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
@@ -512,8 +485,6 @@ class Edit extends Component {
       var formData = new FormData();
       if (this.object.type == 'Points') {
         var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-        console.log("Reconstruct Mesh");
-        console.log(this.object.geometry);
         var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), 
           {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
         formData.append("file", b)
@@ -731,8 +702,6 @@ class Edit extends Component {
       this.boxHelper.update();
       this.updateLabels();
     }
-    console.log("updateTransformation");
-    console.log(this.object);
     this.renderScene(this);
   }
 

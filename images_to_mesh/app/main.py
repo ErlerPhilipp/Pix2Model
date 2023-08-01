@@ -196,11 +196,6 @@ def get_files():
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
         folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/"
         file_names = ["points.ply", "points.ply.vis"]
-        with open(Path(folder_path, file_names[0]), 'rb') as f:
-            for i in range(5):
-                line = f.readline().decode('utf-8').strip()
-                app.logger.info(line)
-
         if folder_path.is_dir():
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
