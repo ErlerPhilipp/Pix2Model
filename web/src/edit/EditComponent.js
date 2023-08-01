@@ -415,7 +415,7 @@ class Edit extends Component {
           const pointsPly = pointCloudFiles[0];
           const pointsVis = pointCloudFiles[1];
           this.pointsVis = pointsVis;
- 
+          var geometry = new PLYLoader().parse( pointsPly.content );
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
