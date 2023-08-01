@@ -386,7 +386,7 @@ class Edit extends Component {
             }
           })
           this.addObject(object);
-          this.loadVersions("mesh", "v000")
+          this.loadVersions("mesh", version)
           this.setState({loading: false});
         });
       }
@@ -413,30 +413,42 @@ class Edit extends Component {
           return Promise.all(promises);
         })
         .then(pointCloudFiles => {
-          console.log(pointCloudFiles);
-          console.log(pointCloudFiles[0]);
-          console.log(pointCloudFiles[1]);
           const pointsPly = pointCloudFiles[0];
           const pointsVis = pointCloudFiles[1];
+          this.pointsVis = pointsVis;
 
+
+          // print header of points.ply
+          const uint8Array = new Uint8Array(pointsPly.content);
+          const textDecoder = new TextDecoder('utf-8');
+          const headerString = textDecoder.decode(uint8Array);
+          const headerLines = headerString.split('\n').slice(0, 5);
+          console.log(headerLines.join('\n'));
 
           var geometry = new PLYLoader().parse( pointsPly.content );
-          console.log(geometry);
-          if (geometry.index) {
-            geometry.computeVertexNormals()
-            var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-            var mesh = new THREE.Mesh( geometry, material );
-            this.addObject(mesh, pointsPly.filename)
-          } else {
-            var material = new THREE.PointsMaterial( { size: 0.005 } );
-            material.vertexColors = true
-            var mesh = new THREE.Points(geometry, material)
-            this.addObject(mesh, pointsPly.filename)
-          }
 
-          this.loadVersions("pointcloud", "v000")
+          // convert to blob and check the header
+          /*
+          var exporter = new PLYExporter();
+
+          var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+          var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), 
+            {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const content = reader.result;
+            const lines = content.split('\n').slice(0, 5);
+            console.log(lines.join('\n'));
+          };
+          reader.readAsText(b);
+          */
+ 
+          var material = new THREE.PointsMaterial( { size: 0.005 } );
+          material.vertexColors = true
+          var mesh = new THREE.Points(geometry, material)
+          this.addObject(mesh, pointsPly.filename)
+          this.loadVersions("pointcloud", version)
           this.setState({loading: false})
-
         })
         .catch((error) => {
           if (error.response && error.response.status == 404) {
@@ -479,24 +491,45 @@ class Edit extends Component {
    */
   reconstructMesh() {
     const { t } = this.props;
-    var exporter = new PLYExporter();
-    var formData = new FormData();
-    if (this.object.type == 'Points') {
-      var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-      var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
-      formData.append("file", b)
-    } else {
-      formData.append("file", new Blob( [ exporter.parse( this.object, {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
-    }
+
     var id = document.getElementById('uuid').value
     this.setState({loading: true})
+    var formData = new FormData();
+    let pointsVisBlob = new Blob([this.pointsVis.content], { type: 'application/octet-stream' });
+    formData.append("file", pointsVisBlob);
+    let type = encodeURIComponent("points.ply.vis");
+    
     axios({
       method: 'post',
-      url: `/backend/savefile?id=${id}`,
+      url: `/backend/savefile?id=${id}&type=pointVis`,
       data : formData,
-      header : {
+      headers : {
         'Content-Type' : 'multipart/form-data'
       }
+    })
+    .then(res => {
+      var exporter = new PLYExporter();
+      var formData = new FormData();
+      if (this.object.type == 'Points') {
+        var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
+        console.log("Reconstruct Mesh");
+        console.log(this.object.geometry);
+        var b = new Blob( [ exporter.parse( new THREE.Mesh(this.object.geometry, material), 
+          {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
+        formData.append("file", b)
+      } else {
+        formData.append("file", new Blob( [ exporter.parse( this.object, 
+          {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
+      }
+      type = encodeURIComponent("points.ply");
+      return axios({
+        method: 'post',
+        url: `/backend/savefile?id=${id}&type=pointcloud`,
+        data : formData,
+        headers : {
+          'Content-Type' : 'multipart/form-data'
+        }
+      })
     })
     .then(res => {
       axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
@@ -565,7 +598,7 @@ class Edit extends Component {
     if (!isMobile) {
       this.transformControls.attach(this.object);
     }
-    this.object.name = filename;
+    // this.object.name = filename;
     this.setState({loaded: true, name: filename});
     this.frameObject(this);
     this.centerPivotPointWithinBoundingBox(this)
@@ -655,7 +688,8 @@ class Edit extends Component {
       }
       geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
 
-      var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), {excludeAttributes: ['index'], binary: true} ) ], { type: 'text/plain' } )
+      var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), 
+        {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
       link.href = URL.createObjectURL(b);
     } else {
       link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
@@ -697,6 +731,8 @@ class Edit extends Component {
       this.boxHelper.update();
       this.updateLabels();
     }
+    console.log("updateTransformation");
+    console.log(this.object);
     this.renderScene(this);
   }
 

@@ -93,11 +93,21 @@ def file_upload():
 @app.route("/savefile", methods=["POST"])
 def save_file():
     i = request.args.get("id")
+    filetype = request.args.get("type")
+    filename = ""
+    version = ""
+    if filetype == "pointVis":
+        filename = "points.ply.vis"
+        step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
+        version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # addd +1 to version number
+    else:
+        filename = "points.ply"
+        step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
+        version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # don't add +1 to version number
     app.logger.info(f"Saving file with id {i}")
-    step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
-    version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0])
-    new_pointcloud_file_path = str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output/points.ply")
-    os.makedirs(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))
+    new_pointcloud_file_path = str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output" / filename)
+    if(not os.path.exists(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))):
+        os.makedirs(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))
     file = request.files['file']
     file.save(new_pointcloud_file_path)
     return new_pointcloud_file_path
@@ -184,8 +194,13 @@ def get_files():
             app.logger.info(f"Can't zip folder {folder_path}, is not a folder")
     else:
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
-        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/output/"
+        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/"
         file_names = ["points.ply", "points.ply.vis"]
+        with open(Path(folder_path, file_names[0]), 'rb') as f:
+            for i in range(5):
+                line = f.readline().decode('utf-8').strip()
+                app.logger.info(line)
+
         if folder_path.is_dir():
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
