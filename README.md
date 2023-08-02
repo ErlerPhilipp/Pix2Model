@@ -6,11 +6,13 @@ Thanks to [Netidee](https://www.netidee.at/images2mesh-web) for funding this pro
 
 ## [Setup](docs/setup.md)
 
-## [Development Environment Setup](proxy/README.md)
+## [Troubleshooting](docs/troubleshooting.md)
 
-## [Maintenance](docs/maintenance.md)
+## [Development Environment Setup](docs/dev_setup.md)
 
-## [Test it here (Our Live System)](https://netidee.cg.tuwien.ac.at/)
+## [Development Guide](docs/dev_guide.md)
+
+## [Test our Live System](https://netidee.cg.tuwien.ac.at/)
 
 ## [Test Data (COLMAP)](https://colmap.github.io/datasets.html)
 
