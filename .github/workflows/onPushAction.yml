@@ -1,4 +1,4 @@
-name: Publish develop version
+name: Publish release version
 on:
   push:
     branches:
