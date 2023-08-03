@@ -1,4 +1,4 @@
-# Setup - Pix2Model
+# Setup
 
 This guide is meant for people who want to set up and run their own Pix2Model server.
 
@@ -22,7 +22,7 @@ sudo apt-get update
 sudo apt-get install git
 ```
 
-[//]: # (TODO: sudo and users setup, recommended path)
+Your current user must have sudo rights and .
 
 
 ## CUDA and GPU Driver
@@ -96,15 +96,30 @@ sudo docker run --rm --runtime=nvidia --gpus all nvidia/cuda:11.6.2-base-ubuntu2
 You see the same nvidia-smi output as before, but now from inside the container.
 
 
+## Server User
+
+While it's possible to run our system with your personal user, we recommend to create a new user for the server:
+```bash
+sudo adduser netidee-server
+```
+
+Run the following commands while impersonating the new user with sudo capabilities:
+```bash 
+sudo su -- netidee-server
+cd ~
+```
+
+
 ## Pix2Model
 
-Make an empty folder for our project and clone the repository:
+If you just want to run our system, make an empty folder for our project and clone the repository:
 ```bash
 mkdir repos
 cd repos
 git clone https://github.com/ErlerPhilipp/Pix2Model.git
 cd Pix2Model
 ```
+If you plan to modify it, please fork our repository first and clone your fork instead.
 
 Change the default settings of `RQ_DASHBOARD_USERNAME` and `RQ_DASHBOARD_PASSWORD` in the `.env` file:
 ```bash
@@ -118,17 +133,24 @@ mkdir backend_log
 mkdir cert
 ```
 
+
+### SSL (optional) [WIP]
+
+You can skip these steps but browsers will warn about the missing HTTPS certificate.
+
+You can manually create a certificate by following the instructions on https://www.sslforfree.com/. 
+In the near future, an automated solution using Certbot (https://certbot.eff.org/) is going to be realized.
+
+
+### Running the System
+
 Now, you can finally start the server with:
 ```bash
-source start.sh
+sudo source start.sh
 ```
-This will take a while, since it needs to download the Docker images and build the containers.
+This will take a while the first time, since it needs to download the Docker images and build the containers.
 
 Once it runs, you can open the frontend at https://localhost/ in your browser.
-
-Your browser will complain about the missing HTTPS certificate, unless you provide one (TODO).
-
-[//]: # (TODO: SSL certificate)
 
 Images for testing the system can be found at COLMAP: https://colmap.github.io/datasets.html
 
