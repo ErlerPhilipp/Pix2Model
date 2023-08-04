@@ -121,9 +121,13 @@ cd Pix2Model
 ```
 If you plan to modify it, please fork our repository first and clone your fork instead.
 
-Change the default settings of `RQ_DASHBOARD_USERNAME` and `RQ_DASHBOARD_PASSWORD` in the `.env` file:
+Create a `.env` file with the following content with a username and password of your choice:
 ```bash
-nano .env
+UPLOAD_FOLDER=upload
+RQ_DASHBOARD_USERNAME=[rq_user]
+RQ_DASHBOARD_PASSWORD=[rq_pw]
+SSL_CERT_FOLDER=cert
+BACKEND_LOG=backend_log
 ```
 
 
