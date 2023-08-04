@@ -329,6 +329,7 @@ class Edit extends Component {
       if (step && version) {
         url_ = `/backend/files?id=${id}&step=${step}&version=${version}`
       }
+      console.log("Load from server: ", url_);
 
       if(step === "mesh" || step===undefined) {
         this.setState({loading: true})
@@ -412,10 +413,10 @@ class Edit extends Component {
           return Promise.all(promises);
         })
         .then(pointCloudFiles => {
-          const pointsPly = pointCloudFiles[0];
-          const pointsVis = pointCloudFiles[1];
+          const pointsPly = pointCloudFiles[0].content;
+          const pointsVis = pointCloudFiles[1].content;
           this.pointsVis = pointsVis;
-          var geometry = new PLYLoader().parse( pointsPly.content );
+          var geometry = new PLYLoader().parse( pointsPly);
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
@@ -467,11 +468,12 @@ class Edit extends Component {
 
     var id = document.getElementById('uuid').value
     this.setState({loading: true})
+
+    // Send pointsPlyVis to server
     var formData = new FormData();
-    let pointsVisBlob = new Blob([this.pointsVis.content], { type: 'application/octet-stream' });
+    console.log(this.pointsVis);
+    let pointsVisBlob = new Blob([this.pointsVis], { type: 'application/octet-stream' });
     formData.append("file", pointsVisBlob);
-    let type = encodeURIComponent("points.ply.vis");
-    
     axios({
       method: 'post',
       url: `/backend/savefile?id=${id}&type=pointVis`,
@@ -481,6 +483,7 @@ class Edit extends Component {
       }
     })
     .then(res => {
+      // Send points.ply to server
       var exporter = new PLYExporter();
       var formData = new FormData();
       if (this.object.type == 'Points') {
@@ -492,7 +495,6 @@ class Edit extends Component {
         formData.append("file", new Blob( [ exporter.parse( this.object, 
           {excludeAttributes: ['index']} ) ], { type: 'text/plain' } ));
       }
-      type = encodeURIComponent("points.ply");
       return axios({
         method: 'post',
         url: `/backend/savefile?id=${id}&type=pointcloud`,
@@ -503,6 +505,7 @@ class Edit extends Component {
       })
     })
     .then(res => {
+      // Send reconstruct command to server
       axios.post(`/backend/reconstructmesh?id=${id}&version=${res.data}`)
       this.setState({loading: false})
       this.setFileStatus(t('edit.warning.progress.reconstruction').replace('{id}', id), 'green')
@@ -774,6 +777,86 @@ class Edit extends Component {
     });
     this.cropBox = new THREE.Mesh( geometry, material );
   }
+
+
+
+  /* global BigInt */
+
+
+
+  readFusedPlyVis(fused_ply_vis) {
+    const numPoints = Number(new DataView(fused_ply_vis.slice(0, 8)).getBigUint64(0, true));
+    let readable_vis = [];
+    let totalVisibleImages = 0;
+    let debug_visible_images = [];
+    console.log("fused_ply_vis: ", fused_ply_vis);
+    console.log("Number of points: ", numPoints);
+    // read fused_ply_vis data and write it into an array, skip first 2*4 bytes because BigInt
+    for( let i=2; i < numPoints+2; i++ ){
+      const byte_start = i*4 + totalVisibleImages*4;
+      const visible_images = new DataView(fused_ply_vis.slice(byte_start, byte_start+4)).getUint32(0, true);
+      const byte_length = 4 + visible_images*4;
+      debug_visible_images.push({index: i, num_images: visible_images});
+      totalVisibleImages += visible_images;
+      const entry = {byte_start: byte_start, byte_length: byte_length}
+      readable_vis.push(entry);
+    }
+    console.log("debug visible Images: ", debug_visible_images);
+
+    return readable_vis;
+  }
+
+  /**
+   * FEATURE: Crop
+   * 
+   * Modify the fused.ply.vis file to adhere to the cropped pointcloud
+   */
+  deletePointsFromFused_ply_vis(fused_ply_vis, remainingIndices) {
+    /**
+     * #### ####      first 8 bytes is a BigInt describing the number of points
+     * ####           next 4 bytes is a uint describing the number of visible images of that point
+     * #### * images  next 4 bytes times visible images describes the indices of the visible images of that point
+     * .              next 4 bytes is a uint describing the number of visible images of the next point and so on...
+     * .
+     * .
+     */
+
+    try{
+      const numPoints = Number(new DataView(fused_ply_vis.slice(0, 8)).getBigUint64(0, true));
+      let readable_vis = this.readFusedPlyVis(fused_ply_vis);
+
+      // count bytes of the entries left after filtering
+      let new_ply_vis_size = 8; // include first Big Int numPoints
+      for( let i=0; i<remainingIndices.length; i++){
+        const idx = remainingIndices[i];
+        new_ply_vis_size += readable_vis[idx].byte_length;
+      }
+
+      // create new fused_ply_vis with remaining entries
+      const newBuffer = new ArrayBuffer(new_ply_vis_size);
+      const newDataView = new DataView(newBuffer);
+      newDataView.setBigUint64(0, BigInt(remainingIndices.length), true);
+      let data_offset = 8;
+      
+      for( let i=0; i<remainingIndices.length; i++){
+        const idx = remainingIndices[i];
+        const byte_start = readable_vis[idx].byte_start;
+        const byte_end = readable_vis[idx].byte_start + readable_vis[idx].byte_length;
+        const visData = fused_ply_vis.slice(byte_start, byte_end);
+        const visDataView = new DataView(visData);
+        for (let j = 0; j < visData.byteLength; j++){
+          newDataView.setUint8(data_offset+j, visDataView.getUint8(j), true);
+        }
+        data_offset += readable_vis[idx].byte_length;
+      }
+
+      this.readFusedPlyVis(newDataView.buffer);
+
+      return newDataView.buffer;
+    }catch(error){
+      console.log(error);
+    }
+  }
   
   /**
    * FEATURE: Crop
@@ -835,16 +918,22 @@ class Edit extends Component {
     var updatedColors = []
     var normals = that.object.geometry.attributes.normal.array
     var updatedNormals = []
+    var point_idx = 0;
+    var remainingIndices = []
     for (var i = 0; i < positions.length; i += 3) {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if (!(Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
+        remainingIndices.push(point_idx);
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
         const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
         updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
+      point_idx++;
     }
+    console.log("Remaining Indices: ", remainingIndices);
+    that.pointsVis = that.deletePointsFromFused_ply_vis(that.pointsVis, remainingIndices);
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));
@@ -912,16 +1001,22 @@ class Edit extends Component {
     var updatedColors = []
     var normals = that.object.geometry.attributes.normal.array
     var updatedNormals = []
+    var remainingIndices = []
+    var point_idx = 0
     for (var i = 0; i < positions.length; i += 3) {
       const d = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld).sub(that.cropBox.position);
       if ((Math.abs(dx.dot(d)) <= (that.cropBox.scale.x / 2) && Math.abs(dy.dot(d)) <= (that.cropBox.scale.y / 2) && Math.abs(dz.dot(d)) <= (that.cropBox.scale.z / 2))) {
+        remainingIndices.push(point_idx);
         const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(that.object.matrixWorld)
         const worldNormals = new THREE.Vector3(normals[i], normals[i+1], normals[i+2]).applyQuaternion(that.object.quaternion)
         updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
         updatedColors.push(colors[i], colors[i+1], colors[i+2])
         updatedNormals.push(worldNormals.x, worldNormals.y, worldNormals.z)
       }
+      point_idx++;
     }
+    console.log("Remaining Indices: ", remainingIndices);
+    that.pointsVis = that.deletePointsFromFused_ply_vis(that.pointsVis, remainingIndices);
     geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(Float32Array.from(updatedColors), 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(Float32Array.from(updatedNormals), 3));

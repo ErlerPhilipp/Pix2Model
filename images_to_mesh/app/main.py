@@ -169,11 +169,14 @@ def get_files():
     step = request.args.get("step")
     version = request.args.get("version")
     if step == None or version == None:
-        step = 'mesh'
-        version = 'v000'
+        step = "mesh"
+        version = "v000"
+        # Todo: fix this here!
+        # wrong file is loaded, use "get_latest_file" to get correct version
+    
     if step == 'mesh':
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
-        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1/v000/openMVS/"
+        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output"
         file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_0_map_Kd.jpg"]
         
         if folder_path.is_dir():
