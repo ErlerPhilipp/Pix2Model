@@ -126,13 +126,6 @@ Change the default settings of `RQ_DASHBOARD_USERNAME` and `RQ_DASHBOARD_PASSWOR
 nano .env
 ```
 
-Create folders for default paths specified in the `.env` file:
-```bash
-mkdir upload
-mkdir backend_log 
-mkdir cert
-```
-
 
 ### SSL [WIP]
 
