@@ -72,7 +72,7 @@ file located inside `/home/netidee-server/Server/Repo`. It specifies the followi
 The base image for the backend and worker that contains all necessary dependencies including e.g. COLMAP. This image is hosted on DockerHub: [https://hub.docker.com/r/image2mesh/image2mesh](https://hub.docker.com/r/image2mesh/image2mesh).
 
 Run the `start.sh` to start each service (including the worker) exactly once. 
-Further information on how to use docker-compose can be found in the 
+Further information on how to use docker compose can be found in the 
 [official documentation](https://docs.docker.com/compose/reference/).
 
 
