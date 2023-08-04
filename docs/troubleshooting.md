@@ -8,11 +8,6 @@ This guide is meant for our recommended [setup](setup.md).
 Sometimes, the server runs into an error and stops working. 
 An easy fix that solves surprisingly many problems is to simply restart the server.
 
-[//]: # (```bash)
-[//]: # (cd repos/Pix2Model)
-[//]: # (sudo source start.sh)
-[//]: # (```)
-
 Impersonate the server user:
 ```bash
 sudo su -- netidee-server
@@ -20,7 +15,7 @@ sudo su -- netidee-server
 and run the deploy script:
 ```bash
 cd /home/netidee-server/Server/
-source deploy.sh
+bash deploy.sh
 ```
 
 It might even be necessary to reboot the host machine:

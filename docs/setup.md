@@ -134,9 +134,12 @@ mkdir cert
 ```
 
 
-### SSL (optional) [WIP]
+### SSL [WIP]
 
-You can skip these steps but browsers will warn about the missing HTTPS certificate.
+You can skip these steps but browsers will warn about unsecure connection, at least.
+NGINX won't start if the certificate is missing or invalid. In order to start in HTTP mode, 
+you need open `web/nginx.conf`, replace the HTTP locations with the SSL locations and comment out the whole SSL block.
+Now, you should be able to connect to the server via HTTP, at least with Google Chrome (in incognito mode).
 
 You can manually create a certificate by following the instructions on https://www.sslforfree.com/. 
 In the near future, an automated solution using Certbot (https://certbot.eff.org/) is going to be realized.
@@ -146,7 +149,7 @@ In the near future, an automated solution using Certbot (https://certbot.eff.org
 
 Now, you can finally start the server with:
 ```bash
-sudo source start.sh
+sudo bash start.sh
 ```
 This will take a while the first time, since it needs to download the Docker images and build the containers.
 

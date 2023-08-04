@@ -39,7 +39,7 @@ Now you're ready to go. You can test the setup by pushing a commit (full test) o
 running the deploy script manually (server-side test):
 ```bash
 cd /home/netidee-server/Server/
-source deploy.sh
+bash deploy.sh
 ```
 
 
