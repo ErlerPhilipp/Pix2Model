@@ -11,7 +11,9 @@
         "sophie": "Frontend",
         "johannes": "SfM and MVS",
         "maximilian": "Backend",
-        "florian": "Reconstruction"
+        "florian": "Reconstruction",
+        "elias": "NeRF",
+        "johannes_p": "Texturing"
     },
     "footer": {
         "impressum": "Impressum",
