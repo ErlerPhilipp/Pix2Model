@@ -169,11 +169,11 @@
         },
         "plyfile": {
             "hashes": [
-                "sha256:155cdd6033451921203dd050d0a6fded3e4ba9cea5a18a4f64fe06bbc2d0cc3c",
-                "sha256:9e9a18d22a3158fcd74df38761d43a7facc6df75126f2ab9f4e9a5d4d2188652"
+                "sha256:4ceaedf1ed92b3a26b766fc8c56cda1b9b2390ec299b16dede2e5fd45097261a",
+                "sha256:57620f14269c6ef41c5782f4547894e0bac2473e2c6f326c4d7fc75ad1ae6fea"
             ],
             "index": "pypi",
-            "version": "==0.7.4"
+            "version": "==1.0.1"
         },
         "pymeshlab": {
             "hashes": [
