@@ -42,7 +42,6 @@ services:
     profiles:
       - deploy
     networks:
-      - proxy_network
       - default
   certbot:
     image: certbot/certbot:latest
@@ -104,7 +103,3 @@ services:
       - default
 volumes:
   exclude:
-networks:
-  proxy_network:
-    name: proxies
-    external: true
