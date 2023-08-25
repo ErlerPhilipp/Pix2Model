@@ -20,14 +20,13 @@ services:
         source: ${UPLOAD_FOLDER}    
     profiles:
       - develop
-  client_deployed:
+  client_deployed_dev:
     stdin_open: true
     build:
       context: ./web
       dockerfile: ./Dockerfile.nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "8082:8082"
     depends_on:
       - backend
     volumes:
@@ -42,6 +41,8 @@ services:
         source: ./certbot/www
     profiles:
       - deploy
+    networks:
+      - default
   certbot:
     image: certbot/certbot:latest
     volumes:
@@ -64,6 +65,8 @@ services:
     - type: bind
       target: /usr/src/app/backend_log/
       source: ${BACKEND_LOG} 
+    networks:
+      - default
   redis:
     image: "redis:alpine"
   dashboard:
@@ -77,6 +80,8 @@ services:
       - RQ_DASHBOARD_URL_PREFIX=/dashboard
     expose:
       - "9181"
+    networks:
+      - default
   worker:
     build: .
     depends_on:
@@ -94,5 +99,7 @@ services:
         reservations:
           devices:
           - capabilities: [gpu]
+    networks:
+      - default
 volumes:
   exclude:

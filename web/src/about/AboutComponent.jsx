@@ -15,10 +15,6 @@ function About(props) {
                     <h2>Team</h2>
                     <div className='team'>
                         <div className='team_member'>
-                            <img src='teammembers/ohrhallinger_stefan.png' className='team_images'></img>
-                            <p className='team_member_description'>Stefan Ohrhallinger<br></br><small className="title">{t('about.stefan')}</small></p>
-                        </div>
-                        <div className='team_member'>
                             <img src='teammembers/erler_philipp.png' className='team_images'></img>
                             <p className='team_member_description'>Philipp Erler<br></br><small className="title">{t('about.philipp')}</small></p>
                         </div>
@@ -37,6 +33,14 @@ function About(props) {
                         <div className='team_member'>
                             <img src='teammembers/pichler_sophie.png' className='team_images'></img>
                             <p className='team_member_description'>Sophie Pichler<br></br><small className="title">{t('about.sophie')}</small></p>
+                        </div>
+                        <div className='team_member'>
+                            <img src='teammembers/elias_brugger.png' className='team_images'></img>
+                            <p className='team_member_description'>Elias Brugger<br></br><small className="title">{t('about.elias')}</small></p>
+                        </div>
+                        <div className='team_member'>
+                            <img src='teammembers/johannes_pauschenwein.png' className='team_images'></img>
+                            <p className='team_member_description'>Johannes Pauschenwein<br></br><small className="title">{t('about.johannes_p')}</small></p>
                         </div>
                     </div>
                 </div>

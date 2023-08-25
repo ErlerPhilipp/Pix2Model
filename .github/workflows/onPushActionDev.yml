@@ -2,7 +2,7 @@ name: Publish release version
 on:
   push:
     branches:
-      - main
+      - develop
 jobs:
   Update-Develop-Version:
     name: Deploy
@@ -19,4 +19,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            bash /home/netidee-server/Server/deploy.sh
+            bash /home/netidee-server/Server_Dev/deploy.sh
