@@ -472,6 +472,13 @@
             "index": "pypi",
             "version": "==5.0.0"
         },
+        "redis-sentinel-url": {
+            "hashes": [
+                "sha256:c6991e2000c5c7a5e2b95eb2d62fd5b0a6b02a59554caf0f9f79d18e152d9663",
+                "sha256:ec1854ab9379a28789423c3cd4082739fb69c7b4b11bb50ae7858697c131b13e"
+            ],
+            "version": "==1.0.1"
+        },
         "rq": {
             "hashes": [
                 "sha256:1f49f4ac1a084044bb8e95b3f305c0bf17e55618b08c18e0b60c080f12d6f008",
@@ -482,10 +489,11 @@
         },
         "rq-dashboard": {
             "hashes": [
-                "sha256:95163f0a8413e6be277d60eada0125f1c4b230577c3fa538a31a77a2cb556f8a"
+                "sha256:391eef0ae3e3f416abc128ddb85ab2ccfdc9ea3cdaac40cb2464efcbdc696973",
+                "sha256:9019d7074ffd132d04623c1937f9ac1b3523bdb43d0c79d6e763dc6789f0686e"
             ],
             "index": "pypi",
-            "version": "==0.6.1"
+            "version": "==0.6.7"
         },
         "six": {
             "hashes": [
