@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /home/netidee-server/Server/SSL-Certificate:/server1
+      - /home/netidee-server/Server_Dev/SSL-Certificate:/server2
+    networks:
+      - proxy_network      
+    restart: always
+networks:
+  proxy_network:
+    name: proxies
+    external: true
+   

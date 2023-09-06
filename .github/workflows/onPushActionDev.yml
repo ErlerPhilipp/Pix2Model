@@ -2,14 +2,14 @@ name: Publish develop version
 on:
   push:
     branches:
-      - main
+      - develop
 jobs:
   Update-Develop-Version:
     name: Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Connect to server
         uses: appleboy/ssh-action@master
@@ -19,4 +19,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
-            bash /home/netidee-server/Server/deploy.sh
+            bash /home/netidee-server/Server_Dev/deploy.sh

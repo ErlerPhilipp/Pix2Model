@@ -1,108 +1,161 @@
-# Setup - Pix2Model
+# Setup
 
-## Server
+This guide is meant for people who want to set up and run their own Pix2Model server.
 
-To finish in a reasonable time, the SfM part requires a CUDA-enabled GPU.
+
+## Hardware
+
+To finish in a reasonable time, you should have a somewhat modern hardware with a recent NVIDIA GPU.
 Our system currently runs on:
 - CPU: AMD Ryzen 7 5800x
 - GPU: NVIDIA GeForce RTX 3090
-- RAM: DDR4 64 GB, 3600MHz, CL 16
+- RAM: DDR4 64 GB, 3600MHz
 
-The server should run on a Linux/Unix. 
 
-We recommend [Ubuntu](https://ubuntu.com/), which makes e.g. graphics driver installation easy:
-```
-sudo apt install ubuntu-drivers-common
-sudo ubuntu-drivers autoinstall
-sudo reboot
-```
+## Operating System
 
-## Colmap Prerequisites
-
-In order to use Colmap a NVIDIA gpu must be present. Install the "nvidia-container-toolkit" before building the project, according to the NVIDIA guide https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html:
-
+The server should run on a Linux/Unix. We recommend [Ubuntu](https://ubuntu.com/) (22.04 LTS).
+[//]: # (We also tested Windows 10 and 11 but ran into issues with HTTPS certificates and nginx.)
+If your installation is fresh, you may need to install some basic packages like git:
 ```bash
-# Add the package repositories
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-# Install nvidia-container-toolkit
-sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-sudo apt-get install -y nvidia-docker2
-sudo systemctl restart docker
-
-# Check that it worked!
-docker run --gpus all nvidia/cuda:10.2-base nvidia-smi
+sudo apt-get update
+sudo apt-get install git
 ```
 
-The [NVIDIA CUDA toolkit](https://developer.nvidia.com/cuda-downloads) must be installed on the host system.
+Your current user must have sudo rights and .
 
-Check your CUDA installation with 
+
+## CUDA and GPU Driver
+
+Since CUDA is the de-facto standard in GPU computing, the used software requires an NVIDIA GPU.
+We recommend CUDA >=11.4, which corresponds to driver version >=450. 
+COLMAP requires the CUDA toolkit, which comes with the driver. 
+Do not install the driver manually to reduce the risk of ambiguities.
+
+Follow the instructions of the [NVIDIA CUDA toolkit](https://developer.nvidia.com/cuda-downloads).
+For the recommended setup, you can use the following commands:
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+wget https://developer.download.nvidia.com/compute/cuda/12.2.1/local_installers/cuda-repo-ubuntu2204-12-2-local_12.2.1-535.86.10-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu2204-12-2-local_12.2.1-535.86.10-1_amd64.deb
+sudo cp /var/cuda-repo-ubuntu2204-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
+sudo apt-get update
+sudo apt-get -y install cuda
+```
+
+Check your CUDA installation with:
 ```bash
 nvidia-smi
 ```
-If a CUDA Version >= 11.4 is reported you are good to go.
+You should see your GPU and the recommended driver and CUDA versions.
 
-## Docker Setup
 
-The project can be deployed using docker and docker-compose. The architecture consists of the following services that can be found in the docker-compose.yml:
+## Docker and NVIDIA Container Toolkit
 
-- web: Contains the application server written in python using flask
-- dashboard: Monitoring of the task queue via connection to redis server
-- redis: Database/Caching server used as host for the task queue
-- worker: Consumer for task queue written in python includes installation of CUDA and [Colmap](https://colmap.github.io/) 
+Our software runs in Docker containers with GPU support. 
+Therefore, we need to install first Docker and then the NVIDIA Container Toolkit.
 
-To start the whole setup the "start.sh" script can be used. It starts each service (including the worker) exactly once. Further information on how to use docker-compose can be found in the [official documentation](https://docs.docker.com/compose/reference/).
-
-### Local Data Folder
-
-During the runtime of the project, the data folder containing the uploaded images is mounted to the host system. The local path on the host must be specified using an environment variable. This can be easily done with the help of docker using an environment file. Place a file called .env in the same directory as the docker-compose.yml and put in each line a key-value pair separated with a "=" sign (more information in the [official documentation](https://docs.docker.com/compose/env-file/)). The following variables can be set in the current setup:
-
-- UPLOAD_FOLDER: Path to the locally mounted data folder
-- RQ_DASHBOARD_USERNAME: Username required for access to the dashboard
-- RQ_DASHBOARD_PASSWORD: Password required for access to the dashboard 
-
-### Folder structure
-
-The structure of the data folder is very flexible. There are only 2 fixed folders:
-
-- "UUID": for new file uploads
-  - input: initial uploaded file set
-
-Once a user starts a new upload of images, a folder named after a random UUID is created. Inside this folder, another folder called "input" is created that contains the uploaded images. The paths to these images is then passed as argument to the first step in the processing pipeline. How each further step uses this folder is up to them, however it makes sense that each step creates its own folder for putting intermediate results.
-
-## Integration of Processing Steps
-
-To integrate a step of the processing pipeline into this project use the process_order.py module. In there declare a wrapper function that looks like this:
-
-```python
-@task(1)
-def _step_one(*args, **kwargs):
-    return processing_function(*args, **kwargs)
+NVIDIA Container Toolkit requires [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) 
+version >=20.10.XX, which you can install with:
+```bash
+sudo apt-get update
+sudo apt-get install docker-ce=5:20.10.13~3-0~ubuntu-jammy docker-ce-cli=5:20.10.13~3-0~ubuntu-jammy containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-The task decorate should receive the ordinal of the step in the pipeline. In this example the "processing_function" should be replaced with the processing function, which is supposed to do the work. For the sake of keeping the folder structure clean, the function should be put inside the "processing_steps" package and if multiple modules/files are necessary inside its own sub-package. Finally the processing step must be registered in the "queue_jobs" function:
-
-```python
-def queue_jobs(input_files: Any) -> int:
-    connection = Redis(host="redis")
-    task_queue = Queue(connection=connection)
-    j1 = task_queue.enqueue(_step_one, input_files)
-    j2 = task_queue.enqueue(_step_two, depends_on=j1)
-    return j2.id
+Test Docker with:
+```bash
+sudo service docker start
+sudo docker run hello-world
+sudo service docker stop  # stop again or container toolkit installation will fail
 ```
 
-Here the "input_files" argument contains a list of the uploaded images and their paths. This argument should always be the fixed argument for the first step in the queue. For every other step, the return value of the previous step is automatically the input for the next one. In order to ensure that each consecutive step waits for the previous one, the "depends_on" keyword argument should be used.
+Now that Docker is installed, we can add GPU support by installing the NVIDIA Container Toolkit. 
+In our last attempt, the 
+[official guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) did not work. 
+We used the following commands instead, which point to the experimental instead of the stable version:
+```bash
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+      && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+      && curl -s -L https://nvidia.github.io/libnvidia-container/experimental/$distribution/libnvidia-container.list | \
+         sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+         sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit-base
 
-## Point Cloud Reconstruction
+# Configure CTK for Docker
+sudo mkdir /etc/docker/
+sudo nvidia-ctk runtime configure --runtime=docker
+```
 
-The first processing step performs a point cloud reconstruction from input images using Colmap. After the step completes, it provides two outputs:
+Test GPU support in Docker:
+```bash
+sudo systemctl restart docker
+sudo docker run --rm --runtime=nvidia --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
+```
+You see the same nvidia-smi output as before, but now from inside the container.
 
-- A points.ply file containing the point cloud data (XYZ positions and RGB colors of each point)
-- A log.txt file containing the log of the reconstruction
 
-## Testing
+## Server User
 
-Images for testing the application can be found here:
-https://colmap.github.io/datasets.html
+While it's possible to run our system with your personal user, we recommend to create a new user for the server:
+```bash
+sudo adduser netidee-server
+```
+
+Run the following commands while impersonating the new user with sudo capabilities:
+```bash 
+sudo su -- netidee-server
+cd ~
+```
+
+
+## Pix2Model
+
+If you just want to run our system, make an empty folder for our project and clone the repository:
+```bash
+mkdir repos
+cd repos
+git clone https://github.com/ErlerPhilipp/Pix2Model.git
+cd Pix2Model
+```
+If you plan to modify it, please fork our repository first and clone your fork instead.
+
+Create a `.env` file with the following content with a username and password of your choice:
+```bash
+UPLOAD_FOLDER=upload
+RQ_DASHBOARD_USERNAME=[rq_user]
+RQ_DASHBOARD_PASSWORD=[rq_pw]
+SSL_CERT_FOLDER=cert
+BACKEND_LOG=backend_log
+```
+
+
+### SSL [WIP]
+
+You can skip these steps but browsers will warn about unsecure connection, at least.
+NGINX won't start if the certificate is missing or invalid. In order to start in HTTP mode, 
+you need open `web/nginx.conf`, replace the HTTP locations with the SSL locations and comment out the whole SSL block.
+Now, you should be able to connect to the server via HTTP, at least with Google Chrome (in incognito mode).
+
+You can manually create a certificate by following the instructions on https://www.sslforfree.com/. 
+In the near future, an automated solution using Certbot (https://certbot.eff.org/) is going to be realized.
+
+
+### Running the System
+
+Now, you can finally start the server with:
+```bash
+sudo bash start.sh
+```
+This will take a while the first time, since it needs to download the Docker images and build the containers.
+
+Once it runs, you can open the frontend at https://localhost/ in your browser.
+
+Images for testing the system can be found at COLMAP: https://colmap.github.io/datasets.html
+
+You can see the running, queued and completed jobs in the dashboard at https://localhost/dashboard/. 
+Login with the credentials you set in the `.env` file.
+
+If you run into any issues, please see the [troubleshooting guide](troubleshooting.md).
+

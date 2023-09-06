@@ -109,6 +109,7 @@ class Edit extends Component {
         scope.camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
         scope.camera.updateProjectionMatrix();
         scope.renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+        scope.labelRenderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
         scope.renderScene(scope)
       })
     } else {
@@ -116,6 +117,7 @@ class Edit extends Component {
         scope.camera.aspect = (window.innerWidth - 300) / (window.innerHeight - 105);
         scope.camera.updateProjectionMatrix();
         scope.renderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+        scope.labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
         scope.renderScene(scope)
       })
     }
