@@ -89,7 +89,9 @@ def file_upload():
         app.logger.info(f"Queuing job {job_id} for step 1 and 2")
         return process_order.queue_step_1_2(processed_filenames, user_email, job_id)
 
-
+# saves files into the output folder in a new version folder
+# files to be saved are the visibility file, the pointcloud and the camera poses in the images file
+# the type arg specifies which file it is
 @app.route("/savefile", methods=["POST"])
 def save_file():
     i = request.args.get("id")
@@ -99,12 +101,16 @@ def save_file():
     if filetype == "pointVis":
         filename = "points.ply.vis"
         step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
-        version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # addd +1 to version number
-    else:
+        version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # add +1 to version number
+    elif filetype == "pointcloud":
         filename = "points.ply"
         step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
         version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # don't add +1 to version number
-    app.logger.info(f"Saving file with id {i}")
+    elif filetype == "images":
+        filename = "images.txt"
+        step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/*"))
+        version = re.sub(r'[0-9]+$', lambda x: f"{str(int(x.group())).zfill(len(x.group()))}", sorted(step1_versions, reverse=True)[0]) # don't add +1 to version number
+    app.logger.info(f"Saving file {filename} with id {i} and version {version}")
     new_pointcloud_file_path = str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output" / filename)
     if(not os.path.exists(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))):
         os.makedirs(str(PosixPath("/usr/src/app/data") / i / "step1" / version / "output"))
@@ -168,12 +174,9 @@ def get_files():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
-    if step == None or version == None:
-        step = "mesh"
-        version = "v000"
-        # Todo: fix this here!
-        # wrong file is loaded, use "get_latest_file" to get correct version
-    
+    if step == None and version == None:
+        [filename, file_path, step, version] = get_latest_file(i)
+
     if step == 'mesh':
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
         folder_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output"
@@ -195,10 +198,10 @@ def get_files():
             return result
         else:
             app.logger.info(f"Can't zip folder {folder_path}, is not a folder")
-    else:
+    else:   # step == pointcloud
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
         folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/"
-        file_names = ["points.ply", "points.ply.vis"]
+        file_names = ["points.ply", "points.ply.vis", "images.txt"]
         if folder_path.is_dir():
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
@@ -206,6 +209,7 @@ def get_files():
                 app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
                 zip_file.write(Path(folder_path, file_names[0]), file_names[0])
                 zip_file.write(Path(folder_path, file_names[1]), file_names[1])
+                zip_file.write(Path(folder_path, file_names[2]), file_names[2])
             zip_buffer.seek(0)
 
             result = send_file(zip_buffer, download_name="pointcloud_files.zip", as_attachment=True, mimetype="application/zip")
@@ -293,12 +297,14 @@ def get_latest_file(i):
         file_step_2: Path = PosixPath(max(step2_versions))
         if file_step_2.is_file():
             filename = i+'_mesh.ply'
-            return [filename, file_step_2, "mesh", sorted(step2_versions, reverse=True)[0]]
+            version = max(glob.glob(str(PosixPath("/usr/src/app/data") / i / "step2/v???"))).rsplit('/', 1)[1]
+            return [filename, file_step_2, "mesh", version]
     if step1_versions:
         file_step_1: Path = PosixPath(max(step1_versions))
         if file_step_1.is_file():
             filename = i+'_pointcloud.ply'
-            return [filename, file_step_1, "pointcloud", sorted(step1_versions, reverse=True)[0]]
+            version = max(glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/v???"))).rsplit('/', 1)[1]
+            return [filename, file_step_1, "pointcloud", version]
     return [None, None, None, None]
 
 

@@ -14,7 +14,6 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
-
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
 import JSZip from 'jszip';
@@ -30,7 +29,6 @@ import { BrowserView, MobileView } from 'react-device-detect';
 
 import 'react-dropdown/style.css';
 import './EditComponent.css';
-
 
 class Edit extends Component {
   constructor(props) {
@@ -392,7 +390,7 @@ class Edit extends Component {
           this.setState({loading: false});
         });
       }
-      else {
+      else {                            // step == pointcloud
         this.setState({loading: true})
         axios({
           method: 'get',
@@ -417,7 +415,9 @@ class Edit extends Component {
         .then(pointCloudFiles => {
           const pointsPly = pointCloudFiles[0].content;
           const pointsVis = pointCloudFiles[1].content;
+          const images = pointCloudFiles[2].content;
           this.pointsVis = pointsVis;
+          this.images = images;
           var geometry = new PLYLoader().parse( pointsPly);
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
@@ -471,9 +471,10 @@ class Edit extends Component {
     var id = document.getElementById('uuid').value
     this.setState({loading: true})
 
+    this.images = this.applyTransformationToCameras(this.images);
+
     // Send pointsPlyVis to server
     var formData = new FormData();
-    console.log(this.pointsVis);
     let pointsVisBlob = new Blob([this.pointsVis], { type: 'application/octet-stream' });
     formData.append("file", pointsVisBlob);
     axios({
@@ -483,6 +484,20 @@ class Edit extends Component {
       headers : {
         'Content-Type' : 'multipart/form-data'
       }
+    })
+    .then(res => {
+      // Send images to server (camera poses)
+      var formData = new FormData();
+      let imagesBlob = new Blob([this.images], { type: 'application/octet-stream' });
+      formData.append("file", imagesBlob);
+      axios({
+        method: 'post',
+        url: `/backend/savefile?id=${id}&type=images`,
+        data : formData,
+        headers : {
+          'Content-Type' : 'multipart/form-data'
+        }
+      })
     })
     .then(res => {
       // Send points.ply to server
@@ -672,6 +687,112 @@ class Edit extends Component {
     }
     link.download = this.state.name;
     link.dispatchEvent( new MouseEvent( 'click' ) );
+  }
+
+  /**
+   * FEATURE: Transformation
+   * 
+   * Apply Transformation to camera poses -> this.images
+   */
+  applyTransformationToCameras(images_txt) {
+    let entries = this.read_images(images_txt);
+
+    // TODO: Do transformation stuff
+
+    let new_images = this.write_images(entries);
+    return new_images;
+  }
+
+  read_images(images_txt) {
+    // Convert the ArrayBuffer to a string
+    const decoder = new TextDecoder('utf-8');
+    images_txt = decoder.decode(images_txt);
+    // Split the file content into lines
+    const lines = images_txt.split('\n');
+    // Initialize an array to store the entries
+    const entries = [];
+
+    let header = ""
+    for (let i=0; i < 4; i++){
+      header += (lines[i] + "\n");
+    }
+
+    entries.push({
+      header: header
+    });
+
+    console.log("lines_length: ", lines.length);
+    // Iterate through the lines
+    for (let i = 4; i < lines.length - 1; i += 2) {
+        const imageInfo = lines[i].trim().split(' ');
+        const imageId = imageInfo[0];
+        const qw = imageInfo[1];
+        const qx = imageInfo[2];
+        const qy = imageInfo[3];
+        const qz = imageInfo[4];
+        const tx = imageInfo[5];
+        const ty = imageInfo[6];
+        const tz = imageInfo[7];
+        const cameraId = imageInfo[8];
+        const name = imageInfo.slice(9).join(' ');
+
+        const points2DInfo = lines[i + 1].trim().split(' ');
+        const points2D = [];
+        console.log("current line number: ", i);
+        for (let j = 0; j < points2DInfo.length; j += 3) {
+            const x = points2DInfo[j];
+            const y = points2DInfo[j + 1];
+            const point3DId = points2DInfo[j + 2];
+            points2D.push({ x, y, point3DId });
+        }
+
+        entries.push({
+            IMAGE_ID: imageId,
+            QW: qw,
+            QX: qx,
+            QY: qy,
+            QZ: qz,
+            TX: tx,
+            TY: ty,
+            TZ: tz,
+            CAMERA_ID: cameraId,
+            NAME: name,
+            POINTS2D: points2D,
+        });
+    }
+
+    // Output the entries
+    console.log(entries);
+    return entries;
+  }
+
+
+  write_images(entries) {
+    // Initialize an empty string for the new file content
+    let newImagesTxt = '';
+
+    // Add the header to the new file content
+    newImagesTxt += entries[0].header;
+
+    // Iterate through the entries and format them
+    for (let i = 1; i < entries.length; i++) {
+      const entry = entries[i];
+      // Format the entry data as a string
+      let entryStr = `${entry.IMAGE_ID} ${entry.QW} ${entry.QX} ${entry.QY} ${entry.QZ} ${entry.TX} ${entry.TY} ${entry.TZ} ${entry.CAMERA_ID} ${entry.NAME}\n`;
+      
+      // Add the points2D data as a string
+      const points2D = entry.POINTS2D;
+      for (let j = 0; j < points2D.length; j++) {
+        const point = points2D[j];
+        entryStr += `${point.x} ${point.y} ${point.point3DId} `;
+      }
+      entryStr += '\n'; // Newline after points2D data
+      
+      newImagesTxt += entryStr; // Add the formatted entry to the new file content
+    }
+
+    console.log(newImagesTxt.split("\n").slice(0,6));
+    return newImagesTxt;
   }
 
   /**

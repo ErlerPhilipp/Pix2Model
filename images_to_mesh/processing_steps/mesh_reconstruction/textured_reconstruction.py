@@ -41,7 +41,7 @@ def execute_subprocess(command: list[str], logfile: TextIO, error_log: TextIO):
 # │   │   ├── openMVS
 # │   │   ├── dense                             input_path 
 # │   │   │   ├── images
-# │   │   │   ├── sparse
+# │   │   │   ├── sparse                        images.txt (camera poses)
 # │   │   │   └── stereo
 # │   │   │       ├── consistency_graphs
 # │   │   │       ├── depth_maps
@@ -98,32 +98,38 @@ def reconstruct_texturing(file: str, out:str):
     ######################### Copy pointcloud ########################
     ##################################################################
     logfile.write("\n")
-    logfile.write("Copy pointcloud to working folder ...\n")
+    logfile.write("Copy pointcloud data to working folder ...\n")
     logfile.flush()
-    print("Copy pointcloud to working folder ...\n", flush=True)
+    print("Copy pointcloud data to working folder ...\n", flush=True)
     try:
-        # source_ply = Path(file) 
+        # Copy pointcloud from versioning folder to working folder
         source_ply = Path(file)
         destination_ply = Path(input_path, "fused.ply")
         logfile.write(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n")
         print(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n", flush=True)
-        
         shutil.copy(source_ply, destination_ply)
 
+        # Copy visibility information from versioning to working folder
         source_vis = Path(Path(file).parent, "points.ply.vis")
         destination_vis = Path(input_path, "fused.ply.vis")
         logfile.write(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n")
         print(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n", flush=True)
-
         shutil.copy(source_vis, destination_vis)
+
+        # Copy camera positions from versioning to working folder (colmap stores camera poses in images.txt)
+        source_images = Path(Path(file).parent, "images.txt")
+        destination_images = Path(input_path, "sparse", "images.txt")
+        logfile.write(f"Copy file \n'{str(source_images)}' \nto destination \n'{str(destination_images)}'\n")
+        print(f"Copy file \n'{str(source_images)}' \nto destination \n'{str(destination_images)}'\n")        
+        shutil.copy(source_images, destination_images)
 
     except Exception as e:
         errorfile.write(str(e))
         errorfile.write(traceback.format_exc())
         errorfile.flush()
         raise
-    logfile.write("Finished copying pointcloud to working folder\n")
-    print("Finished copying pointcloud to working folder\n", flush=True)
+    logfile.write("Finished copying pointcloud data to working folder\n")
+    print("Finished copying pointcloud data to working folder\n", flush=True)
     logfile.flush()
 
     ######################### Convert to MVS #########################

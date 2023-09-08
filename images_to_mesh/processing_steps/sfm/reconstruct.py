@@ -1,12 +1,15 @@
 import subprocess
 import os
 import numpy as np
+import shutil
 
 from pathlib import Path
 from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.erros import ReconstructionError
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
+
+
 
 
 def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
@@ -144,6 +147,35 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     except ReconstructionError as e:
         error_log.write(e.msg)
         raise
+
+
+    # Model Converter
+    logfile.write(f"Performing model conversion to txt format...\n")
+    model_converter_command = [
+        'colmap', 'model_converter',
+        '--output_type', 'TXT',
+        '--input_path', dense_path + '/sparse',
+        '--output_path', dense_path + '/sparse'
+    ]
+    try:
+        for line in execute_subprocess(command=model_converter_command, logfile=logfile, error_log=error_log):
+            logfile.write(line)
+    except ReconstructionError as e:
+        error_log.write(e.msg)
+        raise
+
+    # copy camera poses to output folder
+    source_images = Path(dense_path, "sparse", "images.txt")
+    destination_images = Path(output_path, "images.txt")
+    shutil.copy(source_images, destination_images)
+
+    # delete binary data 
+    binary_path = Path(dense_path, 'sparse')
+    file_names = ["cameras.bin", "images.bin", "points3D.bin"]
+    for file in file_names:
+        file_path = Path(binary_path, file)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
     logfile.write(f"Output written to: {str(output_file)}")
     logfile.close()
