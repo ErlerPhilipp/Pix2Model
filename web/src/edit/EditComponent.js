@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { PLYExporter } from 'three/examples/jsm/exporters/PLYExporter.js';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import Attribute from "./AttributeComponent";
@@ -316,7 +317,7 @@ class Edit extends Component {
   }
 
   /**
-   * SERVER CALL
+   * UPLOAD FILES FROM SERVER SERVER CALL
    * 
    * Upload multiple files inside a zip file from the server based on the ID within the ID field
    */
@@ -370,13 +371,15 @@ class Edit extends Component {
           const mtlFile = fileContents[0];
           const objFile = fileContents[1];
           const jpgFile = fileContents[2];
+          this.texture = jpgFile.content;
+          this.mtl = mtlFile.content;
   
           const textureLoader = new THREE.TextureLoader();
           let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
           texture.name = "MVSTexture"
           const material = new THREE.MeshBasicMaterial( {
             map: texture,
-            name: "material"
+            name: "mesh_textured.mtl"
           });
   
           let object = new OBJLoader().parse(objFile.content);
@@ -455,7 +458,7 @@ class Edit extends Component {
    }
 
   /**
-   * SERVER CALL
+   * RECONSTRUCT MESH SERVER CALL 
    * 
    * Reconstruct mesh. This feature is only available,
    * if the current displayed object is a pointcloud (not a mesh),
@@ -472,7 +475,7 @@ class Edit extends Component {
     this.setState({loading: true})
 
     this.images = this.applyTransformationToCameras(this.images);
-
+    
     // Send pointsPlyVis to server
     var formData = new FormData();
     let pointsVisBlob = new Blob([this.pointsVis], { type: 'application/octet-stream' });
@@ -531,6 +534,7 @@ class Edit extends Component {
       this.setFileStatus(t('edit.error.server.reconstruction').replace('{id}', id), 'red')
       this.setState({loading: false})
     })
+    
   }
 
 
@@ -591,8 +595,8 @@ class Edit extends Component {
     }
     // this.object.name = filename;
     this.setState({loaded: true, name: filename});
-    this.frameObject(this);
-    this.centerPivotPointWithinBoundingBox(this)
+    // this.frameObject(this);
+    // this.centerPivotPointWithinBoundingBox(this)
     this.renderScene(this)
   }
 
@@ -663,7 +667,7 @@ class Edit extends Component {
    * DOWNLOAD OBJECT
    */
   downloadObject() {
-    var exporter = new PLYExporter();
+    var exporter = new OBJExporter();
     var link = document.createElement( 'a' );
     if ( link.href ) {
       URL.revokeObjectURL( link.href );
@@ -683,7 +687,29 @@ class Edit extends Component {
         {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
       link.href = URL.createObjectURL(b);
     } else {
-      link.href = URL.createObjectURL( new Blob( [ exporter.parse( this.object ) ], { type: 'text/plain' } ) );
+      let zip = new JSZip();
+      // parse mtl file
+      const material_obj = new MTLLoader().parse(this.mtl);
+      // get material from parsed file
+      const material = material_obj.getAsArray()[0];
+      zip.file("mesh_textured.mtl", this.mtl);
+      zip.file("mesh_textured_material_0_map_Kd.jpg", this.texture);
+      let temp_obj = this.object.clone();
+      // add material to object
+      temp_obj.material = material;
+      console.log("temp_obj: ", temp_obj);
+      const objBlob =  new Blob( [ exporter.parse( temp_obj ) ], { type: 'application/octet-stream' } );
+      zip.file("mesh.obj", objBlob);
+
+      // zip files and create download link
+      zip.generateAsync({type: 'blob' }).then(function (content){
+        link.href = URL.createObjectURL(content);
+        link.download = "object_mtl_texture.zip"
+        link.dispatchEvent( new MouseEvent( 'click' ) );
+        return;
+      })
+      
+
     }
     link.download = this.state.name;
     link.dispatchEvent( new MouseEvent( 'click' ) );
@@ -696,17 +722,94 @@ class Edit extends Component {
    */
   applyTransformationToCameras(images_txt) {
     let entries = this.read_images(images_txt);
-
     // TODO: Do transformation stuff
+    let world_transform = new THREE.Matrix4();
+    let world_translation = new THREE.Vector3(this.state.translation.x, this.state.translation.y, this.state.translation.z);
+    let world_scale = new THREE.Vector3(this.state.scale.x, this.state.scale.y, this.state.scale.z);
+    let world_rotation_euler = new THREE.Euler(this.state.rotation.x, this.state.rotation.y, this.state.rotation.z, "XYZ");
+    let world_rotation_quat = new THREE.Quaternion();
+    world_rotation_quat.setFromEuler(world_rotation_euler);
+    world_transform.compose(world_translation, world_rotation_quat, world_scale);
+    console.log("world_transform: ", world_transform);
+    console.log("");
+    let camera_pose_transforms = [];
 
+    console.log("entries before transformation: ", entries);
+
+    for (let i=1; i < entries.length; i++){ // start by 1 to skip header
+      let entry = entries[i];
+      let qw = entry.QW;
+      let qx = entry.QX;
+      let qy = entry.QY;
+      let qz = entry.QZ;
+      let tx = entry.TX;
+      let ty = entry.TY;
+      let tz = entry.TZ;
+
+      let quat = new THREE.Quaternion(qx,qy,qz,qw);
+      let rot_mat = new THREE.Matrix4().compose(new THREE.Vector3(0, 0, 0), quat, new THREE.Vector3(1, 1, 1));
+
+      // to get the camera position use R from quaternions and t from translation vector
+      // camera_pose = -R^T * t ... the transpose inverse of the rotation matrix multiplied by the translation vector
+      const t = new THREE.Vector3(tx,ty,tz);
+      const R = new THREE.Matrix3().setFromMatrix4(rot_mat);
+      const R_transpose = R.clone().transpose();
+      const R_transpose_inverse = R_transpose.clone().invert();
+      const camera_pose = t.clone().applyMatrix3(R_transpose_inverse);
+
+      const debug_object = {"t": t, "R": R, "R_transpose": R_transpose, "R_transpose_inverse": R_transpose_inverse}
+
+      // update camera pose
+      // side note: Colmap uses right hand coordinate system where positive y axis points down, 
+      // while three.js uses right hand coordinate system where positive y axis points up
+      const camera_pose_updated = camera_pose.clone().addVectors(camera_pose, world_translation);
+
+      camera_pose_transforms.push(camera_pose_updated); // push to list of camera poses to render cameras for debugging
+
+      // To bring it back from world space to camera space ...
+      // t = camera_pose * R^T
+      const new_t = camera_pose_updated.clone().applyMatrix3(R_transpose);
+      console.log("Old_t: ", t);
+      console.log("New_t: ", new_t);
+
+      entries[i].TX = new_t.x;
+      entries[i].TY = new_t.y;
+      entries[i].TZ = new_t.z;
+
+    }
+    console.log("entries after transformation: ", entries);
     let new_images = this.write_images(entries);
+    this.render_camera_positions(camera_pose_transforms);
     return new_images;
   }
 
+  render_camera_positions(matrices){
+    for(let i=0; i < matrices.length; i++){
+      const transformMatrix = matrices[i];
+
+      const box_size = 0.5;
+      const boxGeometry = new THREE.BoxGeometry(box_size, box_size, box_size);
+      const wireframeGeometry = new THREE.WireframeGeometry(boxGeometry);
+      const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+      const wireframeMesh = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+      // Create local axes helper
+      const axesHelper = new THREE.AxesHelper(0.5);
+      wireframeMesh.add(axesHelper);
+      wireframeMesh.position.add(transformMatrix);
+      this.scene.add(wireframeMesh);
+
+    }
+  }
+
+
   read_images(images_txt) {
+    // ToDo: change from text to binary format for better results!
+
     // Convert the ArrayBuffer to a string
-    const decoder = new TextDecoder('utf-8');
-    images_txt = decoder.decode(images_txt);
+    if(images_txt instanceof ArrayBuffer){
+      const decoder = new TextDecoder('utf-8');
+      images_txt = decoder.decode(images_txt);    // TODO: for large files consider ansynchronous call
+    }
     // Split the file content into lines
     const lines = images_txt.split('\n');
     // Initialize an array to store the entries
@@ -721,24 +824,23 @@ class Edit extends Component {
       header: header
     });
 
-    console.log("lines_length: ", lines.length);
     // Iterate through the lines
     for (let i = 4; i < lines.length - 1; i += 2) {
         const imageInfo = lines[i].trim().split(' ');
         const imageId = imageInfo[0];
-        const qw = imageInfo[1];
-        const qx = imageInfo[2];
-        const qy = imageInfo[3];
-        const qz = imageInfo[4];
-        const tx = imageInfo[5];
-        const ty = imageInfo[6];
-        const tz = imageInfo[7];
+        const qw = parseFloat(imageInfo[1]);
+        const qx = parseFloat(imageInfo[2]);
+        const qy = parseFloat(imageInfo[3]);
+        const qz = parseFloat(imageInfo[4]);
+        const tx = parseFloat(imageInfo[5]);
+        const ty = parseFloat(imageInfo[6]);
+        const tz = parseFloat(imageInfo[7]);
+
         const cameraId = imageInfo[8];
         const name = imageInfo.slice(9).join(' ');
 
         const points2DInfo = lines[i + 1].trim().split(' ');
         const points2D = [];
-        console.log("current line number: ", i);
         for (let j = 0; j < points2DInfo.length; j += 3) {
             const x = points2DInfo[j];
             const y = points2DInfo[j + 1];
@@ -761,8 +863,6 @@ class Edit extends Component {
         });
     }
 
-    // Output the entries
-    console.log(entries);
     return entries;
   }
 
@@ -784,7 +884,7 @@ class Edit extends Component {
       const points2D = entry.POINTS2D;
       for (let j = 0; j < points2D.length; j++) {
         const point = points2D[j];
-        entryStr += `${point.x} ${point.y} ${point.point3DId} `;
+        // entryStr += `${point.x} ${point.y} ${point.point3DId} `; remove points2D data because they are not needed for reconstruction
       }
       entryStr += '\n'; // Newline after points2D data
       
@@ -828,6 +928,9 @@ class Edit extends Component {
       this.boxHelper.update();
       this.updateLabels();
     }
+    console.log("rotation", rotation);
+    console.log("scale: ", scale);
+    console.log("translation: ", translation);
     this.renderScene(this);
   }
 
@@ -1019,8 +1122,8 @@ class Edit extends Component {
         past.push(that.object.clone())
         var model = {...that.state.model, past, canUndo: true, future: [], canRedo: false}
         that.setState({model: model, loading: false})
-        that.centerPivotPointWithinBoundingBox(that)
-        that.updateTransformation(true);
+        // that.centerPivotPointWithinBoundingBox(that)
+        // that.updateTransformation(true);
         that.renderScene(that);
       } catch (error) {
         that.setState({loading: false})
@@ -1102,8 +1205,8 @@ class Edit extends Component {
         past.push(that.object.clone())
         var model = {...that.state.model, past, future: [], canUndo: true, canRedo: false}
         that.setState({model: model, loading: false})
-        that.centerPivotPointWithinBoundingBox(that)
-        that.updateTransformation(true);
+        // that.centerPivotPointWithinBoundingBox(that)
+        // that.updateTransformation(true);
         that.renderScene(that);
       } catch (error) {
         that.setState({loading: false})

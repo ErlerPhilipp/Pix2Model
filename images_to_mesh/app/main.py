@@ -207,6 +207,7 @@ def get_files():
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
                 app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
+                app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
                 zip_file.write(Path(folder_path, file_names[0]), file_names[0])
                 zip_file.write(Path(folder_path, file_names[1]), file_names[1])
                 zip_file.write(Path(folder_path, file_names[2]), file_names[2])

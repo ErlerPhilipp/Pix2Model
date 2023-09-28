@@ -150,6 +150,8 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
 
 
     # Model Converter
+    # TODO: Skip txt conversion for better perforamnce
+    # Reconstructoin quality decreases immensely after converting to txt
     logfile.write(f"Performing model conversion to txt format...\n")
     model_converter_command = [
         'colmap', 'model_converter',
