@@ -1,9 +1,11 @@
 FROM alicevision/meshroom:2023.2.0-av3.1.0-centos7-cuda11.3.1
-RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz
-RUN tar -xvaf Python-3.12.0.tgz
-WORKDIR /root/Python-3.12.0
+RUN yum -y install gcc gcc-c++ zlib zlib-devel epel openssl11-devel libffi-dev
+RUN wget https://www.python.org/ftp/python/3.9.18/Python-3.9.18.tgz
+RUN tar -xvaf Python-3.9.18.tgz
+WORKDIR /root/Python-3.9.18
+RUN sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
 RUN ./configure --enable-optimizations
 RUN make altinstall
 WORKDIR /root
-RUN rm -rf Python-3.12.0*
-ENTRYPOINT [ "bash" ]
+RUN rm -rf Python-3.9.18*
+RUN pip3.9 install pipenv
