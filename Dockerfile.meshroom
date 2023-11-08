@@ -1,0 +1,9 @@
+FROM alicevision/meshroom:2023.2.0-av3.1.0-centos7-cuda11.3.1
+RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz
+RUN tar -xvaf Python-3.12.0.tgz
+WORKDIR /root/Python-3.12.0
+RUN ./configure --enable-optimizations
+RUN make altinstall
+WORKDIR /root
+RUN rm -rf Python-3.12.0*
+ENTRYPOINT [ "bash" ]
