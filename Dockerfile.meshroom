@@ -1,5 +1,5 @@
 FROM alicevision/meshroom:2023.2.0-av3.1.0-centos7-cuda11.3.1
-RUN yum -y install gcc gcc-c++ zlib zlib-devel epel openssl11-devel libffi-dev xz
+RUN yum -y install gcc gcc-c++ zlib zlib-devel epel openssl11-devel libffi-devel xz
 RUN curl https://pyenv.run | bash
 RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
 RUN echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
