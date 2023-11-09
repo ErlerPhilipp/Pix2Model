@@ -14,7 +14,7 @@ import logging
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
 from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap, ReconstructionError
-from images_to_mesh.processing_steps.mesh_reconstruction.mesh_reconstruction import process_clouds
+#from images_to_mesh.processing_steps.mesh_reconstruction.mesh_reconstruction import process_clouds
 
 NUMBER_OF_STEPS = 2
 
@@ -102,11 +102,11 @@ def _mesh_reconstruction(*args, **kwargs):
     connection = Redis(host="redis")
     current_job = get_current_job(connection)
     first_job_result = current_job.dependency.result
-    return process_clouds(first_job_result)
+    return None #process_clouds(first_job_result)
 
 
 @task(2)
 def _mesh_reconstruction_without_dependency(*args, **kwargs):
     pointcloud_file = kwargs.get('path')
     print('pointcloud_file:', pointcloud_file, flush=True)
-    return process_clouds(pointcloud_file)
+    return None #process_clouds(pointcloud_file)
