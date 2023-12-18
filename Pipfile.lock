@@ -192,12 +192,12 @@
         },
         "plyfile": {
             "hashes": [
-                "sha256:4ceaedf1ed92b3a26b766fc8c56cda1b9b2390ec299b16dede2e5fd45097261a",
-                "sha256:57620f14269c6ef41c5782f4547894e0bac2473e2c6f326c4d7fc75ad1ae6fea"
+                "sha256:41562e22c6e4ec045227ea753f30a59a28a81766d9e420696b4862480b96e529",
+                "sha256:446691cfc8a453b8a0c6c394c42a7a28262da94ec2d12fa4d30998f78e8b1313"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.0.1"
+            "version": "==1.0.2"
         },
         "pymeshlab": {
             "hashes": [
