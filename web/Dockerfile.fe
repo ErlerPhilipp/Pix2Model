@@ -1,5 +1,6 @@
 # workaround until this is released: https://github.com/webpack/webpack/pull/14584
-FROM node:16.13-alpine3.12
+#FROM node:16.13-alpine3.12
+FROM node:16.14.2-alpine3.14
 
 WORKDIR /app
 
