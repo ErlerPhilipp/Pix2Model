@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   client:
+    restart: always
     stdin_open: true
     build:
       context: ./web
@@ -21,6 +22,7 @@ services:
     profiles:
       - develop
   client_deployed_dev:
+    restart: always
     stdin_open: true
     build:
       context: ./web
@@ -44,6 +46,7 @@ services:
     networks:
       - default
   certbot:
+    restart: always
     image: certbot/certbot:latest
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
@@ -53,6 +56,7 @@ services:
     profiles:
       - cert
   backend:
+    restart: always
     build: .
     depends_on:
       - redis
@@ -68,8 +72,10 @@ services:
     networks:
       - default
   redis:
+    restart: always
     image: "redis:alpine"
   dashboard:
+    restart: always
     build: ./dashboard
     depends_on:
       - redis
@@ -83,6 +89,7 @@ services:
     networks:
       - default
   worker:
+    restart: always
     build: .
     depends_on:
       - redis
