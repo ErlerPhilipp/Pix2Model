@@ -6,10 +6,19 @@ FROM image2mesh/image2mesh:base
 
 WORKDIR /root
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+ARG CMAKE_VERSION=3.28.0
+
+RUN apt-get update && apt-get install -y build-essential libssl-dev wget \
+&& wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz \
+&& tar zxvf cmake-${CMAKE_VERSION}.tar.gz \
+&& cd cmake-${CMAKE_VERSION} \
+&& ./bootstrap \
+&& make && make install && cd .. \
+&& rm -rf /cmake-${CMAKE_VERSION} && rm cmake-${CMAKE_VERSION}.tar.gz \
+&& apt-get clean && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update -qq && apt-get install -qq
-RUN apt-get -y install git cmake libpng-dev libjpeg-dev libtiff-dev libglu1-mesa-dev
+RUN apt-get -y install git libpng-dev libjpeg-dev libtiff-dev libglu1-mesa-dev
 RUN main_path=`pwd`
 
 #Eigen (Required)
@@ -42,6 +51,6 @@ RUN apt-get -y install freeglut3-dev libglew-dev libglfw3-dev
 #OpenMVS
 RUN git clone https://github.com/cdcseacave/openMVS.git openMVS
 RUN mkdir openMVS_build
-RUN cd openMVS_build && cmake . ../openMVS -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT="../vcglib" -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs && make -j2 && make install
+RUN cd openMVS_build && cmake . ../openMVS -DPython3_EXECUTABLE=/usr/bin/python3 -DCMAKE_BUILD_TYPE=Release -DVCG_ROOT="../vcglib" -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs && make -j2 && make install
 RUN mkdir -p /usr/local/nvidia/lib
 # RUN cp /usr/local/cuda-11.4/compat/libcuda.so.1 /usr/local/nvidia/lib
