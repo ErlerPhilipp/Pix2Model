@@ -94,7 +94,6 @@ services:
     depends_on:
       - redis
     volumes:
-    - /home/joschi/Downloads/test_upload_folder:/root/test_data
     - type: bind
       target: /usr/src/app/data
       source: ${UPLOAD_FOLDER}
