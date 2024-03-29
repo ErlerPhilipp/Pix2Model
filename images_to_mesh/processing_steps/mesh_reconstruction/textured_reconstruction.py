@@ -70,6 +70,7 @@ def execute_subprocess(command: list[str], logfile: TextIO, error_log: TextIO):
 
 def reconstruct_texturing(file: str, out:str):
     interface_exe = Path("/", "root", "openMVS_build", "bin", "InterfaceCOLMAP")
+    densify_exe = Path("/", "root", "openMVS_build", "bin", "DensifyPointCloud")
     reconstruct_exe = Path("/", "root", "openMVS_build", "bin", "ReconstructMesh")
     refine_exe = Path("/", "root", "openMVS_build", "bin", "RefineMesh")
     texture_exe = Path("/", "root", "openMVS_build", "bin", "TextureMesh")
@@ -103,18 +104,18 @@ def reconstruct_texturing(file: str, out:str):
     print("Copy pointcloud data to working folder ...\n", flush=True)
     try:
         # Copy pointcloud from versioning folder to working folder
-        source_ply = Path(file)
-        destination_ply = Path(input_path, "fused.ply")
-        logfile.write(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n")
-        print(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n", flush=True)
-        shutil.copy(source_ply, destination_ply)
+        #source_ply = Path(file)
+        #destination_ply = Path(input_path, "fused.ply")
+        #logfile.write(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n")
+        #print(f"Copy file \n'{str(Path(file))}' \nto destination \n'{str(destination_ply)}'\n", flush=True)
+        #shutil.copy(source_ply, destination_ply)
 
         # Copy visibility information from versioning to working folder
-        source_vis = Path(Path(file).parent, "points.ply.vis")
-        destination_vis = Path(input_path, "fused.ply.vis")
-        logfile.write(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n")
-        print(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n", flush=True)
-        shutil.copy(source_vis, destination_vis)
+        #source_vis = Path(Path(file).parent, "points.ply.vis")
+        #destination_vis = Path(input_path, "fused.ply.vis")
+        #logfile.write(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n")
+        #print(f"Copy file \n'{str(source_vis)}' \nto destination \n'{str(destination_vis)}'\n", flush=True)
+        #shutil.copy(source_vis, destination_vis)
 
         # Copy camera positions from versioning to working folder (colmap stores camera poses in images.txt)
         source_images = Path(Path(file).parent, "images.txt")
@@ -135,7 +136,7 @@ def reconstruct_texturing(file: str, out:str):
     ######################### Convert to MVS #########################
     ##################################################################
     convert_command = [
-        interface_exe, "-w", input_path, "--input-file", input_path, "--output-file", Path(openMVS_path, "dense.mvs")]
+        interface_exe, "-w", input_path, "--input-file", input_path, "--output-file", Path(openMVS_path, "sparse.mvs")]
 
     logfile.write("\n")
     logfile.write("Convert pointcloud to MVS ...\n")
@@ -154,12 +155,36 @@ def reconstruct_texturing(file: str, out:str):
     logfile.flush()
     print("Finished converting pointcloud to MVS\n", flush=True)
 
+    ####################### Densify point cloud ######################
+    ##################################################################
+    densify_command = [
+        densify_exe, "-w", Path(input_path), "--input-file", 
+        Path(openMVS_path, "sparse.mvs"), "--output-file",
+        Path(openMVS_path, "dense.mvs"), "--remove-dmaps", "1"]
+
+    logfile.write("\n")
+    logfile.write("Densify point cloud ...\n")
+    logfile.flush()
+    print("Densify point cloud ...\n", flush=True)
+    try: 
+        for line in execute_subprocess(command=densify_command, logfile=logfile, error_log=errorfile):
+            logfile.write(line)
+    except ReconstructionError as e:
+        errorfile.write(e.msg)
+        errorfile.write(traceback.format_exc())
+        errorfile.flush()
+        raise
+    logfile.write("Finished densifying point cloud\n")
+    logfile.flush()
+    print("Finished densifying point cloud\n", flush=True)
+
     ########################## Reconstruct ###########################
     ##################################################################
     reconstruct_command = [
         reconstruct_exe, "-w", Path(input_path), "--input-file", 
         Path(openMVS_path, "dense.mvs"), "--output-file",
-        Path(openMVS_path, "mesh.mvs")]
+        Path(openMVS_path, "mesh.mvs"), "--pointcloud-file",
+        Path(openMVS_path, "dense.ply"), "--archive-type=1"]
 
     logfile.write("\n")
     logfile.write("Reconstruct mesh ...\n")
@@ -204,7 +229,8 @@ def reconstruct_texturing(file: str, out:str):
     ##################################################################
     texture_command = [
         texture_exe, "-w", Path(input_path), "--export-type", "obj", "--output-file", 
-        Path(final_output_path, "mesh_textured.obj"), "--input-file", Path(openMVS_path, "mesh_refine.mvs")]
+        Path(final_output_path, "mesh_textured.obj"), "--input-file", Path(openMVS_path, "mesh_refine.mvs"),
+        "--mesh-file", Path(openMVS_path, "mesh_refine.ply")]
 
     logfile.write("\n")
     logfile.write("Texture mesh ...\n")

@@ -32,7 +32,7 @@ def process_clouds(file: str) -> str:
 
         filename = os.path.basename(file)
         out = "{0}/{1}_{3}{2}".format(dirname, *os.path.splitext(filename) + ("out",))
-        spsr.reconstruct(GeneralMeshLoader(file), out)
+        #spsr.reconstruct(GeneralMeshLoader(file), out)
         openMVS.reconstruct_texturing(file, out)
     except Exception as e:
         error_log.write(e.args[0])

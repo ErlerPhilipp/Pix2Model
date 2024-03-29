@@ -332,7 +332,7 @@ class Edit extends Component {
       }
       console.log("Load from server: ", url_);
 
-      if(step === "mesh" || step===undefined) {
+      if(step === "mesh") {
         this.setState({loading: true})
         axios({
           method: 'get',
@@ -417,9 +417,9 @@ class Edit extends Component {
         })
         .then(pointCloudFiles => {
           const pointsPly = pointCloudFiles[0].content;
-          const pointsVis = pointCloudFiles[1].content;
-          const images = pointCloudFiles[2].content;
-          this.pointsVis = pointsVis;
+          //const pointsVis = pointCloudFiles[1].content;
+          const images = pointCloudFiles[1].content;
+          //this.pointsVis = pointsVis;
           this.images = images;
           var geometry = new PLYLoader().parse( pointsPly);
           var material = new THREE.PointsMaterial( { size: 0.005 } );
@@ -430,13 +430,13 @@ class Edit extends Component {
           this.setState({loading: false})
         })
         .catch((error) => {
-          if (error.response && error.response.status == 404) {
+          if (error.response && error.response.status == 404 || error.response.status == 500) {
             axios({
               method: 'get',
               url: `/backend/filestatus?id=${id}`
             })
             .then(res => {
-              if (res.status == 201) {
+              if (res.status == 201 || res.status == 500) {
                 this.setFileStatus(t('edit.warning.progress.file').replace('{id}', id), 'yellow')
               }
             })
@@ -693,7 +693,7 @@ class Edit extends Component {
       // get material from parsed file
       const material = material_obj.getAsArray()[0];
       zip.file("mesh_textured.mtl", this.mtl);
-      zip.file("mesh_textured_material_0_map_Kd.jpg", this.texture);
+      zip.file("mesh_textured_material_00_map_Kd.jpg", this.texture);
       let temp_obj = this.object.clone();
       // add material to object
       temp_obj.material = material;

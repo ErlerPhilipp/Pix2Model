@@ -179,8 +179,8 @@ def get_files():
 
     if step == 'mesh':
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
-        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output"
-        file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_0_map_Kd.jpg"]
+        folder_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output/"
+        file_names = ["mesh_textured.obj", "mesh_textured.mtl", "mesh_textured_material_00_map_Kd.jpg"]
         
         if folder_path.is_dir():
             zip_buffer = io.BytesIO()
@@ -201,16 +201,16 @@ def get_files():
     else:   # step == pointcloud
         app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
         folder_path: Path = PosixPath("/usr/src/app/data") / i / "step1" / version / "output/"
-        file_names = ["points.ply", "points.ply.vis", "images.txt"]
+        file_names = ["points.ply", "images.txt"]
         if folder_path.is_dir():
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 app.logger.info(f"zip file: {Path(folder_path, file_names[0])}")
                 app.logger.info(f"zip file: {Path(folder_path, file_names[1])}")
-                app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
+                #app.logger.info(f"zip file: {Path(folder_path, file_names[2])}")
                 zip_file.write(Path(folder_path, file_names[0]), file_names[0])
                 zip_file.write(Path(folder_path, file_names[1]), file_names[1])
-                zip_file.write(Path(folder_path, file_names[2]), file_names[2])
+                #zip_file.write(Path(folder_path, file_names[2]), file_names[2])
             zip_buffer.seek(0)
 
             result = send_file(zip_buffer, download_name="pointcloud_files.zip", as_attachment=True, mimetype="application/zip")

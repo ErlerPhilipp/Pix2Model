@@ -136,3 +136,5 @@ dmypy.json
 /web/.DS_Store
 
 .vscode
+
+*debug*

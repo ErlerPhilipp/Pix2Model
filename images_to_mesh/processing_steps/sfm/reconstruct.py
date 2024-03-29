@@ -9,11 +9,8 @@ from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.erros import ReconstructionError
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
 
-
-
-
-def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
-    """Generate a point cloud from a list of input images and save it as a .ply file
+def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
+    """Generate a !sparse! point cloud from a list of input images and save it as a .ply file
 
     Uses COLMAP (https://colmap.github.io/) for reconstruction and provides the output point cloud
     as a .ply file with rgb vertex colors.
@@ -66,7 +63,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             logfile.write(line)
     except ReconstructionError as e:
         error_log.write(e.msg)
-        raise
+        #raise
 
     # Matching
     logfile.write(f"Performing matching...\n")
@@ -80,7 +77,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             logfile.write(line)
     except ReconstructionError as e:
         error_log.write(e.msg)
-        raise
+        #raise
 
     # Mapping
     logfile.write(f"Performing mapping...\n")
@@ -96,7 +93,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             logfile.write(line)
     except ReconstructionError as e:
         error_log.write(e.msg)
-        raise
+        #raise
 
     # Undistort
     logfile.write(f"Performing undistorting...\n")
@@ -113,41 +110,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             logfile.write(line)
     except ReconstructionError as e:
         error_log.write(e.msg)
-        raise
-
-    # Patch Match
-    logfile.write(f"Performing Patch Match...\n")
-    patch_match_command = [
-        'colmap', 'patch_match_stereo',
-        '--workspace_path', dense_path,
-        '--workspace_format', 'COLMAP',
-        '--PatchMatchStereo.geom_consistency', 'true'
-    ]
-    try:
-        for line in execute_subprocess(command=patch_match_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
-    except ReconstructionError as e:
-        error_log.write(e.msg)
-        raise
-
-    # Stereo Fusion
-    logfile.write(f"Performing Stereo Fusion...\n")
-    stereo_fusion_command = [
-        'colmap', 'stereo_fusion',
-        '--output_type', 'PLY',
-        '--workspace_path', dense_path,
-        '--workspace_format', 'COLMAP',
-        '--input_type', 'geometric',
-        '--output_path', output_file,
-        '--StereoFusion.num_threads', num_processes
-    ]
-    try:
-        for line in execute_subprocess(command=stereo_fusion_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
-    except ReconstructionError as e:
-        error_log.write(e.msg)
-        raise
-
+        #raise
 
     # Model Converter
     # TODO: Skip txt conversion for better perforamnce
@@ -164,7 +127,24 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
             logfile.write(line)
     except ReconstructionError as e:
         error_log.write(e.msg)
-        raise
+        #raise
+    
+    # Convert sfm to ply and save for the editor
+    #convert_to_ply(dataset_path, sparse_path, error_log)
+    # PLY Converter
+    logfile.write(f"Performing model conversion to ply format...\n")
+    model_converter_command = [
+        'colmap', 'model_converter',
+        '--output_type', 'PLY',
+        '--input_path', dense_path + '/sparse',
+        '--output_path', output_file
+    ]
+    try:
+        for line in execute_subprocess(command=model_converter_command, logfile=logfile, error_log=error_log):
+            logfile.write(line)
+    except ReconstructionError as e:
+        error_log.write(e.msg)
+        #raise
 
     # copy camera poses to output folder
     source_images = Path(dense_path, "sparse", "images.txt")
@@ -172,12 +152,12 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     shutil.copy(source_images, destination_images)
 
     # delete binary data 
-    binary_path = Path(dense_path, 'sparse')
-    file_names = ["cameras.bin", "images.bin", "points3D.bin"]
-    for file in file_names:
-        file_path = Path(binary_path, file)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+    #binary_path = Path(dense_path, 'sparse')
+    #file_names = ["cameras.bin", "images.bin", "points3D.bin"]
+    #for file in file_names:
+    #    file_path = Path(binary_path, file)
+    #    if os.path.isfile(file_path):
+    #        os.remove(file_path)
 
     logfile.write(f"Output written to: {str(output_file)}")
     logfile.close()
@@ -192,7 +172,7 @@ def reconstruct_with_colmap(image_list: List[str]) -> List[str]:
     return output_file
 
 
-def convert_to_ply(dataset_path, sparse_path):
+def convert_to_ply(dataset_path, sparse_path, error_log):
     # Read points and convert to ply format
     points = read_points3D_binary(sparse_path + '/0/points3D.bin')
     vertices = np.array([], dtype=[
@@ -209,7 +189,7 @@ def convert_to_ply(dataset_path, sparse_path):
             point.rgb[2])],
             dtype=vertices.dtype))
     output_dir = str(dataset_path) + '/output'
-    make_directory(output_dir)
+    #make_directory(output_dir, error_log)
     output_path = output_dir + '/points.ply'
     el = PlyElement.describe(vertices, 'vertex')
     PlyData([el]).write(output_path)

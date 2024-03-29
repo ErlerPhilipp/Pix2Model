@@ -13,7 +13,7 @@ import logging
 
 from images_to_mesh.app.email.email_config import Order_state
 from images_to_mesh.app.email.sendMail import notify_user
-from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap, ReconstructionError
+from images_to_mesh.processing_steps.sfm.reconstruct import reconstruct_with_colmap_sparse, ReconstructionError
 from images_to_mesh.processing_steps.mesh_reconstruction.mesh_reconstruction import process_clouds
 
 NUMBER_OF_STEPS = 2
@@ -92,7 +92,7 @@ def queue_step_2(iid, job_id: str = None):
 def _structure_from_motion(*args, **kwargs):
     # Error handling here for now
     try:
-        return reconstruct_with_colmap(*args, **kwargs)
+        return reconstruct_with_colmap_sparse(*args, **kwargs)
     except ReconstructionError as e:
         print(e.msg)
 
