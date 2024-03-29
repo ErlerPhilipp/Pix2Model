@@ -14,15 +14,15 @@ Our system currently runs on:
 
 ## Operating System
 
-The server should run on a Linux/Unix. We recommend [Ubuntu](https://ubuntu.com/) (22.04 LTS).
-[//]: # (We also tested Windows 10 and 11 but ran into issues with HTTPS certificates and nginx.)
+The server should run on a Linux/Unix. We recommend the current [Ubuntu LTS](https://ubuntu.com/).
+We tested this setup on Ubuntu 20/22 LTS and Windows 10/11.
 If your installation is fresh, you may need to install some basic packages like git:
 ```bash
 sudo apt-get update
 sudo apt-get install git
 ```
 
-Your current user must have sudo rights and .
+Your current user must have sudo rights.
 
 
 ## CUDA and GPU Driver
@@ -131,15 +131,15 @@ BACKEND_LOG=backend_log
 ```
 
 
-### SSL [WIP]
+### SSL
 
-You can skip these steps but browsers will warn about unsecure connection, at least.
+You can skip these steps but browsers will warn about unsecure connection, or even block it.
 NGINX won't start if the certificate is missing or invalid. In order to start in HTTP mode, 
 you need open `web/nginx.conf`, replace the HTTP locations with the SSL locations and comment out the whole SSL block.
 Now, you should be able to connect to the server via HTTP, at least with Google Chrome (in incognito mode).
 
 You can manually create a certificate by following the instructions on https://www.sslforfree.com/. 
-In the near future, an automated solution using Certbot (https://certbot.eff.org/) is going to be realized.
+Or you can automate it with Certbot (https://certbot.eff.org/). For this, you need to create a Cron job and a script that triggers a docker image. See [SSL Automation](setup_ssl.md) for more information.
 
 
 ### Running the System
