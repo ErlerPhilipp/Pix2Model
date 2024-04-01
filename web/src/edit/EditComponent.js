@@ -175,12 +175,12 @@ class Edit extends Component {
       case "f":
         scope.frameObject(scope);
         break
-      case "+":
+      /*case "+":
         scope.light.intensity += 0.5;
         break
       case "-":
         scope.light.intensity -= 0.5;
-        break
+        break*/
     }
     scope.renderScene(scope)
   }
@@ -425,7 +425,8 @@ class Edit extends Component {
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
-          this.addObject(mesh, pointsPly.filename)
+          //this.addObject(mesh, pointsPly.filename)
+          this.addObject(mesh, 'points.ply')
           this.loadVersions("pointcloud", version)
           this.setState({loading: false})
         })
@@ -692,7 +693,7 @@ class Edit extends Component {
       const material_obj = new MTLLoader().parse(this.mtl);
       // get material from parsed file
       const material = material_obj.getAsArray()[0];
-      zip.file("mesh_textured.mtl", this.mtl);
+      zip.file("mesh.mtl", this.mtl);
       zip.file("mesh_textured_material_00_map_Kd.jpg", this.texture);
       let temp_obj = this.object.clone();
       // add material to object
@@ -1472,7 +1473,7 @@ class Edit extends Component {
             {this.state.loaded &&
               <div className='edit_box'>
                 <p>{ this.state.name }</p>
-                {this.state.pointcloud &&
+                {/*{this.state.pointcloud &&
                   <div>
                     <hr></hr>
                     <div className="heading_interaction_wrapper">
@@ -1484,7 +1485,7 @@ class Edit extends Component {
                     </div>
                     <button onClick={() => {this.reconstructMesh()}} className="recon_button">{t('edit.reconstruct')}</button>
                   </div>
-                }
+                }*/}
                 <hr></hr>
                 <div className="heading_interaction_wrapper">
                   <p className="heading_interaction">{t('edit.transformation')}</p>
@@ -1493,7 +1494,7 @@ class Edit extends Component {
                 <Attribute name='Rotation' editor={this} x={this.state.rotation.x} y={this.state.rotation.y} z={this.state.rotation.z}></Attribute>
                 <Attribute name='Translation' editor={this} x={this.state.translation.x} y={this.state.translation.y} z={this.state.translation.z}></Attribute>
                 <hr></hr>
-                {this.state.pointcloud &&
+                {/*{this.state.pointcloud &&
                 <div>
                   <div className="heading_interaction_wrapper">
                     <p className="heading_interaction">{t('edit.crop.crop')}</p>
@@ -1524,7 +1525,7 @@ class Edit extends Component {
                   }
                   <hr></hr>
                 </div>
-                }
+                }*/}
                 <div className="heading_interaction_wrapper">
                   <p className="heading_interaction">{t('edit.measure')}</p>
                   <FontAwesomeIcon icon={solid('circle-info')} data-tip data-for='tooltip_measure'/>
@@ -1588,8 +1589,6 @@ class Edit extends Component {
                   { button_translation: <button className="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
                     button_rotation: <button className="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
                     button_scale: <button className="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
-                    button_increase_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
-                    button_decrease_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "-")} />,
                     button_frame: <button className="transformation_button" onClick={() => this.frameObject(this)} />
                   }}/>
               </div>

@@ -60,7 +60,7 @@ class Upload extends Component {
       document.querySelector("#upload").dropzone.on("sending", function(file, xhr, data) {
           if (data) {
             //data.append("user_email", document.querySelector("#email").value);
-            data.append("step2", + !document.querySelector("#ply").checked);
+            data.append("step2", + "1"); /*!document.querySelector("#ply").checked);*/
           }
       });
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
@@ -134,13 +134,13 @@ class Upload extends Component {
                   <button id="submit_upload" className="button_small">{t('upload.submit')}</button>
                   <button onClick={() => {this.resetDropbox()}} className="button_small">{t('upload.reset')}</button>
                 </div>
-                <br />
+                {/*<br />
                 <hr></hr>
                 <div className="formfield">
                 <input type="checkbox" id="ply" name="ply"></input>
                 <label for="ply" className="formfield">{t('upload.pc.label')}</label>
                 <small className="hint"><br></br>{t('upload.pc.hint')}</small>
-                </div>
+                </div>*/}
                 {/*<hr></hr>
                 <div className="formfield">
                 <label for="email" className="formfield">Email </label>
@@ -184,7 +184,7 @@ class Upload extends Component {
                   <button id="submit_upload" className="button_small">{t('upload.submit')}</button>
                   <button onClick={() => {this.resetDropbox()}} className="button_small">{t('upload.reset')}</button>
                 </div>
-                <br />
+                {/*<br />
                 <hr></hr>
                 <div className="formfield">
                 <input type="checkbox" id="ply" name="ply"></input>
@@ -196,7 +196,7 @@ class Upload extends Component {
                 <label for="email" className="formfield">Email </label>
                 <input type="email" id="email" name="email" className="formfield_input"></input>
                 <small className="hint"><br></br>{t('upload.email')}<br></br></small>
-                </div>
+                </div>*/}
               </div>
             }
             {this.state.success &&

@@ -184,7 +184,7 @@ def reconstruct_texturing(file: str, out:str):
         reconstruct_exe, "-w", Path(input_path), "--input-file", 
         Path(openMVS_path, "dense.mvs"), "--output-file",
         Path(openMVS_path, "mesh.mvs"), "--pointcloud-file",
-        Path(openMVS_path, "dense.ply"), "--archive-type=1"]
+        Path(openMVS_path, "dense.ply"), "--archive-type=1", "--decimate=0.3", "--smooth=0"]
 
     logfile.write("\n")
     logfile.write("Reconstruct mesh ...\n")
