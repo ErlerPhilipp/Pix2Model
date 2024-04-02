@@ -668,26 +668,19 @@ class Edit extends Component {
    * DOWNLOAD OBJECT
    */
   downloadObject() {
-    var exporter = new OBJExporter();
     var link = document.createElement( 'a' );
     if ( link.href ) {
       URL.revokeObjectURL( link.href );
     }
     if (this.object.type == 'Points') {
+      var exporter = new PLYExporter();
       var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
       var geometry = this.object.geometry.clone()
-      var positions = this.object.geometry.attributes.position.array
-      var updatedPositions = []
-      for (var i = 0; i < positions.length; i += 3) {
-        const worldPosition = new THREE.Vector3(positions[i], positions[i+1], positions[i+2]).applyMatrix4(this.object.matrixWorld)
-        updatedPositions.push(worldPosition.x, worldPosition.y, worldPosition.z)
-      }
-      geometry.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(updatedPositions), 3));
-
       var b = new Blob( [ exporter.parse( new THREE.Mesh(geometry, material), 
-        {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'text/plain' } )
+        {excludeAttributes: ['index'], binary: true, littleEndian: true} ) ], { type: 'application/octet-stream' } )
       link.href = URL.createObjectURL(b);
     } else {
+      var exporter = new OBJExporter();
       let zip = new JSZip();
       // parse mtl file
       const material_obj = new MTLLoader().parse(this.mtl);
