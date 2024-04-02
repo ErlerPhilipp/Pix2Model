@@ -136,7 +136,7 @@ BACKEND_LOG=backend_log
 You can skip these steps but browsers will warn about unsecure connection, or even block it.
 NGINX won't start if the certificate is missing or invalid. In order to start in HTTP mode, 
 you need open `web/nginx.conf`, replace the HTTP locations with the SSL locations and comment out the whole SSL block.
-Now, you should be able to connect to the server via HTTP, at least with Google Chrome (in incognito mode).
+Now, you should be able to connect to the server via HTTP (port 8082), at least with Google Chrome (in incognito mode). 
 
 You can manually create a certificate by following the instructions on https://www.sslforfree.com/. 
 Or you can automate it with Certbot (https://certbot.eff.org/). For this, you need to create a Cron job and a script that triggers a docker image. See [SSL Automation](setup_ssl.md) for more information.
