@@ -175,12 +175,12 @@ class Edit extends Component {
       case "f":
         scope.frameObject(scope);
         break
-      /*case "+":
+      case "+":
         scope.light.intensity += 0.5;
         break
       case "-":
         scope.light.intensity -= 0.5;
-        break*/
+        break
     }
     scope.renderScene(scope)
   }
@@ -1582,6 +1582,8 @@ class Edit extends Component {
                   { button_translation: <button className="transformation_button" onClick={() => this.setTransformation(this, "t")} />,
                     button_rotation: <button className="transformation_button" onClick={() => this.setTransformation(this, "r")} />,
                     button_scale: <button className="transformation_button" onClick={() => this.setTransformation(this, "s")} />,
+                    button_increase_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "+")} />,
+                    button_decrease_light: <button className="transformation_button" onClick={() => this.setTransformation(this, "-")} />,
                     button_frame: <button className="transformation_button" onClick={() => this.frameObject(this)} />
                   }}/>
               </div>
