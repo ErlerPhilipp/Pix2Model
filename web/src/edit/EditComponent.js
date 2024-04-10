@@ -332,68 +332,7 @@ class Edit extends Component {
       }
       console.log("Load from server: ", url_);
 
-      if(step === "mesh") {
-        this.setState({loading: true})
-        axios({
-          method: 'get',
-          url: url_,
-          responseType: 'arraybuffer',
-          responseEncoding: 'binary'
-        })
-        .then(res => {
-          const zip = new JSZip()
-          return zip.loadAsync(res.data);
-        })
-        .then(zip => {
-          const fileContents = [];
-          const textFilePromises = [];
-          let blobFileContent;
-  
-          Object.keys(zip.files).forEach(relativePath => {
-            const file = zip.file(relativePath);
-            if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {
-              textFilePromises.push(file.async('text').then(content => {
-                fileContents.push({ fileName: relativePath, content: content });
-              }));
-            }else if (relativePath.split('.').pop() === 'jpg') {
-              blobFileContent = file.async('blob');
-            }
-          });
-  
-          return Promise.all(textFilePromises).then(() => {
-            return blobFileContent.then(blob=> {
-              fileContents.push({ fileName: 'texture.jpg', content: blob });
-              return fileContents;
-            });
-          });
-        })
-        .then(fileContents => {
-          const mtlFile = fileContents[0];
-          const objFile = fileContents[1];
-          const jpgFile = fileContents[2];
-          this.texture = jpgFile.content;
-          this.mtl = mtlFile.content;
-  
-          const textureLoader = new THREE.TextureLoader();
-          let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
-          texture.name = "MVSTexture"
-          const material = new THREE.MeshBasicMaterial( {
-            map: texture,
-            name: "mesh_textured.mtl"
-          });
-  
-          let object = new OBJLoader().parse(objFile.content);
-          object.traverse( function ( child) {
-            if ( child instanceof THREE.Mesh ) {
-              child.material = material;
-            }
-          })
-          this.addObject(object);
-          this.loadVersions("mesh", version)
-          this.setState({loading: false});
-        });
-      }
-      else {                            // step == pointcloud
+      if(step === "pointcloud") {
         this.setState({loading: true})
         axios({
           method: 'get',
@@ -455,6 +394,67 @@ class Edit extends Component {
           }
           this.setState({loading: false})
         })
+      }
+      else {                            // step == mesh
+        this.setState({loading: true})
+        axios({
+          method: 'get',
+          url: url_,
+          responseType: 'arraybuffer',
+          responseEncoding: 'binary'
+        })
+        .then(res => {
+          const zip = new JSZip()
+          return zip.loadAsync(res.data);
+        })
+        .then(zip => {
+          const fileContents = [];
+          const textFilePromises = [];
+          let blobFileContent;
+  
+          Object.keys(zip.files).forEach(relativePath => {
+            const file = zip.file(relativePath);
+            if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {
+              textFilePromises.push(file.async('text').then(content => {
+                fileContents.push({ fileName: relativePath, content: content });
+              }));
+            }else if (relativePath.split('.').pop() === 'jpg') {
+              blobFileContent = file.async('blob');
+            }
+          });
+  
+          return Promise.all(textFilePromises).then(() => {
+            return blobFileContent.then(blob=> {
+              fileContents.push({ fileName: 'texture.jpg', content: blob });
+              return fileContents;
+            });
+          });
+        })
+        .then(fileContents => {
+          const mtlFile = fileContents[0];
+          const objFile = fileContents[1];
+          const jpgFile = fileContents[2];
+          this.texture = jpgFile.content;
+          this.mtl = mtlFile.content;
+  
+          const textureLoader = new THREE.TextureLoader();
+          let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
+          texture.name = "MVSTexture"
+          const material = new THREE.MeshBasicMaterial( {
+            map: texture,
+            name: "mesh_textured.mtl"
+          });
+  
+          let object = new OBJLoader().parse(objFile.content);
+          object.traverse( function ( child) {
+            if ( child instanceof THREE.Mesh ) {
+              child.material = material;
+            }
+          })
+          this.addObject(object);
+          this.loadVersions("mesh", version)
+          this.setState({loading: false});
+        });
       }
    }
 

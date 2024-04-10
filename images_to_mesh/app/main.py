@@ -292,7 +292,7 @@ def get_log_file():
 
 def get_latest_file(i):
     step1_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step1/**/output/points.ply"))
-    step2_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step2/**/output/points_out.ply"))
+    step2_versions = glob.glob(str(PosixPath("/usr/src/app/data") / i / "step2/**/output/mesh_textured.obj"))
     
     if step2_versions:
         file_step_2: Path = PosixPath(max(step2_versions))
