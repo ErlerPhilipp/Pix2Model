@@ -153,7 +153,19 @@ class Edit extends Component {
       document.getElementById('uuid').value = id
       this.uploadFilesFromServer()
     }
+    if (isMobile) {
+      console.log("componentDidMount");
+      console.log(this.props);
+      if(document.getElementById('uuid').value){
+        this.uploadFilesFromServer();
+      }
+    }
     this.renderScene(this)
+  }
+
+  componentDidUpdate(props){
+    console.log("componentDidUpdate");
+    console.log(this.props);
   }
 
   renderScene(scope) {
@@ -253,70 +265,6 @@ class Edit extends Component {
   }
 
   /**
-   * SERVER CALL
-   * 
-   * Upload a file from the server based on the ID within the ID field
-   */
-  uploadFileFromServer() {
-    const { t } = this.props;
-    var id = document.getElementById('uuid').value
-    var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
-    var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
-    var url_ = `/backend/file?id=${id}`
-    if (step && version) {
-      url_ = `/backend/file?id=${id}&step=${step}&version=${version}`
-    }
-    this.setState({loading: true})
-    axios({
-      method: 'get',
-      url: url_,
-      responseType: 'arraybuffer',
-      reponseEncoding: 'binary'
-    })
-      .then(res => {
-        var geometry = new PLYLoader().parse( res.data );
-        if (geometry.index) {
-          geometry.computeVertexNormals()
-          var material = new THREE.MeshStandardMaterial({vertexColors: THREE.VertexColors, side: 2})
-          var mesh = new THREE.Mesh( geometry, material );
-          this.addObject(mesh, res.headers["filename"])
-          this.loadVersions(step, version)
-        } else {
-          var material = new THREE.PointsMaterial( { size: 0.005 } );
-          material.vertexColors = true
-          var mesh = new THREE.Points(geometry, material)
-          this.addObject(mesh, res.headers["filename"])
-          this.loadVersions(step, version)
-        }
-      })
-      .catch((error) => {
-        if (error.response && error.response.status == 404) {
-          axios({
-            method: 'get',
-            url: `/backend/filestatus?id=${id}`
-          })
-          .then(res => {
-            if (res.status == 201) {
-              this.setFileStatus(t('edit.warning.progress.file').replace('{id}', id), 'yellow')
-            }
-          })
-          .catch((error)=>{
-            if (error.response.status == 404 || error.response.status == 405) {
-              this.setFileStatus(t('edit.error.filenotfound').replace('{id}', id), 'red')
-            } else if (error.response.status == 400) {
-              this.setFileStatus(error.response.data, 'red', true)
-            } else {
-              this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
-            }
-          })
-        } else {
-          this.setFileStatus(t('edit.error.server.file').replace('{id}', id), 'red')
-        }
-        this.setState({loading: false})
-      })
-  }
-
-  /**
    * UPLOAD FILES FROM SERVER SERVER CALL
    * 
    * Upload multiple files inside a zip file from the server based on the ID within the ID field
@@ -324,12 +272,21 @@ class Edit extends Component {
     uploadFilesFromServer() {
       const { t } = this.props;
       var id = document.getElementById('uuid').value
-      var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
-      var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
+      if (!isMobile){
+        var step = document.getElementById("options") ? document.getElementById("options").children[0].innerText : undefined
+        var version = document.getElementById("options") ? document.getElementById("options").children[1].innerText : undefined
+      }
       var url_ = `/backend/files?id=${id}`
       if (step && version) {
         url_ = `/backend/files?id=${id}&step=${step}&version=${version}`
       }
+
+      if(isMobile){
+        step = this.props.step;
+        version = "v000";
+        url_ = `/backend/files?id=${id}&step=${step}&version=${version}`
+      }
+
       console.log("Load from server: ", url_);
 
       if(step === "pointcloud") {
@@ -411,7 +368,7 @@ class Edit extends Component {
           const fileContents = [];
           const textFilePromises = [];
           let blobFileContent;
-  
+
           Object.keys(zip.files).forEach(relativePath => {
             const file = zip.file(relativePath);
             if(relativePath.split('.').pop() === 'obj' || relativePath.split('.').pop() === 'mtl') {

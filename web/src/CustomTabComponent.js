@@ -14,6 +14,7 @@ import Edit from "./edit/EditComponent";
 import Impressum from './impressum/ImpressumComponent';
 import Privacy from './privacy/PrivacyComponent';
 import Support from './support/SupportComponent';
+import SideMenuItem from './sideMenu/SideMenuItemComponent'
 
 import './index.css';
 
@@ -22,6 +23,11 @@ function CustomTabs() {
   const { t, i18n } = useTranslation();
   const [state, setState] = useState('upload')
   const [index, setIndex] = useState(new URLSearchParams(window.location.search).get('page') ? new URLSearchParams(window.location.search).get('page') : 0);
+  const [load_id, setLoadId] = useState(false);
+
+  const handleSetState = (newState) => {
+    setState(newState);
+  };
 
   function handleChangeLang(lang) {
     i18n.changeLanguage(lang)
@@ -34,6 +40,14 @@ function CustomTabs() {
   function handleChangeIndex(index) {
     setIndex(index);
   };
+
+  function onLoadIdPressed(){
+    if(state==="mesh"){
+      handleSetState("pointcloud");
+    }else{
+      handleSetState("mesh"); 
+    }
+  }
 
   return (
       <React.StrictMode>
@@ -80,20 +94,25 @@ function CustomTabs() {
         <MobileView>
           <div className='mobile_wrapper'>
             <Menu>
-              <a id="home" className="menu-item" onClick={() => { setState('upload')}}>Image-2-Mesh</a>
-              <a id="about" className="menu-item" onClick={() => { setState('edit')}}>{t('menu.edit')}</a>
-              <a id="contact" className="menu-item" onClick={() => { setState('about')}}>{t('menu.about')}</a>
+              <SideMenuItem title="Upload" image="images.png" stateName="upload" state={state} setState={handleSetState} ></SideMenuItem>
+              <SideMenuItem title="Pointcloud" image="ply.png" stateName="pointcloud" state={state} setState={handleSetState} ></SideMenuItem>
+              <SideMenuItem title="Mesh" image="mesh.png" stateName="mesh" state={state} setState={handleSetState} ></SideMenuItem>
+              <div>
+                <input id="uuid"></input>
+                <button className="button_small" onClick={() => { onLoadIdPressed() }}>{t('upload.loadPointcloud')}</button>
+              </div>
+              <button id="uuid_error" className="edit_warning"></button>
             </Menu>
               {state === 'upload' && (
                 <Upload></Upload>
               )}
-              {state === 'edit' && (
-                <Edit></Edit>
+              {state === 'pointcloud' && (
+                <Edit load_id={load_id} step="pointcloud" ></Edit>
               )}
-              {state === 'about' && (
-                <About></About>
+              {state === 'mesh' && (
+                <Edit load_id={load_id} step="mesh" ></Edit>
               )}
-            </div>
+          </div>
         </MobileView>
       </React.StrictMode>
     );

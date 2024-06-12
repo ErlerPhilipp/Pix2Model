@@ -139,7 +139,7 @@ code {
 }
 
 .swipable_content {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .icon {
