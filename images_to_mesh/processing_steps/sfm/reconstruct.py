@@ -33,25 +33,31 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
 
     # Create log file
     log_path = str(dataset_path) + '/log.txt'
-    logfile = open(log_path, "w")
+    #logfile = open(log_path, "a")
+    #logfile.close()
 
     # Create error log file
     error_path = str(dataset_path) + '/error.log'
-    error_log = open(error_path, "w")
+    error_log = open(error_path, "a") # call once to create the file
+    error_log.close()
 
     num_processes = str(os.cpu_count() - 1)
 
     try:
-        make_directory(path=sparse_path, error_log=error_log)
-        make_directory(path=dense_path, error_log=error_log)
-        make_directory(path=output_path, error_log=error_log)
-    except ReconstructionError:
-        raise
+        make_directory(path=sparse_path, error_path=error_path)        
+        make_directory(path=dense_path, error_path=error_path)
+        make_directory(path=output_path, error_path=error_path)
+    except ReconstructionError as e:
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Make directories]!\n" + e.msg)
+        #raise
 
     output_file = output_path + '/points.ply'
 
     # Extract features
-    logfile.write(f"Extracting features...\n")
+    # with open() closes file automatically
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Extracting features...\n")
     extract_command = [
         'colmap', 'feature_extractor',
         '--database_path', database_path,
@@ -59,28 +65,36 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--SiftExtraction.num_threads', num_processes
     ]
     try:
-        for line in execute_subprocess(command=extract_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=extract_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Extracting features]!\n" + e.msg)
+        #error_log.write(e.msg)
         #raise
 
     # Matching
-    logfile.write(f"Performing matching...\n")
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Performing matching...\n")
     matching_command = [
         'colmap', 'exhaustive_matcher',
         '--database_path', database_path,
         '--SiftMatching.num_threads', num_processes
     ]
     try:
-        for line in execute_subprocess(command=matching_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=matching_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Matching]!\n" + e.msg)
+        #error_log.write(e.msg)
         #raise
 
     # Mapping
-    logfile.write(f"Performing mapping...\n")
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Performing mapping...\n")
     mapping_command = [
         'colmap', 'mapper',
         '--database_path', database_path,
@@ -89,14 +103,18 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--Mapper.num_threads', num_processes
     ]
     try:
-        for line in execute_subprocess(command=mapping_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=mapping_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Mapping]!\n" + e.msg) 
+        #error_log.write(e.msg)
         #raise
 
     # Undistort
-    logfile.write(f"Performing undistorting...\n")
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Performing undistorting...\n")
     undistort_command = [
         'colmap', 'image_undistorter',
         '--image_path', image_path,
@@ -106,16 +124,20 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--max_image_size', '2000'
     ]
     try:
-        for line in execute_subprocess(command=undistort_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=undistort_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Undistortion]!\n" + e.msg)
+        #error_log.write(e.msg)
         #raise
 
     # Model Converter
     # TODO: Skip txt conversion for better perforamnce
     # Reconstructoin quality decreases immensely after converting to txt
-    logfile.write(f"Performing model conversion to txt format...\n")
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Performing model conversion to txt format...\n")
     model_converter_command = [
         'colmap', 'model_converter',
         '--output_type', 'TXT',
@@ -123,16 +145,20 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--output_path', dense_path + '/sparse'
     ]
     try:
-        for line in execute_subprocess(command=model_converter_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=model_converter_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Model conversion TXT]!\n" + e.msg)
+        #error_log.write(e.msg)
         #raise
     
     # Convert sfm to ply and save for the editor
     #convert_to_ply(dataset_path, sparse_path, error_log)
     # PLY Converter
-    logfile.write(f"Performing model conversion to ply format...\n")
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Performing model conversion to ply format...\n")
     model_converter_command = [
         'colmap', 'model_converter',
         '--output_type', 'PLY',
@@ -140,10 +166,13 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--output_path', output_file
     ]
     try:
-        for line in execute_subprocess(command=model_converter_command, logfile=logfile, error_log=error_log):
-            logfile.write(line)
+        for line in execute_subprocess(command=model_converter_command, log_path=log_path, error_path=error_path):
+            with open(log_path, "a") as logfile:
+                logfile.write(line)
     except ReconstructionError as e:
-        error_log.write(e.msg)
+        with open(error_path, "a") as error_log:
+            error_log.write("Colmap reconstruction error [Model conversion PLY]!\n" + e.msg)
+        #error_log.write(e.msg)
         #raise
 
     # copy camera poses to output folder
@@ -159,16 +188,17 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     #    if os.path.isfile(file_path):
     #        os.remove(file_path)
 
-    logfile.write(f"Output written to: {str(output_file)}")
-    logfile.close()
+    with open(log_path, "a") as logfile:
+        logfile.write(f"Output written to: {str(output_file)}\n")
+        #logfile.close()
 
-    error_log.close()
+    #error_log.close()
 
     # Remove error file if empty
     if not os.path.getsize(error_path):
         os.remove(error_path)
 
-    print(f"Finished reconstruction. Output written to: {str(output_file)}, log written to log.txt")
+    print(f"Finished reconstruction. Output written to: {str(output_file)}, log written to log.txt\n")
     return output_file
 
 
@@ -196,32 +226,42 @@ def convert_to_ply(dataset_path, sparse_path, error_log):
     return output_path
 
 
-def execute_subprocess(command: list[str], logfile: TextIO, error_log: TextIO):
+#def execute_subprocess(command: list[str], logfile: TextIO, error_log: TextIO):
+def execute_subprocess(command: list[str], log_path: str, error_path: str):
     # Call the COLMAP command line interface and print all outputs
     try:
         process = subprocess.Popen(command,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-        for stdout_line in iter(process.stdout.readline, ""):
-            yield stdout_line
-        process.stdout.close()
+        #https://blog.dalibo.com/2022/09/12/monitoring-python-subprocesses.html
+        # this for loop already consumes the stdout PIPE, such that process.communicate() gives us an empty stdout
+        for stderr_line in iter(process.stderr.readline, ""):
+            # yield saves memory usage here, but probably not needed because we don't have lots of data
+            yield stderr_line
         (stdout, stderr) = process.communicate()
+        #process.stdout.close()
+        # stdout returns nothing when calling colmap commands
         if stdout:
-            logfile.write(stdout)
+            with open(log_path, "a") as logfile:
+                logfile.write(stdout)
         if stderr:
-            logfile.write(stderr)
+            with open(error_path, "a") as error_log:
+                error_log.write(stderr)
             raise ReconstructionError(stderr.rstrip())
-    except ReconstructionError:
+    except ReconstructionError as e:
         raise
     except OSError as e:
-        error_log.write(e.strerror + ': ' + e.filename)
+        with open(error_path, "a") as error_log:
+            error_log.write(e.strerror + ': ' + e.filename)
         raise ReconstructionError(e.strerror + ': ' + e.filename)
 
 
-def make_directory(path: str, error_log: TextIO):
+#def make_directory(path: str, error_log: TextIO):
+def make_directory(path: str, error_path: str):
     try:
         os.mkdir(path)
     except OSError:
-        error_log.write("Creation of directory %s failed" % path)
-        raise ReconstructionError("Creation of directory %s failed" % path)
+        with open(error_path, "a") as error_log:
+            error_log.write("Creation of directory %s failed \n" % path)
+        raise ReconstructionError("Creation of directory %s failed \n" % path)
