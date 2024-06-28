@@ -11,7 +11,7 @@ We use publicly available software to create a 3D model from uploaded images.
 The pipeline consists of the following steps:
 - COLMAP for Structure from Motion and Multi-View Stereo
 - PyMeshlab (Screened Poisson Surface Reconstruction) for meshing
-- [WIP] OpenMVS for texturing
+- OpenMVS for texturing
 
 So far, [COLMAP](https://colmap.github.io/) has shown the best results for our use cases with 
 acceptable computation times. 
@@ -33,7 +33,7 @@ which lose quality quickly when simplifying the mesh.
 ## Processing Folder Structure
 
 Uploaded images are stored in `data/[UUID]/input`, where UUID is a random unique identifier for each job. 
-The paths to these images is passed as argument to the first step in the processing pipeline. 
+The paths to these images are passed as arguments to the first step in the processing pipeline. 
 
 How each further step uses this folder is up to them, 
 however it makes sense that each step creates its own folder for putting intermediate results.
