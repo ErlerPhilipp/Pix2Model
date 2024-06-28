@@ -67,16 +67,21 @@ class Edit extends Component {
 
     const gridHelper = new THREE.GridHelper( 10, 50 );
     this.scene.add( gridHelper );
+    this.labelRenderer = new CSS2DRenderer();
+
     if (isMobile) {
       this.camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 1000);
       this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.labelRenderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
     } else {
       this.camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / (window.innerHeight - 105), 0.1, 1000);
+      this.labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+
     }
-    this.labelRenderer = new CSS2DRenderer();
-    this.labelRenderer.setSize(window.innerWidth - 300, window.innerHeight - 105);
+    this.labelRenderer.domElement.setAttribute("name", "orbit_controls");
     this.labelRenderer.domElement.style.position = 'absolute';
     this.labelRenderer.domElement.style.top = '0px';
+    this.labelRenderer.domElement.style.left = '10px';
     this.mount.appendChild(this.labelRenderer.domElement);
 
     this.camera.position.z = 5;
