@@ -8,6 +8,7 @@ from typing import List, TextIO
 from plyfile import PlyData, PlyElement
 from images_to_mesh.processing_steps.erros import ReconstructionError
 from images_to_mesh.processing_steps.sfm.read_write_model import read_points3D_binary
+import re
 
 def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     """Generate a !sparse! point cloud from a list of input images and save it as a .ply file
@@ -66,8 +67,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=extract_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Extracting features]!\n" + e.msg)
@@ -84,8 +84,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=matching_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Matching]!\n" + e.msg)
@@ -104,8 +103,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=mapping_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Mapping]!\n" + e.msg) 
@@ -125,8 +123,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=undistort_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Undistortion]!\n" + e.msg)
@@ -146,8 +143,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=model_converter_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Model conversion TXT]!\n" + e.msg)
@@ -167,8 +163,7 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     ]
     try:
         for line in execute_subprocess(command=model_converter_command, log_path=log_path, error_path=error_path):
-            with open(log_path, "a") as logfile:
-                logfile.write(line)
+            parse_text_output(line, log_path, error_path)
     except ReconstructionError as e:
         with open(error_path, "a") as error_log:
             error_log.write("Colmap reconstruction error [Model conversion PLY]!\n" + e.msg)
@@ -190,9 +185,6 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
 
     with open(log_path, "a") as logfile:
         logfile.write(f"Output written to: {str(output_file)}\n")
-        #logfile.close()
-
-    #error_log.close()
 
     # Remove error file if empty
     if not os.path.getsize(error_path):
@@ -237,24 +229,41 @@ def execute_subprocess(command: list[str], log_path: str, error_path: str):
         #https://blog.dalibo.com/2022/09/12/monitoring-python-subprocesses.html
         # this for loop already consumes the stdout PIPE, such that process.communicate() gives us an empty stdout
         for stderr_line in iter(process.stderr.readline, ""):
-            # yield saves memory usage here, but probably not needed because we don't have lots of data
             yield stderr_line
-        (stdout, stderr) = process.communicate()
+        #(stdout, stderr) = process.communicate()
         #process.stdout.close()
         # stdout returns nothing when calling colmap commands
-        if stdout:
-            with open(log_path, "a") as logfile:
-                logfile.write(stdout)
-        if stderr:
-            with open(error_path, "a") as error_log:
-                error_log.write(stderr)
-            raise ReconstructionError(stderr.rstrip())
+        #if stdout:
+        #    with open(log_path, "a") as logfile:
+        #        logfile.write(stdout)
+        #if stderr:
+        #    with open(error_path, "a") as error_log:
+        #        error_log.write(stderr)
+        #    raise ReconstructionError(stderr.rstrip())
     except ReconstructionError as e:
         raise
     except OSError as e:
         with open(error_path, "a") as error_log:
             error_log.write(e.strerror + ': ' + e.filename)
         raise ReconstructionError(e.strerror + ': ' + e.filename)
+    
+        
+def parse_text_output(line: str, log_path: str, error_path: str):
+    word_list = line.split()
+    regex = bool(re.match(r"^([IWE]\d{4})", word_list[0]))
+    if(regex & word_list[0].startswith("I")): # info
+        with open(log_path, "a") as logfile:
+            logfile.write(line)
+    elif(regex & word_list[0].startswith("W")): # warning, also write into error file
+        with open(error_path, "a") as error_log:
+            error_log.write(line)
+    elif(regex & word_list[0].startswith("E")): # error
+        with open(error_path, "a") as error_log:
+            error_log.write(line)
+    else: # write undefined lines to error log
+        with open(error_path, "a") as error_log:
+            error_log.write(line) 
+        
 
 
 #def make_directory(path: str, error_log: TextIO):
