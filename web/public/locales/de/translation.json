@@ -68,6 +68,7 @@
             "support": "Unterstützt "
         },
         "submit": "Dateien übertragen",
+        "loadPointcloud": "Lade Punktwolke",
         "new": "Neue Rekonstruktion",
         "abort": {
             "button": "Rekonstruktion abbrechen",

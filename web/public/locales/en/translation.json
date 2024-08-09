@@ -68,6 +68,7 @@
             "support": "Supports "
         },
         "submit": "Submit files",
+        "loadPointcloud": "Load pointcloud",
         "new": "New Reconstruction",
         "abort": {
             "button": "Abort Reconstruction",

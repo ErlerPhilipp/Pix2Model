@@ -5,7 +5,7 @@
 
 .images {
     position: absolute;
-    top: 80px;
+    top: 20px;
     width: 550px;
     left: calc((100vw / 2) - 880px);
 }
@@ -68,4 +68,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(100vh - 40px);
+  }
+
+  .dropzone {
+    max-height: calc(100vh - 300px);
+    overflow: auto;
   }
