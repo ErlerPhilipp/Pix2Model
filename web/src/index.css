@@ -101,6 +101,11 @@ code {
   background: transparent;
 }
 
+.id_container {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 .button_small {
   width: 190px;
   height: 40px;
@@ -110,7 +115,10 @@ code {
   border: 0px;
   box-shadow: 1px 1px 5px grey;
   color: white;
+  margin: 10px;
 }
+
+
 
 .button_small:hover {
   background: rgb(34,102,153);
@@ -330,4 +338,21 @@ Note: Beware of modifying this element as it can break the animations - you shou
 /* Styling of overlay */
 .bm-overlay {
   background: rgba(0, 0, 0, 0.3);
+}
+
+.icon_container {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  height: 25px;
+}
+
+.icon_container a {
+  height: 100%;
+  width: auto;
+}
+
+.icon_container a img {
+  height: 100%;
+  width: auto;
 }
