@@ -269,7 +269,7 @@ def parse_text_output(line: str, log_path: str, error_path: str):
 #def make_directory(path: str, error_log: TextIO):
 def make_directory(path: str, error_path: str):
     try:
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
     except OSError:
         with open(error_path, "a") as error_log:
             error_log.write("Creation of directory %s failed \n" % path)

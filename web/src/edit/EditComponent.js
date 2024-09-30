@@ -14,6 +14,7 @@ import axios from 'axios';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import InfiniteGridHelper from './InfiniteGridHelper.js';
 
 import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
@@ -65,7 +66,7 @@ class Edit extends Component {
     this.scene.add(this.light);
     this.mount.appendChild(this.renderer.domElement);
 
-    const gridHelper = new THREE.GridHelper( 10, 50 );
+    const gridHelper = new InfiniteGridHelper( 1, 10 );
     this.scene.add( gridHelper );
     this.labelRenderer = new CSS2DRenderer();
 
