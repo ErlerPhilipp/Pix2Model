@@ -149,7 +149,7 @@ def get_file():
     step = request.args.get("step")
     version = request.args.get("version")
     app.logger.info(f"Retrieving file with id {i} from step {step}, version {version}")
-    if step == None or version == None:
+    if step is None or version is None:
         [filename, file_path, step, version] = get_latest_file(i)
     elif step == 'mesh':
         file_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output/points_out.ply"
@@ -174,7 +174,7 @@ def get_files():
     i = request.args.get("id")
     step = request.args.get("step")
     version = request.args.get("version")
-    if step == None and version == None:
+    if step is None and version is None:
         [filename, file_path, step, version] = get_latest_file(i)
 
     if step == 'mesh':
@@ -226,7 +226,7 @@ def get_status():
     version = request.args.get("version")
     app.logger.info(f"Retrieving status of job with id {i} from step {step}, version {version}")
     # Check if file exists
-    if step == None or version == None:
+    if step is None or version is None:
         [filename, file_path, step, version] = get_latest_file(i)
     elif step == 'mesh':
         file_path: Path = PosixPath("/usr/src/app/data") / i / "step2" / version / "output/points_out.ply"
