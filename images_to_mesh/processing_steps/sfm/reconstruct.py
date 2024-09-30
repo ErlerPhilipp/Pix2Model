@@ -221,7 +221,7 @@ def execute_subprocess(command: list[str], logfile: TextIO, error_log: TextIO):
 
 def make_directory(path: str, error_log: TextIO):
     try:
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
     except OSError:
         error_log.write("Creation of directory %s failed" % path)
         raise ReconstructionError("Creation of directory %s failed" % path)
