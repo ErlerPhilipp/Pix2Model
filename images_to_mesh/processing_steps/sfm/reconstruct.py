@@ -80,7 +80,8 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
     matching_command = [
         'colmap', 'exhaustive_matcher',
         '--database_path', database_path,
-        '--SiftMatching.num_threads', num_processes
+        '--SiftMatching.num_threads', num_processes,
+        '--use_gpu', 0
     ]
     try:
         for line in execute_subprocess(command=matching_command, log_path=log_path, error_path=error_path):
@@ -99,7 +100,8 @@ def reconstruct_with_colmap_sparse(image_list: List[str]) -> List[str]:
         '--database_path', database_path,
         '--image_path', image_path,
         '--output_path', sparse_path,
-        '--Mapper.num_threads', num_processes
+        '--Mapper.num_threads', num_processes,
+        '--use_gpu', 0
     ]
     try:
         for line in execute_subprocess(command=mapping_command, log_path=log_path, error_path=error_path):
