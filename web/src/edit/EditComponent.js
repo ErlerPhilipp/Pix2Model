@@ -56,6 +56,7 @@ class Edit extends Component {
         canRedo: false
       }
     };
+    this.refreshTimer = null;
   }
 
   componentDidMount() {
@@ -166,6 +167,8 @@ class Edit extends Component {
         this.uploadFilesFromServer();
       }
     }
+    this.startRefreshInterval();
+
     this.renderScene(this)
   }
 
@@ -173,6 +176,27 @@ class Edit extends Component {
     console.log("componentDidUpdate");
     console.log(this.props);
   }
+
+  componentWillUnmount(){
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+  }
+
+  /**
+   * Try to load object from server every 60 seconds until the object is loaded.
+   */
+  startRefreshInterval = () => {
+    this.refreshTimer = setInterval(() => {
+      if (!this.state.loaded) {
+        console.log("Rrefreshing the page...");
+        this.uploadFilesFromServer()
+      } else {
+        console.log("Object loaded, stopping refresh.");
+        clearInterval(this.refreshTimer);
+      }
+    }, 60000);
+  };
 
   renderScene(scope) {
     scope.renderer.render(scope.scene, scope.camera);
@@ -1391,6 +1415,7 @@ class Edit extends Component {
       ReactTooltip.rebuild();
     }
   }
+
 
   render() {
 
