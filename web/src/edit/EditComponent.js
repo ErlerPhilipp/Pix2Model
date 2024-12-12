@@ -14,6 +14,7 @@ import axios from 'axios';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { LoadingManager } from 'three/src/loaders/LoadingManager.js';
 import InfiniteGridHelper from './InfiniteGridHelper.js';
 
 import Dropdown from 'react-dropdown';
@@ -91,6 +92,14 @@ class Edit extends Component {
     this.transformControls = new TransformControls(this.camera, this.labelRenderer.domElement);
     this.loader = new Loader(this);
     var scope = this;
+    this.loadingManager = new LoadingManager();
+    this.loadingManager.onProgress = function (item, loaded, total) {
+      if (loaded === total){
+        scope.renderer.render(scope.scene, scope.camera);
+        scope.frameObject(scope);
+        console.log("Loading complete!");
+      } 
+    }; 
     this.transformControls.addEventListener('mouseDown', function () {
       scope.controls.enabled = false;
     });
@@ -202,6 +211,7 @@ class Edit extends Component {
     scope.renderer.render(scope.scene, scope.camera);
     scope.labelRenderer.render( scope.scene, scope.camera );
   }
+
 
   setTransformation(scope, transformation) {
     switch (transformation) {
@@ -347,7 +357,7 @@ class Edit extends Component {
           const images = pointCloudFiles[1].content;
           //this.pointsVis = pointsVis;
           this.images = images;
-          var geometry = new PLYLoader().parse( pointsPly);
+          var geometry = new PLYLoader(this.loadingManager).parse( pointsPly);
           var material = new THREE.PointsMaterial( { size: 0.005 } );
           material.vertexColors = true
           var mesh = new THREE.Points(geometry, material)
@@ -424,7 +434,7 @@ class Edit extends Component {
           this.texture = jpgFile.content;
           this.mtl = mtlFile.content;
   
-          const textureLoader = new THREE.TextureLoader();
+          const textureLoader = new THREE.TextureLoader(this.loadingManager);
           let texture = textureLoader.load(URL.createObjectURL(jpgFile.content));
           texture.name = "MVSTexture"
           const material = new THREE.MeshBasicMaterial( {
@@ -432,7 +442,7 @@ class Edit extends Component {
             name: "mesh_textured.mtl"
           });
   
-          let object = new OBJLoader().parse(objFile.content);
+          let object = new OBJLoader(this.loadingManager).parse(objFile.content);
           object.traverse( function ( child) {
             if ( child instanceof THREE.Mesh ) {
               child.material = material;
@@ -583,24 +593,10 @@ class Edit extends Component {
     }
     // this.object.name = filename;
     this.setState({loaded: true, name: filename});
-    // this.frameObject(this);
-    // this.centerPivotPointWithinBoundingBox(this)
-    this.centerCameraToObject(this);
+    this.frameObject(this);
     this.renderScene(this);
   }
 
-  centerCameraToObject(scope) {
-    if (!scope.object) {
-      return
-    }
-
-    scope.object.geometry.computeBoundingBox(scope);
-    const boundingBox = new THREE.Box3();
-    boundingBox.copy( scope.object.geometry.boundingBox ).applyMatrix4( scope.object.matrixWorld );
-    const center = new THREE.Vector3();
-    boundingBox.getCenter(center);
-    scope.camera.lookAt(center);
-  }
 
   centerPivotPointWithinBoundingBox(scope) {
     if (!scope.object) {
@@ -684,7 +680,7 @@ class Edit extends Component {
       var exporter = new OBJExporter();
       let zip = new JSZip();
       // parse mtl file
-      const material_obj = new MTLLoader().parse(this.mtl);
+      const material_obj = new MTLLoader(this.loadingManager).parse(this.mtl);
       // get material from parsed file
       const material = material_obj.getAsArray()[0];
       zip.file("mesh.mtl", this.mtl);
