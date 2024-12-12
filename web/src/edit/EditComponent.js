@@ -20,7 +20,7 @@ import Dropdown from 'react-dropdown';
 import ReactTooltip from 'react-tooltip';
 import JSZip from 'jszip';
 
-import { FaInfoCircle, FaTheRedYeti } from 'react-icons/fa'; 
+import { FaInfoCircle, FaRegObjectUngroup, FaTheRedYeti } from 'react-icons/fa'; 
 import { isMobile } from 'react-device-detect';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -585,7 +585,21 @@ class Edit extends Component {
     this.setState({loaded: true, name: filename});
     // this.frameObject(this);
     // this.centerPivotPointWithinBoundingBox(this)
-    this.renderScene(this)
+    this.centerCameraToObject(this);
+    this.renderScene(this);
+  }
+
+  centerCameraToObject(scope) {
+    if (!scope.object) {
+      return
+    }
+
+    scope.object.geometry.computeBoundingBox(scope);
+    const boundingBox = new THREE.Box3();
+    boundingBox.copy( scope.object.geometry.boundingBox ).applyMatrix4( scope.object.matrixWorld );
+    const center = new THREE.Vector3();
+    boundingBox.getCenter(center);
+    scope.camera.lookAt(center);
   }
 
   centerPivotPointWithinBoundingBox(scope) {
