@@ -87,6 +87,11 @@ class Edit extends Component {
     this.labelRenderer.domElement.style.left = '10px';
     this.mount.appendChild(this.labelRenderer.domElement);
 
+    // Set default up vector
+    // THREE.Object3D.DefaultUp.set(0, -1, 0); does nothing
+
+    // Set camera up vector to flip object upside down
+    this.camera.up.set(0, -1, 0); 
     this.camera.position.z = 5;
     this.controls = new OrbitControls(this.camera, this.labelRenderer.domElement);
     this.transformControls = new TransformControls(this.camera, this.labelRenderer.domElement);
