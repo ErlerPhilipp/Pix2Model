@@ -1,6 +1,7 @@
 import 'dropzone/dist/dropzone.css'
 import './UploadComponent.css';
-import React, { Component } from 'react';
+import LoadingScreen from './LoadingComponent.jsx'
+import React, { Component, useState } from 'react';
 import Dropzone from 'dropzone'
 import axios from 'axios';
 import { BrowserView, MobileView } from 'react-device-detect';
@@ -14,7 +15,14 @@ class Upload extends Component {
     Dropzone.autoDiscover = false;
     this.state = {
       success: false,
-      id: ''
+      SFMisLoading: false,
+      MESHisLoading: false,
+      currentPipeState: 'SFM',
+      currentSFMJobPosition: 0,
+      currentMeshJobPosition: 0,
+      status: 'Queued', // can be '' for processing or 'Queued' for position in queue
+      id: '',
+      mesh_job_id: ''
     };
   }
 
@@ -65,12 +73,19 @@ class Upload extends Component {
       });
       document.querySelector("#upload").dropzone.on("success", (file, response) => {
           document.querySelector("#upload").dropzone.setupEventListeners();
-          that.setState({success: true, id: response.replace('data/','')})
+          // response[0] => 'data/id...', response[1] => 'id'
+          //that.setState({success: true, isLoading: true, id: response.replace('data/','')})
+          console.log("Upload Response: ", response)
+
+          that.setState({success: true, SFMisLoading: true, id: response['sfm_job_id'][0].replace('data/',''), mesh_job_id: response['mesh_job_id'][0]})
+          that.startJobStatusRequest()
           submitButton.disablwrapper_uploaded = true;
-          var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${response.replace('data/','')}`;    
+          //var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${response.replace('data/','')}`;    
+          var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${response['sfm_job_id'][0].replace('data/','')}`;    
           window.history.pushState({ path: refresh }, '', refresh);
-          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1">${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1</a>`;
-      });
+          //document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1">${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response.replace('data/','')}&page=1</a>`;
+          document.querySelector("#response_field").innerHTML = `${t('upload.success')}<a href="${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response['sfm_job_id'][0].replace('data/','')}&page=1">${window.location.protocol + "//" + window.location.host + window.location.pathname}?id=${response['sfm_job_id'][0].replace('data/','')}&page=1</a>`;
+        });
     }, 0);
   }
 
@@ -108,17 +123,106 @@ class Upload extends Component {
       })
   }
 
+  GetJobPosition() {
+    const { t } = this.props;
+    const that = this
+    // sfm job
+    if (this.state.SFMisLoading == true) {
+      axios({
+        method: 'get',
+        url: `/backend/jobposition?id=${this.state.id}`
+      })
+        .then(res => {
+          console.log("SFM Job position: ", res.data)
+          if (res.data=="finished") {
+            // job is finished
+            that.setState({SFMisLoading: false, MESHisLoading: true, currentPipeState: 'Mesh', currentSFMJobPosition: res.data})
+          } else {
+            // job is still loading, res.data will either be "processing" or the jobposition
+            if (res.data=="processing") {
+              that.setState({SFMisLoading: true, currentPipeState: 'SFM', currentSFMJobPosition: res.data, status: "Status"}) // res.data can be the job position or str "processing"
+            } else {
+              that.setState({SFMisLoading: true, currentPipeState: 'SFM', currentSFMJobPosition: res.data, status: "Queued"})
+            }
+            
+          }
+        })
+        .catch((error) => {
+          console.log("[Error] SFM Job: ", error.response.data)
+          that.setState({currentSFMJobPosition: -1}) 
+        })
+    }
+
+    // mesh reconstruction job
+    if (this.state.MESHisLoading == true) {
+      axios({
+        method: 'get',
+        url: `/backend/jobposition?id=${this.state.mesh_job_id}`
+      })
+        .then(res => {
+          console.log("Mesh Job position: ", res)
+          if (res.data=="finished") {
+            // job is finished
+            that.setState({MESHisLoading: false, currentMeshJobPosition: res.data})
+          } else {
+            if (res.data=="processing") {
+              console.log("Current Pipe state: ", this.state.currentPipeState)
+              that.setState({MESHisLoading: true, currentPipeState: 'Mesh', currentMeshJobPosition: res.data, status: "Status"}) 
+            } else {
+              console.log("Current Pipe state: ", this.state.currentPipeState)
+              that.setState({MESHisLoading: true, currentPipeState: 'Mesh', currentMeshJobPosition: res.data, status: "Queued"})
+            }
+            
+          }
+        })
+        .catch((error) => {
+          console.log("[Error] Mesh Job: ", error.response.data)
+          that.setState({currentMeshJobPosition: -1}) 
+        })
+    }
+  }
+
   resetDropbox() {
     this.dropzone.removeAllFiles(true); 
   }
 
+  /**
+   * Update job status every few seconds
+   */
+  startJobStatusRequest = () => {
+    // initialize with SFMisLoading = true
+    const { t } = this.props;
+    const that = this
+    that.setState({SFMisLoading: true})
+    this.refreshTimer = setInterval(() => {
+      if (this.state.SFMisLoading || this.state.MESHisLoading) {
+        console.log("Refreshing job status...");
+        this.GetJobPosition()
+      } else {
+        console.log("Job finished, stopping refresh.");
+        clearInterval(this.refreshTimer);
+      }
+    }, 5000);
+  };
+
   render() {
     const { t } = this.props;
+    //this.state.isLoading = true;
+    //if (this.state.isLoading == true) {
+    //  return <LoadingScreen jobPosition={this.state.currentJobPosition}></LoadingScreen>
+    //}
     return (
       <div>
         <BrowserView>
           <div className='content'>
             <div className='wrapper_centered_box'>
+            {this.state.MESHisLoading && 
+              <LoadingScreen currentPipeState={this.state.currentPipeState} jobPosition={this.state.currentMeshJobPosition} isLoading={this.state.MESHisLoading} status={this.state.status}/>
+            }
+            {this.state.SFMisLoading && 
+              <LoadingScreen currentPipeState={this.state.currentPipeState} jobPosition={this.state.currentSFMJobPosition} isLoading={this.state.SFMisLoading} status={this.state.status}/>
+            }
+            
             {!this.state.success &&
               <div>
                 <img src='images.png' className='images'/>
@@ -151,6 +255,12 @@ class Upload extends Component {
             }
             {this.state.success &&
               <div>
+                <img src='images.png' className='images'/>
+                <img src='mesh.png' className='mesh'/>
+                <i className="arrow first"></i>
+                <i className="arrow second"></i>
+                <i className="arrow third"></i>
+                <i className="arrow fourth"></i>
                 <h2>SUCCESS
                 </h2>
                 <hr></hr>
@@ -169,6 +279,13 @@ class Upload extends Component {
         <MobileView>
         <div>
             <div className='mobile_wrapper_upload'>
+            {this.state.MESHisLoading && 
+              <LoadingScreen currentPipeState={this.state.currentPipeState} jobPosition={this.state.currentMeshJobPosition} isLoading={this.state.MESHisLoading} status={this.state.status}/>
+            }
+            {this.state.SFMisLoading && 
+              <LoadingScreen currentPipeState={this.state.currentPipeState} jobPosition={this.state.currentSFMJobPosition} isLoading={this.state.SFMisLoading} status={this.state.status}/>
+            }
+            
             {!this.state.success &&
               <div>
                 <img src='images.png' className='images'/>

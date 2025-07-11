@@ -1,0 +1,56 @@
+.loading-text {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+    display: flex;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    color: white;
+
+    align-items: center;
+}
+
+
+.loading-state {
+    width: 440px;
+    height: 100%;
+    position: absolute;
+    border-radius: 5px;
+    background-color: rgba(38, 50, 56, 0.75);
+    z-index: 9999;
+    justify-content: center;
+    overflow: hidden;
+    align-items: center;
+
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.loading-upload {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+    display: flex;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 10px solid #00000000;
+    border-top-color: rgb(255, 255, 255);
+    animation: loading 1s linear infinite;
+}
+
+@keyframes loading {
+    to {
+        transform: rotate(360deg);
+    }
+}

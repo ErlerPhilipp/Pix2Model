@@ -87,7 +87,13 @@ def file_upload():
         return process_order.queue_step_1(processed_filenames, user_email, job_id)
     else:
         app.logger.info(f"Queuing job {job_id} for step 1 and 2")
-        return process_order.queue_step_1_2(processed_filenames, user_email, job_id)
+        ids = {'sfm_job_id': [], 'mesh_job_id': []}
+        result_ids = process_order.queue_step_1_2(processed_filenames, user_email, job_id) # return job1_id and job2_id
+        app.logger.info(f"TUPLE {result_ids}")
+        ids.get('sfm_job_id').append(result_ids[0])
+        ids.get('mesh_job_id').append(result_ids[1])
+
+        return ids
 
 # saves files into the output folder in a new version folder
 # files to be saved are the visibility file, the pointcloud and the camera poses in the images file
@@ -330,6 +336,21 @@ def get_job_status(i):
     else:
         return f"Job with id {i} finished with:<br />{job.result}"
 
+@app.route("/jobposition", methods=["GET"])
+def get_job_position():
+    i = request.args.get("id")
+    job = task_queue.fetch_job(i)
+    if job is None:
+        return f"No job found with id {i}"
+    else:
+        if job.is_finished:
+            return "finished"
+        elif job.get_status() == 'started' or job.get_status() == 'deferred':
+            return "processing"
+        elif job.get_status() == 'queued':
+            return str(job.get_position()) #return f"queued: {job.get_position()}" 
+        else:
+            return "unknown"
 
 @app.errorhandler(413)
 def too_large(e):
