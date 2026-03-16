@@ -46,6 +46,11 @@ Backend logs are stored in the `BACKEND_LOG` folder as specified in the `.env` f
 Each processing step should save its log in its output folder.
 
 
+## Error client version xxx is too old
+
+We once got this: "Error response from daemon: client version 1.41 is too old. Minimum supported API version is 1.44, please upgrade your client to a newer version" when trying to renew the certificate. The reason is actually not certbot but docker. Updating docker solved this.
+
+
 ## Problem not solved?
 
 Please open an issue on GitHub, and we will try to help you and expand this guide.
